@@ -186,7 +186,7 @@ function Ring({size,pct,color,sw=6,pulse,children}){
   const r=(size-sw)/2,circ=2*Math.PI*r,off=circ-(pct/100)*circ;
   return (
     <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
-      <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"absolute"}}>
+      <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"absolute",top:0,left:0}}>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={TANL} strokeWidth={sw} opacity={0.35}/>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{transition:"stroke-dashoffset 0.6s ease"}}/>
       </svg>
