@@ -775,86 +775,6 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     }catch(e){setAiSug(null);}
     setAiLoad(false);
   }
-  function applySug(){
-    if(!aiSug)return;
-    const u={...tp};
-    Object.entries(aiSug).forEach(([block,tasks])=>{
-      u[block]=[...(u[block]||[]),...tasks.map(label=>({id:"ai"+Date.now()+Math.random(),label,resistance:"medium",done:false}))];
-    });
-    upd(u);setAiSug(null);
-  }
-  const allOpen=cats.flatMap(c=>c.tasks.filter(t=>!t.done).map(t=>({...t,catColor:c.color})));
-  return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
-      <SL>Daily Planner</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:16}}>Build tomorrow tonight. Sequence by energy, not urgency.</p>
-      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",marginBottom:16,padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-        {aiLoad?"◎ Planning your day…":"✦ Suggest My Day"}
-      </button>
-      {aiSug&&(
-        <div style={{marginBottom:20,padding:"16px",background:GOLD+"08",border:"1px solid "+GOLD+"40",borderRadius:2}}>
-          <SL c={GOLD}>Suggested Plan</SL>
-          {DAYBLOCKS.map(block=>{
-            const tasks=aiSug[block.id]||[];
-            if(!tasks.length)return null;
-            return(
-              <div key={block.id} style={{marginBottom:10}}>
-                <div style={{fontSize:11,color:GOLD,fontWeight:"bold",marginBottom:4}}>{block.label}</div>
-                {tasks.map((t,i)=><div key={i} style={{fontSize:12,color:INK,padding:"3px 0",borderBottom:"1px solid "+FINK}}>· {t}</div>)}
-              </div>
-            );
-          })}
-          <div style={{display:"flex",gap:8,marginTop:12}}>
-            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Apply to My Day</button>
-            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Dismiss</button>
-          </div>
-        </div>
-      )}
-      {DAYBLOCKS.map(block=>{
-        const bt=tp[block.id]||[];
-        return(
-          <div key={block.id} style={{marginBottom:20}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-              <div>
-                <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ {block.label}</div>
-                <div style={{fontSize:11,color:TAN,fontStyle:"italic",marginTop:1}}>{block.desc}</div>
-              </div>
-              {bt.length>0&&<span style={{fontSize:10,color:TAN}}>{bt.filter(t=>t.done).length}/{bt.length}</span>}
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {!bt.length&&<div style={{padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2,fontSize:12,color:TAN,fontStyle:"italic",opacity:0.6}}>Nothing scheduled yet</div>}
-              {bt.map((task,idx)=>(
-                <div key={task.id||idx} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",background:task.done?OX+"08":"rgba(255,255,255,0.6)",border:"1px solid "+(task.done?OX+"30":FINK),borderLeft:"3px solid "+(task.done?OX:TANL),borderRadius:2}}>
-                  <div onClick={()=>upd({...tp,[block.id]:bt.map((t,i)=>i===idx?{...t,done:!t.done}:t)})} style={{width:18,height:18,borderRadius:"50%",flexShrink:0,cursor:"pointer",border:"2px solid "+(task.done?OX:TANL),background:task.done?OX:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    {task.done&&<span style={{color:"white",fontSize:9}}>✓</span>}
-                  </div>
-                  <span style={{flex:1,fontSize:13,color:task.done?TAN:INK,textDecoration:task.done?"line-through":"none"}}>{task.label}</span>
-                  <RDot level={task.resistance||"low"}/>
-                  <button onClick={()=>upd({...tp,[block.id]:bt.filter((_,i)=>i!==idx)})} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:14,padding:"0 2px"}}>×</button>
-                </div>
-              ))}
-            </div>
-            {addTo===block.id?(
-              <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                {allOpen.slice(0,5).map(t=>(
-                  <div key={t.id} onClick={()=>{upd({...tp,[block.id]:[...bt,{id:t.id,label:t.label,resistance:t.resistance,done:false}]});}} style={{padding:"7px 10px",background:"rgba(255,255,255,0.7)",border:"1px solid "+FINK,borderLeft:"3px solid "+t.catColor,borderRadius:2,cursor:"pointer",fontSize:12,color:INK,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>{t.label}</span><RDot level={t.resistance}/>
-                  </div>
-                ))}
-                <input value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Or type a custom task…"
-                  onKeyDown={e=>{if(e.key==="Enter"&&custom.trim()){upd({...tp,[block.id]:[...bt,{id:"c"+Date.now(),label:custom,resistance:"low",done:false}]});setCustom("");setAddTo(null);}}}
-                  style={{padding:"7px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:12,color:INK,outline:"none",borderRadius:2}}/>
-                <button onClick={()=>setAddTo(null)} style={{padding:"6px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Done</button>
-              </div>
-            ):(
-              <button onClick={()=>setAddTo(block.id)} style={{marginTop:8,width:"100%",padding:"7px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,fontStyle:"italic",borderRadius:2}}>+ Add to {block.label}</button>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 function LibraryTab({library,setLibrary}){
   const [ac,setAc]=useState("all");
@@ -1340,6 +1260,7 @@ export default function App(){
             </div>
             <div style={{marginBottom:16}}>
               <AISuggestButton cats={cats} planner={planner} setPlanner={setPlanner}/>
+            </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:28}}>
               {cats.map(cat=>{
                 const pct=getCatPct(cat);
