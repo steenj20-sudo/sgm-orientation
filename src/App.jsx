@@ -1056,7 +1056,7 @@ export default function App(){
             <div style={{flex:1}}>
               <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
               <div style={{fontSize:22,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
-              <div style={{fontSize:11,color:INK,fontStyle:"italic",opacity:0.75,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"short",month:"long",day:"numeric"})}</div>
+              <div style={{fontSize:11,color:INK,fontStyle:"italic",opacity:0.75,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).replace(",", " —")}</div>
             </div>
           </div>
           <div style={{borderTop:"1px solid rgba(26,46,74,0.12)",paddingTop:4}}>
