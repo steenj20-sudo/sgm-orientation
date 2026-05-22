@@ -380,13 +380,12 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
   );
 }
 
-function HabitsTab({habits,setHabits,streaks,setStreaks}){
+function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHabits}){
   const tk=new Date().toISOString().slice(0,10);
   const yk=new Date(Date.now()-86400000).toISOString().slice(0,10);
   const td=habits[tk]||{};
   const [addingHabit,setAddingHabit]=useState(false);
   const [newHabit,setNewHabit]=useState({label:"",cat:"health"});
-  const [customHabits,setCustomHabits]=useState([]);
   const allHabits=[...HABITS,...customHabits];
   const done=allHabits.filter(h=>td[h.id]).length;
   const pct=Math.round(done/allHabits.length*100);
@@ -943,6 +942,7 @@ export default function App(){
   const [newTask,setNewTask]=useState({label:"",resistance:"low",roadblock:null});
   const [projectView,setProjectView]=useState(null);
   const [habits,setHabits]=useState({});
+  const [customHabits,setCustomHabits]=useState([]);
   const [streaks,setStreaks]=useState({});
   const [prayers,setPrayers]=useState([]);
   const [planner,setPlanner]=useState({});
@@ -957,6 +957,7 @@ export default function App(){
       try{const r=localStorage.getItem("sgm3-history");if(r)setHistory(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-library");if(r)setLibrary(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-habits");if(r)setHabits(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-customhabits");if(r)setCustomHabits(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-streaks");if(r)setStreaks(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-prayers");if(r)setPrayers(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-planner");if(r)setPlanner(JSON.parse(r));}catch(e){}
@@ -973,13 +974,14 @@ export default function App(){
       try{localStorage.setItem("sgm3-history",JSON.stringify(history));}catch(e){}
       try{localStorage.setItem("sgm3-library",JSON.stringify(library));}catch(e){}
       try{localStorage.setItem("sgm3-habits",JSON.stringify(habits));}catch(e){}
+      try{localStorage.setItem("sgm3-customhabits",JSON.stringify(customHabits));}catch(e){}
       try{localStorage.setItem("sgm3-streaks",JSON.stringify(streaks));}catch(e){}
       try{localStorage.setItem("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
       try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
       try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
     },800);
     return()=>clearTimeout(timer);
-  },[cats,history,library,habits,streaks,prayers,planner,shelf,loaded]);
+  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,loaded]);
 
   function addTask(catId){
     if(!newTask.label.trim())return;
@@ -1173,7 +1175,7 @@ export default function App(){
 
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
-        {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks}/>}
+        {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
         {view==="planner"&&<PlannerTab cats={cats} planner={planner} setPlanner={setPlanner}/>}
 
         {view==="history"&&(
