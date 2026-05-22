@@ -162,7 +162,7 @@ const TABS_ROW1 = [
   {id:"dashboard",label:"Map",g:"◎",type:"g"},
   {id:"habits",label:"Habits",g:"✓",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
-  {id:"planner",label:"Plan",g:"◈",type:"g"},
+  {id:"planner",label:"Week",g:"◈",type:"g"},
 ];
 const TABS_ROW2 = [
   {id:"shelf",label:"Shelf",g:"⊡",type:"g"},
@@ -567,7 +567,190 @@ function PrayerTab({prayers,setPrayers}){
   );
 }
 
-function PlannerTab({cats,planner,setPlanner}){
+function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
+  const [mode,setMode]=useState("day");
+  const tk=new Date().toISOString().slice(0,10);
+  const today=new Date();
+  const weekDays=Array.from({length:7},(_,i)=>{
+    const d=new Date(today);
+    d.setDate(today.getDate()-today.getDay()+i);
+    return d;
+  });
+
+  // Daily thought
+  const dp=planner[tk]||{};
+  function updDay(u){setPlanner(p=>({...p,[tk]:u}));}
+
+  // Weekly intention
+  const wk=`week-${today.getFullYear()}-${Math.ceil((today.getDate()-today.getDay()+1)/7)}`;
+  const wp=planner[wk]||{intention:"",thoughts:[]};
+  function updWeek(u){setPlanner(p=>({...p,[wk]:u}));}
+
+  // Stats
+  const todayHabits=habits[tk]||{};
+  const habitDone=Object.values(todayHabits).filter(Boolean).length;
+  const totalHabits=Object.keys(todayHabits).length||1;
+  const overall=cats.length?Math.round(cats.flatMap(c=>c.tasks).filter(t=>t.done).length/Math.max(cats.flatMap(c=>c.tasks).length,1)*100):0;
+  const activeP=prayers.filter(p=>!p.answered).length;
+  const shelfWeek=shelf.filter(s=>s.timeframe==="week").length;
+
+  return(
+    <div style={{animation:"fadeIn 0.4s ease"}}>
+      {/* Toggle */}
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {["day","week"].map(m=>(
+          <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",background:mode===m?"transparent":"transparent",border:mode===m?"1px solid "+OX:"1px solid "+TANL,color:mode===m?OX:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,letterSpacing:"1px",textTransform:"uppercase",borderRadius:2,transition:"all 0.2s"}}>
+            {m==="day"?"Today":"This Week"}
+          </button>
+        ))}
+      </div>
+
+      {mode==="day"&&(
+        <div>
+          {/* Date + pulse stats */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+            {[
+              {label:"Orientation",value:overall+"%",color:INK},
+              {label:"Habits",value:habitDone+"/"+totalHabits,color:"#4AB8C8"},
+              {label:"Prayers",value:activeP+" active",color:OX},
+            ].map(s=>(
+              <div key={s.label} style={{padding:"12px 8px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
+                <div style={{fontSize:18,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
+                <div style={{fontSize:9,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Morning thought */}
+          <div style={{marginBottom:20}}>
+            <SL>Morning Thought</SL>
+            <textarea
+              value={dp.morningThought||""}
+              onChange={e=>updDay({...dp,morningThought:e.target.value})}
+              placeholder="What's on your mind this morning? One honest sentence is enough."
+              rows={3}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+            />
+          </div>
+
+          {/* Today's focus */}
+          <div style={{marginBottom:20}}>
+            <SL>Today's Focus</SL>
+            <textarea
+              value={dp.focus||""}
+              onChange={e=>updDay({...dp,focus:e.target.value})}
+              placeholder="What is the one thing that would make today a win?"
+              rows={2}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+            />
+          </div>
+
+          {/* Shelf items due today */}
+          {shelfWeek>0&&(
+            <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
+              <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div>
+              <div style={{fontSize:13,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div>
+              <div style={{fontSize:11,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div>
+            </div>
+          )}
+
+          {/* Evening reflection */}
+          <div style={{marginBottom:20}}>
+            <SL>Evening Reflection</SL>
+            <textarea
+              value={dp.evening||""}
+              onChange={e=>updDay({...dp,evening:e.target.value})}
+              placeholder="What happened today that's worth remembering?"
+              rows={3}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+            />
+          </div>
+        </div>
+      )}
+
+      {mode==="week"&&(
+        <div>
+          {/* Week at a glance */}
+          <div style={{marginBottom:20}}>
+            <SL>Week at a Glance</SL>
+            <div style={{display:"flex",gap:4,overflowX:"auto",paddingBottom:4}}>
+              {weekDays.map((d,i)=>{
+                const dk=d.toISOString().slice(0,10);
+                const isToday=dk===tk;
+                const dp2=planner[dk]||{};
+                const hasMorning=!!(dp2.morningThought||dp2.focus);
+                return(
+                  <div key={i} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isToday?OX:FINK),borderRadius:2}}>
+                    <div style={{fontSize:9,color:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                    <div style={{fontSize:16,fontWeight:"bold",color:isToday?OX:INK,marginTop:2}}>{d.getDate()}</div>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:hasMorning?"#4AB8C8":"transparent",border:"1px solid "+TANL,marginTop:4}}/>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Weekly intention */}
+          <div style={{marginBottom:20}}>
+            <SL>Weekly Intention</SL>
+            <textarea
+              value={wp.intention||""}
+              onChange={e=>updWeek({...wp,intention:e.target.value})}
+              placeholder="What does this week need to accomplish? One clear sentence."
+              rows={2}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+            />
+          </div>
+
+          {/* Weekly stats */}
+          <div style={{marginBottom:20}}>
+            <SL>Week Pulse</SL>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {[
+                {label:"Overall",value:overall+"%",color:INK},
+                {label:"Active Prayers",value:activeP,color:OX},
+                {label:"Shelf This Week",value:shelfWeek+" items",color:"#2E6B8A"},
+                {label:"Tasks Done",value:cats.flatMap(c=>c.tasks).filter(t=>t.done).length+" total",color:"#4AB8C8"},
+              ].map(s=>(
+                <div key={s.label} style={{padding:"14px 12px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2}}>
+                  <div style={{fontSize:22,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
+                  <div style={{fontSize:9,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Weekly thoughts */}
+          <div style={{marginBottom:20}}>
+            <SL>Weekly Thoughts</SL>
+            <textarea
+              value={wp.thoughts||""}
+              onChange={e=>updWeek({...wp,thoughts:e.target.value})}
+              placeholder="Notes, observations, things God is showing you this week…"
+              rows={4}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+            />
+          </div>
+
+          {/* Past week archive preview */}
+          {Object.keys(planner).filter(k=>k.startsWith("week-")&&k!==wk).slice(-3).reverse().map(k=>{
+            const pw=planner[k]||{};
+            if(!pw.intention&&!pw.thoughts)return null;
+            return(
+              <div key={k} style={{marginBottom:10,padding:"14px 16px",background:"rgba(255,255,255,0.35)",border:"1px solid "+FINK,borderRadius:2,opacity:0.7}}>
+                <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
+                {pw.intention&&<p style={{fontSize:13,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
+                {pw.thoughts&&<p style={{fontSize:12,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
   const tk=new Date().toISOString().slice(0,10);
   const tp=planner[tk]||{};
   const [addTo,setAddTo]=useState(null);
@@ -930,6 +1113,62 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   );
 }
 
+function AISuggestButton({cats,planner,setPlanner}){
+  const tk=new Date().toISOString().slice(0,10);
+  const [aiLoad,setAiLoad]=useState(false);
+  const [aiSug,setAiSug]=useState(null);
+  const dp=planner[tk]||{};
+  function updDay(u){setPlanner(p=>({...p,[tk]:u}));}
+  async function suggest(){
+    setAiLoad(true);setAiSug(null);
+    try{
+      const tasks=cats.flatMap(c=>c.tasks.filter(t=>!t.done).map(t=>"- "+t.label+" ["+t.resistance+"] ("+c.label+")")).join("\n");
+      const prompt="Help Joe plan his day. Highest energy morning, lowest afternoon, evenings are family.\n\nOpen tasks:\n"+tasks+"\n\nDistribute across Morning, Midday, Afternoon, Evening. Morning: 2-3 high/medium. Midday: 2-3 medium. Afternoon: low only. Evening: family/rest.\n\nRespond ONLY:\nMORNING: task | task\nMIDDAY: task | task\nAFTERNOON: task | task\nEVENING: task";
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+      const data=await res.json();
+      const text=data.content?.find(b=>b.type==="text")?.text||"";
+      const parsed={};
+      ["MORNING","MIDDAY","AFTERNOON","EVENING"].forEach(b=>{
+        const m=text.match(new RegExp(b+": (.+)"));
+        if(m)parsed[b.toLowerCase()]=m[1].split("|").map(t=>t.trim()).filter(Boolean);
+      });
+      setAiSug(parsed);
+    }catch(e){setAiSug(null);}
+    setAiLoad(false);
+  }
+  function applySug(){
+    if(!aiSug)return;
+    const u={...dp,focus:(dp.focus||"")+(dp.focus?"\n":"")+Object.entries(aiSug).map(([b,ts])=>b.toUpperCase()+": "+ts.join(", ")).join("\n")};
+    updDay(u);setAiSug(null);
+  }
+  return(
+    <div>
+      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+        {aiLoad?"◎ Planning your day…":"✦ Suggest My Day"}
+      </button>
+      {aiSug&&(
+        <div style={{marginTop:10,padding:"14px 16px",background:GOLD+"08",border:"1px solid "+GOLD+"40",borderRadius:2}}>
+          <SL c={GOLD}>Suggested Plan</SL>
+          {DAYBLOCKS.map(block=>{
+            const tasks=aiSug[block.id]||[];
+            if(!tasks.length)return null;
+            return(
+              <div key={block.id} style={{marginBottom:8}}>
+                <div style={{fontSize:10,color:GOLD,letterSpacing:"1px",textTransform:"uppercase",marginBottom:3}}>{block.label}</div>
+                {tasks.map((t,i)=><div key={i} style={{fontSize:12,color:INK,padding:"2px 0"}}>· {t}</div>)}
+              </div>
+            );
+          })}
+          <div style={{display:"flex",gap:8,marginTop:10}}>
+            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Apply to Week Tab</button>
+            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Dismiss</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App(){
   const [cats,setCats]=useState(INIT_CATS);
   const [library,setLibrary]=useState(INIT_LIB);
@@ -1099,6 +1338,8 @@ export default function App(){
                 <div style={{marginTop:10,fontSize:13,fontStyle:"italic",color:GOLD}}>Overall Orientation</div>
               </div>
             </div>
+            <div style={{marginBottom:16}}>
+              <AISuggestButton cats={cats} planner={planner} setPlanner={setPlanner}/>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:28}}>
               {cats.map(cat=>{
                 const pct=getCatPct(cat);
@@ -1174,7 +1415,7 @@ export default function App(){
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
-        {view==="planner"&&<PlannerTab cats={cats} planner={planner} setPlanner={setPlanner}/>}
+        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history}/>}
 
         {view==="history"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
