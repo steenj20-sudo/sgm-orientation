@@ -583,7 +583,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
   // Weekly intention
   const wk=`week-${today.getFullYear()}-${Math.ceil((today.getDate()-today.getDay()+1)/7)}`;
-  const wp=planner[wk]||{intention:"",thoughts:[]};
+  const wp=planner[wk]||{intention:"",thoughts:""};
   function updWeek(u){setPlanner(p=>({...p,[wk]:u}));}
 
   // Stats
@@ -740,7 +740,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               <div key={k} style={{marginBottom:10,padding:"14px 16px",background:"rgba(255,255,255,0.35)",border:"1px solid "+FINK,borderRadius:2,opacity:0.7}}>
                 <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
                 {pw.intention&&<p style={{fontSize:13,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
-                {pw.thoughts&&<p style={{fontSize:12,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
+                {pw.thoughts&&typeof pw.thoughts==="string"&&<p style={{fontSize:12,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
               </div>
             );
           })}
