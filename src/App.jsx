@@ -1049,8 +1049,8 @@ export default function App(){
       <div style={{background:PAPER,position:"sticky",top:0,zIndex:100,borderBottom:"3px solid "+INK}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
           <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
-            <Logo size={80}/>
-            <div style={{width:1,height:72,background:"rgba(26,46,74,0.15)"}}/>
+            <Logo size={100}/>
+            <div style={{width:1,height:90,background:"rgba(26,46,74,0.15)"}}/>
             <div style={{flex:1}}>
               <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
               <div style={{fontSize:22,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
