@@ -82,42 +82,42 @@ const HCATS = [
 ];
 
 const INIT_CATS = [
-  {id:"faith",label:"Faith",icon:"✦",color:OX,state:"Intentional. Holy Spirit is speaking.",tasks:[
+  {id:"faith",label:"Faith",icon:"✦",color:"#1A2E4A",color2:"#6DDCE8",state:"Intentional. Holy Spirit is speaking.",tasks:[
     {id:"f1",label:"Morning prayer & orientation",resistance:"low",roadblock:"unknown",done:false,steps:[]},
     {id:"f2",label:"Kingdom Notebook deposit",resistance:"medium",roadblock:"procrastination",done:false,steps:[]},
     {id:"f3",label:"Celebrate Recovery prep",resistance:"low",roadblock:null,done:false,steps:[]},
   ]},
-  {id:"family",label:"Family & Kids",icon:"⌂",color:TAN,state:"Healthy. Present and engaged.",tasks:[
+  {id:"family",label:"Family & Kids",icon:"⌂",color:"#2E6B8A",color2:"#6DDCE8",state:"Healthy. Present and engaged.",tasks:[
     {id:"fa1",label:"Graduation — Bloomington Creek 5:30pm",resistance:"low",roadblock:null,done:false,steps:[]},
     {id:"fa2",label:"Dinner at Suzie's after graduation",resistance:"low",roadblock:null,done:false,steps:[]},
     {id:"fa3",label:"Dad rides up — confirmed",resistance:"low",roadblock:null,done:true,steps:[]},
   ]},
-  {id:"sgm",label:"SGM",icon:"⊕",color:GOLD,state:"Built. Needs review pass before launch.",tasks:[
+  {id:"sgm",label:"SGM",icon:"⊕",color:"#1A7A8A",color2:"#6DDCE8",state:"Built. Needs review pass before launch.",tasks:[
     {id:"s1",label:"Full module review pass",resistance:"high",roadblock:"perfectionism",done:false,steps:[]},
     {id:"s2",label:"SGM Learning Hub session",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
-    {id:"s3",label:"Warrior Track modules",resistance:"medium",roadblock:"time",done:false,steps:[]},
+    {id:"s3",label:"Warrior Track modules",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
     {id:"s4",label:"Certifications — legitimize SGM",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
   ]},
-  {id:"shawn",label:"Shawn & Imprint",icon:"♡",color:"#7A4F6A",state:"Collaborative. Communication improving.",tasks:[
+  {id:"shawn",label:"Shawn & Imprint",icon:"♡",color:"#3A9AAA",color2:"#6DDCE8",state:"Collaborative. Communication improving.",tasks:[
     {id:"sh1",label:"Return Shawn's shoes",resistance:"low",roadblock:null,done:false,steps:[]},
     {id:"sh2",label:"Schedule money conversation",resistance:"high",roadblock:"shame",done:false,steps:[]},
     {id:"sh3",label:"Wedding travel — confirm details",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
   ]},
-  {id:"health",label:"Health & Fitness",icon:"◈",color:GRN,state:"On track. 200g protein, 5-day split.",tasks:[
+  {id:"health",label:"Health & Fitness",icon:"◈",color:"#4AB8C8",color2:"#6DDCE8",state:"On track. 200g protein, 5-day split.",tasks:[
     {id:"hf1",label:"Today's workout",resistance:"low",roadblock:"time",done:false,steps:[]},
     {id:"hf2",label:"Hit protein target",resistance:"low",roadblock:null,done:false,steps:[]},
     {id:"hf3",label:"Log in MyFitnessPal",resistance:"low",roadblock:null,done:false,steps:[]},
   ]},
-  {id:"golf",label:"Golf",icon:"◎",color:"#4A7A5A",state:"Simulator active. Reset protocol in progress.",tasks:[
+  {id:"golf",label:"Golf",icon:"◎",color:"#5ACAD8",color2:"#6DDCE8",state:"Simulator active. Reset protocol in progress.",tasks:[
     {id:"g1",label:"Simulator session — pre-reset protocol",resistance:"medium",roadblock:"perfectionism",done:false,steps:[]},
     {id:"g2",label:"One-sentence voice note after session",resistance:"low",roadblock:null,done:false,steps:[]},
   ]},
-  {id:"house",label:"House",icon:"⌂",color:"#5A6E4A",state:"Ongoing maintenance and projects.",tasks:[
+  {id:"house",label:"House",icon:"⌂",color:"#3A5A7A",color2:"#6DDCE8",state:"Ongoing maintenance and projects.",tasks:[
     {id:"ho1",label:"Pool robot — run weekly",resistance:"low",roadblock:null,done:false,steps:[]},
     {id:"ho2",label:"Pool cabinets Phase 1 — empty and sort",resistance:"medium",roadblock:"perfectionism",done:false,steps:[]},
     {id:"ho3",label:"Teak furniture restoration",resistance:"high",roadblock:"unknown",done:false,steps:[]},
   ]},
-  {id:"finances",label:"Finances",icon:"◈",color:"#4A5A7A",state:"Open loop. Needs emotionless review.",tasks:[
+  {id:"finances",label:"Finances",icon:"◈",color:"#2A4A6A",color2:"#6DDCE8",state:"Open loop. Needs emotionless review.",tasks:[
     {id:"fi1",label:"Jeep note payment setup",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
     {id:"fi2",label:"Schedule money conversation with Shawn",resistance:"high",roadblock:"shame",done:false,steps:[]},
     {id:"fi3",label:"Wedding travel — book flights and rental car",resistance:"medium",roadblock:"unknown",done:false,steps:[]},
@@ -182,15 +182,40 @@ function RDot({level}){
   return <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:"50%",background:m[level]||TAN,color:"white",fontSize:9,fontWeight:"bold",flexShrink:0}}>{(level||"l")[0].toUpperCase()}</span>;
 }
 
-function Ring({size,pct,color,sw=6,pulse,children}){
+function Ring({size,pct,color,color2,sw=6,main=false,children}){
   const r=(size-sw)/2,circ=2*Math.PI*r,off=circ-(pct/100)*circ;
+  const id="rg"+Math.round(size)+(color||"").replace("#","");
+  const c1=color||"#6DDCE8",c2=color2||"#1A2E4A";
   return (
     <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
+      {main&&(
+        <svg width={size} height={size} style={{position:"absolute",top:0,left:0,overflow:"visible"}}>
+          <defs>
+            <radialGradient id={id+"fill"} cx="42%" cy="42%" r="58%">
+              <stop offset="0%" stopColor={c1} stopOpacity="0.20"/>
+              <stop offset="35%" stopColor="#4A8FA8" stopOpacity="0.10"/>
+              <stop offset="70%" stopColor={c2} stopOpacity="0.06"/>
+              <stop offset="100%" stopColor={c2} stopOpacity="0.01"/>
+            </radialGradient>
+          </defs>
+          <circle cx={size/2} cy={size/2} r={r-sw/2-2} fill={`url(#${id}fill)`}/>
+          <circle cx={size/2} cy={size/2} r={(r-sw/2-2)*0.80} fill="none" stroke={c1} strokeWidth="0.8" opacity="0.09"/>
+          <circle cx={size/2} cy={size/2} r={(r-sw/2-2)*0.58} fill="none" stroke={c1} strokeWidth="0.8" opacity="0.06"/>
+          <circle cx={size/2} cy={size/2} r={(r-sw/2-2)*0.36} fill="none" stroke={c1} strokeWidth="0.8" opacity="0.04"/>
+          <circle cx={size/2} cy={size/2} r={r+sw/2+2} fill="none" stroke={c2} strokeWidth="0.8" opacity="0.04"/>
+        </svg>
+      )}
       <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"absolute",top:0,left:0}}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={TANL} strokeWidth={sw} opacity={0.35}/>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{transition:"stroke-dashoffset 0.6s ease"}}/>
+        <defs>
+          <linearGradient id={id} x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={c1}/>
+            <stop offset="100%" stopColor={c2}/>
+          </linearGradient>
+        </defs>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(26,46,74,0.07)" strokeWidth={sw}/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{transition:"stroke-dashoffset 0.6s ease"}}/>
+        {main&&<circle cx={size/2} cy={size/2} r={r-sw/2} fill="none" stroke={c1} strokeWidth="0.8" opacity="0.07"/>}
       </svg>
-      {pulse && <div style={{position:"absolute",inset:sw+4,borderRadius:"50%",background:"radial-gradient(circle,"+color+"15 0%,transparent 70%)",animation:"pulse 3s ease-in-out infinite"}}/>}
       <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>{children}</div>
     </div>
   );
@@ -282,7 +307,7 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
         <div style={{maxWidth:700,margin:"0 auto"}}>
           <button onClick={onBack} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:12,fontFamily:"Georgia,serif",marginBottom:12,padding:0}}>← Back</button>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <Ring size={44} pct={pct} color={cat.color} sw={4}><span style={{fontSize:10,color:cat.color}}>{cat.icon}</span></Ring>
+            <Ring size={44} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:10,color:cat.color}}>{cat.icon}</span></Ring>
             <div>
               <div style={{color:TAN,fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{cat.label}</div>
               <div style={{fontSize:16,fontWeight:"bold",color:"white",lineHeight:1.2}}>{task.label}</div>
@@ -309,7 +334,7 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
         {pasteMode?(
           <div>
             <SL>Break this down with Claude</SL>
-            <div style={{background:INK,color:TANL,padding:"14px 16px",fontSize:13,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:2}}>
+            <div style={{background:"rgba(255,255,255,0.5)",color:INK,padding:"14px 16px",fontSize:13,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:2,border:"1px solid "+FINK}}>
               "Break down this project: <strong style={{color:"white"}}>{task.label}</strong>"
             </div>
             <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder={"Paste Claude's breakdown here...\nFormat: 1. Step [resistance] {roadblock}"} rows={7}
@@ -430,7 +455,7 @@ function HabitsTab({habits,setHabits,streaks,setStreaks}){
               {HCATS.map(hc=><option key={hc.id} value={hc.id}>{hc.label}</option>)}
             </select>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={addHabit} style={{flex:1,padding:"9px",background:GRN,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Habit</button>
+              <button onClick={addHabit} style={{flex:1,padding:"9px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Habit</button>
               <button onClick={()=>setAddingHabit(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
             </div>
           </div>
@@ -472,7 +497,7 @@ function PrayerTab({prayers,setPrayers}){
             <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Notes — what God is doing (optional)..." rows={2} style={{...inp,resize:"vertical",lineHeight:1.6}}/>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>{if(!form.name.trim()||!form.request.trim())return;setPrayers(p=>[{id:"p"+Date.now(),...form,dateAdded:today,answered:false,answeredDate:null},...p]);setForm({name:"",relationship:"church",request:"",notes:""});setAdding(false);}}
-                style={{flex:1,padding:"10px",background:OX,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Prayer List</button>
+                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Prayer List</button>
               <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
             </div>
           </div>
@@ -502,7 +527,7 @@ function PrayerTab({prayers,setPrayers}){
                           {pr.notes&&<div style={{fontSize:13,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
                           <div style={{display:"flex",gap:8}}>
                             <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:true,answeredDate:today}:x))}
-                              style={{flex:1,padding:"8px",background:GRN,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>✓ Mark Answered</button>
+                              style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>✓ Mark Answered</button>
                             <button onClick={()=>setPrayers(p=>p.filter(x=>x.id!==pr.id))}
                               style={{padding:"8px 12px",background:"transparent",color:OX,border:"1px solid "+OX+"40",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Remove</button>
                           </div>
@@ -525,7 +550,7 @@ function PrayerTab({prayers,setPrayers}){
             return(
               <div key={pr.id} onClick={()=>setExpId(ie?null:pr.id)} style={{padding:"12px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:2,cursor:"pointer",marginBottom:8}}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"white",fontSize:11}}>✓</span></div>
+                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:"transparent",border:"2px solid "+GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:GRN,fontSize:11}}>✓</span></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:14,fontWeight:"bold",color:INK}}>{pr.name}</div>
                     <div style={{fontSize:12,color:INK,lineHeight:1.6,opacity:0.8,marginTop:2}}>{pr.request}</div>
@@ -598,7 +623,7 @@ function PlannerTab({cats,planner,setPlanner}){
             );
           })}
           <div style={{display:"flex",gap:8,marginTop:12}}>
-            <button onClick={applySug} style={{flex:1,padding:"8px",background:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Apply to My Day</button>
+            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Apply to My Day</button>
             <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Dismiss</button>
           </div>
         </div>
@@ -677,7 +702,7 @@ function LibraryTab({library,setLibrary}){
           <textarea value={pt} onChange={e=>setPt(e.target.value)} placeholder="Paste Claude's formatted principles here..." rows={6}
             style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
           <button onClick={()=>{const items=parsePaste(pt);if(items.length){setLibrary(p=>[...items,...p]);setPt("");setPm(false);}}}
-            style={{marginTop:10,width:"100%",padding:"10px",background:OX,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Library</button>
+            style={{marginTop:10,width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Library</button>
         </div>
       )}
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
@@ -842,7 +867,7 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
             </button>
           ))}
         </div>
-        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:"transparent",color:INK,border:"1px solid "+INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
           + Add to Shelf
         </button>
       </div>
@@ -887,7 +912,7 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
                         {SHELF_TIMEFRAMES.map(tf=><option key={tf.id} value={tf.id}>{tf.label}</option>)}
                       </select>
                       <button onClick={()=>promote(item)}
-                        style={{padding:"4px 8px",background:OX,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,whiteSpace:"nowrap"}}>
+                        style={{padding:"4px 8px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,whiteSpace:"nowrap"}}>
                         → Today
                       </button>
                       <button onClick={()=>remove(item.id)}
@@ -927,15 +952,15 @@ export default function App(){
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   useEffect(()=>{
-    async function load(){
-      try{const r=await window.storage.get("sgm3-cats");if(r)setCats(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-history");if(r)setHistory(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-library");if(r)setLibrary(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-habits");if(r)setHabits(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-streaks");if(r)setStreaks(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-prayers");if(r)setPrayers(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-planner");if(r)setPlanner(JSON.parse(r.value));}catch(e){}
-      try{const r=await window.storage.get("sgm3-shelf");if(r)setShelf(JSON.parse(r.value));}catch(e){}
+    function load(){
+      try{const r=localStorage.getItem("sgm3-cats");if(r)setCats(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-history");if(r)setHistory(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-library");if(r)setLibrary(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-habits");if(r)setHabits(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-streaks");if(r)setStreaks(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-prayers");if(r)setPrayers(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-planner");if(r)setPlanner(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-shelf");if(r)setShelf(JSON.parse(r));}catch(e){}
       setLoaded(true);
     }
     load();
@@ -943,15 +968,15 @@ export default function App(){
 
   useEffect(()=>{
     if(!loaded)return;
-    const timer=setTimeout(async()=>{
-      try{await window.storage.set("sgm3-cats",JSON.stringify(cats));}catch(e){}
-      try{await window.storage.set("sgm3-history",JSON.stringify(history));}catch(e){}
-      try{await window.storage.set("sgm3-library",JSON.stringify(library));}catch(e){}
-      try{await window.storage.set("sgm3-habits",JSON.stringify(habits));}catch(e){}
-      try{await window.storage.set("sgm3-streaks",JSON.stringify(streaks));}catch(e){}
-      try{await window.storage.set("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
-      try{await window.storage.set("sgm3-planner",JSON.stringify(planner));setSaveStatus("saved");setTimeout(()=>setSaveStatus(""),1500);}catch(e){setSaveStatus("error");}
-      try{await window.storage.set("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
+    const timer=setTimeout(()=>{
+      try{localStorage.setItem("sgm3-cats",JSON.stringify(cats));}catch(e){}
+      try{localStorage.setItem("sgm3-history",JSON.stringify(history));}catch(e){}
+      try{localStorage.setItem("sgm3-library",JSON.stringify(library));}catch(e){}
+      try{localStorage.setItem("sgm3-habits",JSON.stringify(habits));}catch(e){}
+      try{localStorage.setItem("sgm3-streaks",JSON.stringify(streaks));}catch(e){}
+      try{localStorage.setItem("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
+      try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
+      try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
     },800);
     return()=>clearTimeout(timer);
   },[cats,history,library,habits,streaks,prayers,planner,shelf,loaded]);
@@ -963,14 +988,15 @@ export default function App(){
     setAddingTask(false);
   }
 
-  const manualSave = async()=>{
-    try{await window.storage.set("sgm3-cats",JSON.stringify(cats));}catch(e){}
-    try{await window.storage.set("sgm3-history",JSON.stringify(history));}catch(e){}
-    try{await window.storage.set("sgm3-library",JSON.stringify(library));}catch(e){}
-    try{await window.storage.set("sgm3-habits",JSON.stringify(habits));}catch(e){}
-    try{await window.storage.set("sgm3-streaks",JSON.stringify(streaks));}catch(e){}
-    try{await window.storage.set("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
-    try{await window.storage.set("sgm3-planner",JSON.stringify(planner));setSaveStatus("saved");setTimeout(()=>setSaveStatus(""),2000);}catch(e){setSaveStatus("error");}
+  const manualSave = ()=>{
+    try{localStorage.setItem("sgm3-cats",JSON.stringify(cats));}catch(e){}
+    try{localStorage.setItem("sgm3-history",JSON.stringify(history));}catch(e){}
+    try{localStorage.setItem("sgm3-library",JSON.stringify(library));}catch(e){}
+    try{localStorage.setItem("sgm3-habits",JSON.stringify(habits));}catch(e){}
+    try{localStorage.setItem("sgm3-streaks",JSON.stringify(streaks));}catch(e){}
+    try{localStorage.setItem("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
+    try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
+    try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
   };
 
   function getCatPct(cat){
@@ -1020,31 +1046,31 @@ export default function App(){
     <div style={{minHeight:"100vh",background:PAPER,backgroundImage:"radial-gradient(ellipse at 60% 20%, rgba(184,149,106,0.03) 0%, transparent 60%), "+BG,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
-      <div style={{background:INK,position:"sticky",top:0,zIndex:100}}>
+      <div style={{background:PAPER,position:"sticky",top:0,zIndex:100,borderBottom:"3px solid "+INK}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-            <Logo size={32}/>
-            <div style={{width:1,height:32,background:"rgba(255,255,255,0.08)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+            <Logo size={44}/>
+            <div style={{width:1,height:42,background:"rgba(26,46,74,0.15)"}}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:9,color:TAN,letterSpacing:"3px",textTransform:"uppercase",opacity:0.7,marginBottom:1}}>Steen Growth Ministries</div>
-              <div style={{fontSize:19,fontWeight:"bold",color:"white",letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
+              <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
+              <div style={{fontSize:22,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:10,color:TANL,fontStyle:"italic"}}>{new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
+              <div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
             </div>
           </div>
-          <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:4}}>
+          <div style={{borderTop:"1px solid rgba(26,46,74,0.12)",paddingTop:4}}>
             {[TABS_ROW1,TABS_ROW2].map((row,ri)=>(
-              <div key={ri} style={{display:"flex",paddingBottom:ri===1?2:0}}>
+              <div key={ri} style={{display:"flex",paddingBottom:ri===1?4:0}}>
                 {row.map(tab=>{
                   const isAct=view===tab.id;
-                  const ic=isAct?"white":TANL;
+                  const ic=isAct?"white":INK;
                   return(
-                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(122,31,31,0.5)":"none",border:"none",borderRadius:3,padding:"5px 2px 6px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                      <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:17}}>
-                        {tab.type==="cross"?<CrossSVG color={ic} size={13}/>:<span style={{fontSize:15,color:ic,lineHeight:1}}>{tab.g}</span>}
+                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(122,31,31,0.06)":"none",border:isAct?"1px solid "+OX:"1px solid transparent",borderRadius:3,padding:"6px 2px 7px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                      <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:20}}>
+                        {tab.type==="cross"?<CrossSVG color={isAct?OX:INK} size={15}/>:<span style={{fontSize:17,color:isAct?OX:INK,lineHeight:1}}>{tab.g}</span>}
                       </span>
-                      <span style={{fontSize:8,letterSpacing:"0.05em",color:ic,opacity:isAct?1:0.7,lineHeight:1}}>{tab.label}</span>
+                      <span style={{fontSize:9,letterSpacing:"0.05em",color:isAct?OX:TAN,opacity:isAct?1:0.9,lineHeight:1}}>{tab.label}</span>
                     </button>
                   );
                 })}
@@ -1066,7 +1092,7 @@ export default function App(){
             <DailyMsg cats={cats} habits={habits} prayers={prayers} streaks={streaks}/>
             <div style={{display:"flex",justifyContent:"center",marginBottom:36}}>
               <div style={{textAlign:"center"}}>
-                <Ring size={140} pct={overall} color={OX} sw={8} pulse>
+                <Ring size={140} pct={overall} color="#6DDCE8" color2="#1A2E4A" sw={12} main={true}>
                   <div style={{fontSize:32,fontWeight:"bold",color:INK,lineHeight:1,letterSpacing:"-1px"}}>{overall}%</div>
                   <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Today</div>
                 </Ring>
@@ -1079,7 +1105,7 @@ export default function App(){
                 const isAct=activeCat===cat.id;
                 return(
                   <div key={cat.id} onClick={()=>setActiveCat(isAct?null:cat.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 6px",cursor:"pointer",background:isAct?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.25)",border:"1px solid "+(isAct?cat.color:FINK),borderRadius:2,transition:"all 0.2s"}}>
-                    <Ring size={56} pct={pct} color={cat.color} sw={4}><span style={{fontSize:13,color:cat.color}}>{cat.icon}</span></Ring>
+                    <Ring size={56} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:13,color:cat.color}}>{cat.icon}</span></Ring>
                     <div style={{marginTop:6,fontSize:9,fontWeight:"bold",color:INK,textAlign:"center",lineHeight:1.2}}>{cat.label}</div>
                     <div style={{fontSize:9,color:TAN,marginTop:2}}>{cat.tasks.filter(t=>t.done).length}/{cat.tasks.length}</div>
                   </div>
