@@ -751,31 +751,6 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 }
 
 
-  const tk=new Date().toISOString().slice(0,10);
-  const tp=planner[tk]||{};
-  const [addTo,setAddTo]=useState(null);
-  const [custom,setCustom]=useState("");
-  const [aiLoad,setAiLoad]=useState(false);
-  const [aiSug,setAiSug]=useState(null);
-  function upd(u){setPlanner(p=>({...p,[tk]:u}));}
-  async function suggest(){
-    setAiLoad(true);setAiSug(null);
-    try{
-      const tasks=cats.flatMap(c=>c.tasks.filter(t=>!t.done).map(t=>"- "+t.label+" ["+t.resistance+"] ("+c.label+")")).join("\n");
-      const prompt="Help Joe plan his day. Highest energy morning, lowest afternoon, evenings are family.\n\nOpen tasks:\n"+tasks+"\n\nDistribute across Morning, Midday, Afternoon, Evening. Morning: 2-3 high/medium. Midday: 2-3 medium. Afternoon: low only. Evening: family/rest.\n\nRespond ONLY:\nMORNING: task | task\nMIDDAY: task | task\nAFTERNOON: task | task\nEVENING: task";
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
-      const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text||"";
-      const parsed={};
-      ["MORNING","MIDDAY","AFTERNOON","EVENING"].forEach(b=>{
-        const m=text.match(new RegExp(b+": (.+)"));
-        if(m)parsed[b.toLowerCase()]=m[1].split("|").map(t=>t.trim()).filter(Boolean);
-      });
-      setAiSug(parsed);
-    }catch(e){setAiSug(null);}
-    setAiLoad(false);
-  }
-
 function LibraryTab({library,setLibrary}){
   const [ac,setAc]=useState("all");
   const [pm,setPm]=useState(false);
