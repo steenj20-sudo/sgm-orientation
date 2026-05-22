@@ -1049,14 +1049,14 @@ export default function App(){
       <div style={{background:PAPER,position:"sticky",top:0,zIndex:100,borderBottom:"3px solid "+INK}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
           <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
-            <Logo size={44}/>
-            <div style={{width:1,height:42,background:"rgba(26,46,74,0.15)"}}/>
+            <Logo size={58}/>
+            <div style={{width:1,height:52,background:"rgba(26,46,74,0.15)"}}/>
             <div style={{flex:1}}>
               <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
               <div style={{fontSize:22,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
+              <div style={{fontSize:13,color:INK,fontStyle:"italic",opacity:0.75}}>{new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
             </div>
           </div>
           <div style={{borderTop:"1px solid rgba(26,46,74,0.12)",paddingTop:4}}>
