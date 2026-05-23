@@ -515,8 +515,8 @@ function PrayerTab({prayers,setPrayers}){
             const tag=RTAGS.find(t=>t.id===pr.relationship);
             const ie=expId===pr.id;
             return(
-              <div key={pr.id} onClick={()=>setExpId(ie?null:pr.id)} style={{padding:"12px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:2,cursor:"pointer",marginBottom:8}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+              <div key={pr.id} style={{padding:"12px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:2,marginBottom:8}}>
+                <div onClick={()=>setExpId(ie?null:pr.id)} style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
                   <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:"transparent",border:"2px solid "+GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:GRN,fontSize:11}}>✓</span></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:14,fontWeight:"bold",color:INK}}>{pr.name}</div>
@@ -525,7 +525,15 @@ function PrayerTab({prayers,setPrayers}){
                   </div>
                   <span style={{color:TANL,fontSize:16,flexShrink:0}}>{ie?"−":"+"}</span>
                 </div>
-                {ie&&pr.notes&&<div style={{marginTop:10,padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:13,fontStyle:"italic",color:INK,lineHeight:1.65}}>{pr.notes}</div>}
+                {ie&&(
+                  <div style={{marginTop:10}}>
+                    {pr.notes&&<div style={{padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:13,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:8}}>{pr.notes}</div>}
+                    <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:false,answeredDate:null}:x))}
+                      style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                      ↩ Move back to active prayer
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -1233,6 +1241,7 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   const [input,setInput]=useState("");
   const [timeframe,setTimeframe]=useState("week");
   const [filter,setFilter]=useState("all");
+  const [promotingId,setPromotingId]=useState(null);
 
   function quickAdd(){
     if(!input.trim())return;
@@ -1241,11 +1250,12 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
     setInput("");
   }
 
-  function promote(item){
-    const firstCat=cats[0];
-    if(!firstCat)return;
-    setCats(prev=>prev.map(c=>c.id!==firstCat.id?c:{...c,tasks:[...c.tasks,{id:"shelf"+Date.now(),label:item.label,resistance:"low",roadblock:null,done:false,steps:[]}]}));
+  function promoteToCat(item,catId){
+    const cat=cats.find(c=>c.id===catId);
+    if(!cat)return;
+    setCats(prev=>prev.map(c=>c.id!==catId?c:{...c,tasks:[...c.tasks,{id:"shelf"+Date.now(),label:item.label,resistance:"low",roadblocks:[],roadblock:null,done:false,steps:[]}]}));
     setShelf(p=>p.filter(s=>s.id!==item.id));
+    setPromotingId(null);
   }
 
   function remove(id){
@@ -1314,26 +1324,40 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
               {filter==="all"&&<div style={{fontSize:9,color:tf.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ {tf.label}</div>}
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 {items.map(item=>(
-                  <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:13,color:INK,lineHeight:1.4}}>{item.label}</div>
-                      <div style={{fontSize:10,color:TAN,marginTop:3}}>{item.dateAdded}</div>
+                  <div key={item.id} style={{padding:"11px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,color:INK,lineHeight:1.4}}>{item.label}</div>
+                        <div style={{fontSize:10,color:TAN,marginTop:3}}>{item.dateAdded}</div>
+                      </div>
+                      <div style={{display:"flex",gap:6,flexShrink:0}}>
+                        <select value={item.timeframe} onChange={e=>changeTimeframe(item.id,e.target.value)}
+                          style={{padding:"3px 6px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:10,color:TAN,outline:"none",borderRadius:2,cursor:"pointer"}}>
+                          {SHELF_TIMEFRAMES.map(tf=><option key={tf.id} value={tf.id}>{tf.label}</option>)}
+                        </select>
+                        <button onClick={()=>setPromotingId(promotingId===item.id?null:item.id)}
+                          style={{padding:"4px 8px",background:promotingId===item.id?OX:"transparent",color:promotingId===item.id?"white":OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,whiteSpace:"nowrap"}}>
+                          → Project
+                        </button>
+                        <button onClick={()=>remove(item.id)}
+                          style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                          ×
+                        </button>
+                      </div>
                     </div>
-                    <div style={{display:"flex",gap:6,flexShrink:0}}>
-                      {/* Timeframe quick-change */}
-                      <select value={item.timeframe} onChange={e=>changeTimeframe(item.id,e.target.value)}
-                        style={{padding:"3px 6px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:10,color:TAN,outline:"none",borderRadius:2,cursor:"pointer"}}>
-                        {SHELF_TIMEFRAMES.map(tf=><option key={tf.id} value={tf.id}>{tf.label}</option>)}
-                      </select>
-                      <button onClick={()=>promote(item)}
-                        style={{padding:"4px 8px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,whiteSpace:"nowrap"}}>
-                        → Today
-                      </button>
-                      <button onClick={()=>remove(item.id)}
-                        style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
-                        ×
-                      </button>
-                    </div>
+                    {promotingId===item.id&&(
+                      <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK}}>
+                        <div style={{fontSize:10,color:TAN,fontStyle:"italic",marginBottom:8}}>Move to which category?</div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {cats.map(cat=>(
+                            <button key={cat.id} onClick={()=>promoteToCat(item,cat.id)}
+                              style={{padding:"5px 10px",background:"transparent",color:cat.color,border:"1px solid "+cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                              {cat.icon} {cat.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1341,6 +1365,78 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ManualScriptureAdd(){
+  const [open,setOpen]=useState(false);
+  const [verses,setVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm3-manual-verses")||"[]");}catch(e){return[];}});
+  const [form,setForm]=useState({label:"",verse:"",ref:""});
+  const [copied,setCopied]=useState(null);
+
+  function save(){
+    if(!form.verse.trim()||!form.ref.trim())return;
+    const updated=[{id:"mv"+Date.now(),label:form.label||form.ref,...form},...verses];
+    setVerses(updated);
+    localStorage.setItem("sgm3-manual-verses",JSON.stringify(updated));
+    setForm({label:"",verse:"",ref:""});
+    setOpen(false);
+  }
+
+  function remove(id){
+    const updated=verses.filter(v=>v.id!==id);
+    setVerses(updated);
+    localStorage.setItem("sgm3-manual-verses",JSON.stringify(updated));
+  }
+
+  function copy(v){
+    navigator.clipboard?.writeText(`"${v.verse}" — ${v.ref}`).then(()=>{setCopied(v.id);setTimeout(()=>setCopied(null),2000);});
+  }
+
+  return(
+    <div style={{marginBottom:24}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
+        <button onClick={()=>setOpen(o=>!o)}
+          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+          {open?"× Close":"+ Add Scripture"}
+        </button>
+      </div>
+      {open&&(
+        <div style={{padding:"14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL,borderRadius:2,marginBottom:14,animation:"fadeIn 0.2s ease"}}>
+          <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Label (e.g. Fear, Identity, Rest)..."
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+          <textarea value={form.verse} onChange={e=>setForm(f=>({...f,verse:e.target.value}))} placeholder="Verse text..." rows={3}
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
+          <input value={form.ref} onChange={e=>setForm(f=>({...f,ref:e.target.value}))} placeholder="Reference (e.g. John 15:5)..."
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+            Save Scripture
+          </button>
+        </div>
+      )}
+      {verses.length>0&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+          {verses.map(v=>(
+            <div key={v.id} style={{padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
+              {v.label&&<div style={{fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
+              <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.75,margin:0}}>"{v.verse}"</p>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
+                <p style={{color:GOLD,fontSize:12,margin:0}}>{v.ref}</p>
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>
+                    {copied===v.id?"✓":"Copy"}
+                  </button>
+                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>×</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {!verses.length&&!open&&<p style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
+      <div style={{height:1,background:FINK,marginBottom:20}}/>
     </div>
   );
 }
@@ -1594,6 +1690,7 @@ export default function App(){
   const [planner,setPlanner]=useState({});
   const [shelf,setShelf]=useState([]);
   const [showSnapshot,setShowSnapshot]=useState(false);
+  const [showCompleted,setShowCompleted]=useState({});
 
   const todayVerse=ANCH[new Date().getDay()%ANCH.length];
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
@@ -1635,8 +1732,8 @@ export default function App(){
 
   function addTask(catId){
     if(!newTask.label.trim())return;
-    setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:[...cat.tasks,{id:catId+Date.now(),label:newTask.label,resistance:newTask.resistance,roadblock:newTask.roadblock,done:false,steps:[]}]}));
-    setNewTask({label:"",resistance:"low",roadblock:null});
+    setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:[...cat.tasks,{id:catId+Date.now(),label:newTask.label,resistance:newTask.resistance,roadblocks:newTask.roadblocks||[],roadblock:newTask.roadblocks?.[0]||null,done:false,steps:[]}]}));
+    setNewTask({label:"",resistance:"low",roadblocks:[]});
     setAddingTask(false);
   }
 
@@ -1704,7 +1801,9 @@ export default function App(){
       <div style={{background:PAPER,position:"sticky",top:0,zIndex:100,borderBottom:"3px solid "+INK}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-            <Logo size={100}/>
+            <div onClick={()=>setView("dashboard")} style={{cursor:"pointer"}}>
+              <Logo size={100}/>
+            </div>
             <div style={{width:1,height:90,background:"rgba(26,46,74,0.15)"}}/>
             <div style={{flex:1}}>
               <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
@@ -1747,9 +1846,9 @@ export default function App(){
               <div style={{textAlign:"center"}}>
                 <Ring size={140} pct={overall} color="#6DDCE8" color2="#1A2E4A" sw={12} main={true}>
                   <div style={{fontSize:32,fontWeight:"bold",color:INK,lineHeight:1,letterSpacing:"-1px"}}>{overall}%</div>
-                  <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Today</div>
+                  <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Overall</div>
                 </Ring>
-                <div style={{marginTop:10,fontSize:13,fontStyle:"italic",color:GOLD}}>Overall Orientation</div>
+                <div style={{marginTop:10,fontSize:13,fontStyle:"italic",color:GOLD}}>Life Projects</div>
               </div>
             </div>
             <div style={{marginBottom:12}}>
@@ -1782,22 +1881,28 @@ export default function App(){
                   </div>
                   <button onClick={()=>setActiveCat(null)} style={{background:"none",border:"none",color:TAN,cursor:"pointer",fontSize:20}}>x</button>
                 </div>
+
+                {/* Active projects */}
                 <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {aC.tasks.map(task=>(
-                    <div key={task.id} style={{background:task.done?aC.color+"0D":"rgba(255,255,255,0.75)",border:"1px solid "+(task.done?aC.color+"30":FINK),borderRadius:2,overflow:"hidden"}}>
+                  {aC.tasks.filter(t=>!t.done).map(task=>(
+                    <div key={task.id} style={{background:"rgba(255,255,255,0.75)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px"}}>
-                        <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:20,height:20,borderRadius:"50%",flexShrink:0,marginTop:1,cursor:"pointer",border:"2px solid "+(task.done?aC.color:TANL),background:task.done?aC.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          {task.done&&<span style={{color:"white",fontSize:10}}>v</span>}
-                        </div>
+                        <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:20,height:20,borderRadius:"50%",flexShrink:0,marginTop:1,cursor:"pointer",border:"2px solid "+TANL,background:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}/>
                         <div style={{flex:1}}>
-                          <div style={{fontSize:13,color:task.done?TAN:INK,textDecoration:task.done?"line-through":"none",lineHeight:1.4}}>{task.label}</div>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
+                          <div style={{fontSize:13,color:INK,lineHeight:1.4}}>{task.label}</div>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
                             <RDot level={task.resistance}/>
-                            {task.roadblock&&<span style={{fontSize:10,color:OX,fontStyle:"italic"}}>{task.roadblock}</span>}
+                            {(task.roadblocks&&task.roadblocks.length>0?task.roadblocks:[task.roadblock].filter(Boolean)).map(rb=>(
+                              <span key={rb} style={{fontSize:10,color:OX,fontStyle:"italic"}}>{rb}</span>
+                            ))}
                             {task.steps&&task.steps.length>0&&<span style={{fontSize:10,color:aC.color}}>{task.steps.filter(s=>s.done).length}/{task.steps.length} steps</span>}
                           </div>
                         </div>
-                        {!task.done&&<button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"Georgia,serif",flexShrink:0,whiteSpace:"nowrap",borderRadius:2}}>Break down</button>}
+                        <div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0}}>
+                          <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>Break down</button>
+                          <button onClick={()=>{setShelf(s=>[...s,{id:"sh"+Date.now(),label:task.label,timeframe:"week",note:"From "+aC.label}]);setCats(prev=>prev.map(c=>c.id!==aC.id?c:{...c,tasks:c.tasks.filter(t=>t.id!==task.id)}));}}
+                            style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>→ Shelf</button>
+                        </div>
                       </div>
                       {task.steps&&task.steps.length>0&&(
                         <div style={{height:2,background:FINK,margin:"0 12px 8px"}}>
@@ -1807,25 +1912,57 @@ export default function App(){
                     </div>
                   ))}
                 </div>
+
+                {/* Completed projects — collapsed section */}
+                {aC.tasks.filter(t=>t.done).length>0&&(
+                  <div style={{marginTop:12}}>
+                    <button onClick={()=>setShowCompleted(s=>({...s,[aC.id]:!s[aC.id]}))}
+                      style={{width:"100%",padding:"6px",background:"transparent",border:"1px solid "+FINK,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,fontStyle:"italic",borderRadius:2,textAlign:"left"}}>
+                      {showCompleted[aC.id]?"▲":"▼"} Completed ({aC.tasks.filter(t=>t.done).length})
+                    </button>
+                    {showCompleted[aC.id]&&(
+                      <div style={{display:"flex",flexDirection:"column",gap:4,marginTop:6}}>
+                        {aC.tasks.filter(t=>t.done).map(task=>(
+                          <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:aC.color+"08",border:"1px solid "+aC.color+"25",borderRadius:2}}>
+                            <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:18,height:18,borderRadius:"50%",flexShrink:0,cursor:"pointer",border:"2px solid "+aC.color,background:aC.color,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{color:"white",fontSize:9}}>✓</span>
+                            </div>
+                            <div style={{fontSize:12,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Add project form */}
                 {addingTask?(
                   <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:8}}>
-                    <input autoFocus value={newTask.label} onChange={e=>setNewTask(n=>({...n,label:e.target.value}))} placeholder="Task name..." onKeyDown={e=>e.key==="Enter"&&addTask(aC.id)} style={{...inp,width:"100%"}}/>
-                    <div style={{display:"flex",gap:8}}>
-                      <select value={newTask.resistance} onChange={e=>setNewTask(n=>({...n,resistance:e.target.value}))} style={{...inp,flex:1}}>
-                        <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
-                      </select>
-                      <select value={newTask.roadblock||""} onChange={e=>setNewTask(n=>({...n,roadblock:e.target.value||null}))} style={{...inp,flex:1}}>
-                        <option value="">No roadblock</option>
-                        {Object.keys(SCVS).map(k=><option key={k} value={k}>{k}</option>)}
-                      </select>
+                    <input autoFocus value={newTask.label} onChange={e=>setNewTask(n=>({...n,label:e.target.value}))} placeholder="Project name..." onKeyDown={e=>e.key==="Enter"&&addTask(aC.id)} style={{...inp,width:"100%"}}/>
+                    <select value={newTask.resistance} onChange={e=>setNewTask(n=>({...n,resistance:e.target.value}))} style={{...inp,width:"100%"}}>
+                      <option value="low">Low resistance</option><option value="medium">Medium resistance</option><option value="high">High resistance</option>
+                    </select>
+                    <div>
+                      <div style={{fontSize:11,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                        {Object.keys(SCVS).map(k=>{
+                          const sel=(newTask.roadblocks||[]).includes(k);
+                          return(
+                            <button key={k} onClick={()=>setNewTask(n=>{const rb=n.roadblocks||[];return{...n,roadblocks:sel?rb.filter(r=>r!==k):[...rb,k]};})}
+                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                              {k}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Task</button>
+                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Project</button>
                       <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
                     </div>
                   </div>
                 ):(
-                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,fontStyle:"italic",borderRadius:2}}>+ Add task</button>
+                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,fontStyle:"italic",borderRadius:2}}>+ Add project</button>
                 )}
               </div>
             )}
@@ -1861,6 +1998,10 @@ export default function App(){
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <SL>Scripture for the Roadblocks</SL>
             <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
+
+            {/* Manual scripture add */}
+            <ManualScriptureAdd/>
+
             {Object.entries(SCVS).map(([key,val])=>(
               <div key={key} style={{padding:"16px 18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,marginBottom:10}}>
                 <div style={{fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
