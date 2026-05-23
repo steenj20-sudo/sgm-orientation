@@ -1209,6 +1209,181 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   );
 }
 
+function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
+  const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const tk=new Date().toISOString().slice(0,10);
+  const th=habits[tk]||{};
+  const allHabits=HABITS;
+  const habitsDone=allHabits.filter(h=>th[h.id]).length;
+  const habitsTotal=allHabits.length;
+  const activePrayers=prayers.filter(p=>!p.answered);
+  const answeredPrayers=prayers.filter(p=>p.answered);
+  const shelfTotal=shelf.length;
+  const shelfThisWeek=shelf.filter(s=>s.timeframe==="week").length;
+  const overallTasks=cats.flatMap(c=>c.tasks);
+  const overallDone=overallTasks.filter(t=>t.done).length;
+  const overallPct=overallTasks.length?Math.round(overallDone/overallTasks.length*100):0;
+
+  function handlePrint(){window.print();}
+
+  return(
+    <div style={{position:"fixed",inset:0,background:PAPER,zIndex:300,overflowY:"auto",fontFamily:"Georgia,serif",color:INK}}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #life-snapshot, #life-snapshot * { visibility: visible !important; }
+          #life-snapshot { position: absolute; left: 0; top: 0; width: 100%; padding: 0 !important; }
+          #snap-close-bar { display: none !important; }
+          @page { margin: 18mm; }
+        }
+      `}</style>
+
+      {/* Close / Print bar */}
+      <div id="snap-close-bar" style={{background:INK,padding:"12px 20px",position:"sticky",top:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,fontFamily:"Georgia,serif",padding:0}}>← Back to Map</button>
+        <div style={{fontSize:9,color:TAN,letterSpacing:"2.5px",textTransform:"uppercase"}}>Life Snapshot</div>
+        <button onClick={handlePrint} style={{background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,padding:"6px 14px",borderRadius:2}}>⬇ Export PDF</button>
+      </div>
+
+      <div id="life-snapshot" style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 60px"}}>
+        {/* Header */}
+        <div style={{borderBottom:"2px solid "+INK,paddingBottom:16,marginBottom:24,display:"flex",alignItems:"flex-end",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:9,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:4}}>Steen Growth Ministries</div>
+            <div style={{fontSize:26,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Snapshot</div>
+            <div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:4}}>{today}</div>
+          </div>
+          <Logo size={60}/>
+        </div>
+
+        {/* Overall pulse */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:28}}>
+          {[
+            {label:"Overall",val:overallPct+"%",sub:"orientation",color:INK},
+            {label:"Habits",val:habitsDone+"/"+habitsTotal,sub:"done today",color:GRN},
+            {label:"Prayer",val:activePrayers.length,sub:"active",color:OX},
+            {label:"Shelf",val:shelfTotal,sub:shelfThisWeek+" this week",color:GOLD},
+          ].map(m=>(
+            <div key={m.label} style={{padding:"12px 10px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderTop:"3px solid "+m.color,borderRadius:2,textAlign:"center"}}>
+              <div style={{fontSize:22,fontWeight:"bold",color:m.color,lineHeight:1}}>{m.val}</div>
+              <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:INK,marginTop:4,opacity:0.7}}>{m.label}</div>
+              <div style={{fontSize:10,color:TAN,marginTop:2,fontStyle:"italic"}}>{m.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Life Categories */}
+        <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Life Map</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:32}}>
+          {cats.map(cat=>{
+            const done=cat.tasks.filter(t=>t.done).length;
+            const total=cat.tasks.length;
+            const pct=total?Math.round(done/total*100):0;
+            const open=cat.tasks.filter(t=>!t.done);
+            return(
+              <div key={cat.id} style={{padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"4px solid "+cat.color,borderRadius:2}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:open.length?10:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:15,color:cat.color}}>{cat.icon}</span>
+                    <span style={{fontSize:14,fontWeight:"bold",color:INK}}>{cat.label}</span>
+                    <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{cat.state}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                    <div style={{width:60,height:4,background:"rgba(26,46,74,0.1)",borderRadius:2}}>
+                      <div style={{width:pct+"%",height:"100%",background:cat.color,borderRadius:2,transition:"width 0.4s"}}/>
+                    </div>
+                    <span style={{fontSize:11,color:cat.color,fontWeight:"bold",minWidth:28,textAlign:"right"}}>{done}/{total}</span>
+                  </div>
+                </div>
+                {open.length>0&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {open.map(t=>(
+                      <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,paddingLeft:4}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:cat.color,flexShrink:0,opacity:0.5}}/>
+                        <span style={{fontSize:12,color:INK,lineHeight:1.4}}>{t.label}</span>
+                        <RDot level={t.resistance}/>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Prayer snapshot */}
+        {activePrayers.length>0&&(
+          <div style={{marginBottom:28}}>
+            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Active Prayer</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {activePrayers.slice(0,8).map(p=>{
+                const tag=RTAGS.find(t=>t.id===p.relationship)||RTAGS[0];
+                return(
+                  <div key={p.id} style={{padding:"10px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,display:"flex",alignItems:"flex-start",gap:10}}>
+                    <span style={{fontSize:12,color:tag.color,flexShrink:0}}>{tag.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,color:INK,fontWeight:"bold"}}>{p.name}</div>
+                      <div style={{fontSize:12,color:TAN,lineHeight:1.4,marginTop:2}}>{p.request}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              {activePrayers.length>8&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",textAlign:"center",padding:"6px"}}>+{activePrayers.length-8} more on your prayer list</div>}
+            </div>
+          </div>
+        )}
+
+        {/* Shelf snapshot */}
+        {shelf.length>0&&(
+          <div style={{marginBottom:28}}>
+            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ The Shelf</div>
+            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              {SHELF_TIMEFRAMES.map(tf=>{
+                const items=shelf.filter(s=>s.timeframe===tf.id);
+                if(!items.length)return null;
+                return(
+                  <div key={tf.id}>
+                    <div style={{fontSize:9,color:tf.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:5,opacity:0.85}}>— {tf.label}</div>
+                    {items.slice(0,5).map(item=>(
+                      <div key={item.id} style={{padding:"7px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2,marginBottom:4,fontSize:12,color:INK}}>{item.label}</div>
+                    ))}
+                    {items.length>5&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",paddingLeft:14,marginBottom:6}}>+{items.length-5} more</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Habits snapshot */}
+        <div style={{marginBottom:28}}>
+          <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Habits Today</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {allHabits.map(h=>{
+              const done=!!th[h.id];
+              const str=streaks[h.id]?.count||0;
+              const hcat=HCATS.find(hc=>hc.id===h.cat);
+              return(
+                <div key={h.id} style={{padding:"5px 10px",background:done?((hcat?.color||GRN)+"18"):"rgba(255,255,255,0.5)",border:"1px solid "+(done?(hcat?.color||GRN)+"50":FINK),borderRadius:2,fontSize:11,color:done?(hcat?.color||GRN):TAN,display:"flex",alignItems:"center",gap:5}}>
+                  <span style={{fontSize:10}}>{done?"✓":"○"}</span>
+                  {h.label}
+                  {str>1&&<span style={{fontSize:10,opacity:0.8}}>{str}🔥</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{borderTop:"1px solid rgba(26,46,74,0.15)",paddingTop:16,marginTop:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{fontSize:10,color:TAN,fontStyle:"italic"}}>"Trust in the Lord with all your heart." — Proverbs 3:5</div>
+          <div style={{fontSize:9,color:TAN,opacity:0.6,letterSpacing:"1px"}}>SGM Orientation</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AISuggestButton({cats,planner,setPlanner}){
   const tk=new Date().toISOString().slice(0,10);
   const [aiLoad,setAiLoad]=useState(false);
@@ -1282,6 +1457,7 @@ export default function App(){
   const [prayers,setPrayers]=useState([]);
   const [planner,setPlanner]=useState({});
   const [shelf,setShelf]=useState([]);
+  const [showSnapshot,setShowSnapshot]=useState(false);
 
   const todayVerse=ANCH[new Date().getDay()%ANCH.length];
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
@@ -1373,6 +1549,9 @@ export default function App(){
     if(pCat&&pTask)return <ProjectScreen task={pTask} cat={pCat} onBack={()=>setProjectView(null)} onUpdate={ut=>updateTask(pCat.id,ut)}/>;
   }
 
+  if(showSnapshot)return <LifeSnapshotOverlay cats={cats} habits={habits} prayers={prayers} shelf={shelf} streaks={streaks} onClose={()=>setShowSnapshot(false)}/>;
+
+
   if(!loaded)return <div style={{minHeight:"100vh",background:PAPER,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"Georgia,serif",fontStyle:"italic",color:TAN}}>Loading…</div>;
 
   const aC=cats.find(c=>c.id===activeCat);
@@ -1433,6 +1612,11 @@ export default function App(){
                 </Ring>
                 <div style={{marginTop:10,fontSize:13,fontStyle:"italic",color:GOLD}}>Overall Orientation</div>
               </div>
+            </div>
+            <div style={{marginBottom:12}}>
+              <button onClick={()=>setShowSnapshot(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+INK,color:INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <span style={{fontSize:14}}>◎</span> Life Snapshot
+              </button>
             </div>
             <div style={{marginBottom:16}}>
               <AISuggestButton cats={cats} planner={planner} setPlanner={setPlanner}/>
