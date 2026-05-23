@@ -954,63 +954,231 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
 function LibraryTab({library,setLibrary}){
   const [ac,setAc]=useState("all");
-  const [pm,setPm]=useState(false);
+  const [showDeposit,setShowDeposit]=useState(false);
   const [pt,setPt]=useState("");
-  const [exp,setExp]=useState({});
+  const [expanded,setExpanded]=useState(null);
+  const [copied,setCopied]=useState(null);
+  const DEPOSIT_PROMPT=`I'm going to paste my Gemini unload below. For each major insight or principle you find, format it exactly like this — one block per principle, separated by three dashes:
+
+PRINCIPLE: One clear sentence capturing the core insight, in my voice
+CATEGORY: one of — identity, relationships, capacity, warfare, stewardship, ministry
+DATE: [today's date]
+CONTEXT: 2-3 sentences in my voice, first person. What was happening, what God showed me, why it matters to me specifically. Use my actual words and details from the unload — real names, real situations.
+PATTERN: The specific struggle or survival anchor this speaks to (one phrase — e.g. perfectionism, shame, over-explanation, avoidance, unbelief)
+SCRIPTURE: Short verse, 15 words or less
+REF: Book chapter:verse
+---
+
+Rules:
+- Stay in my voice throughout — don't sanitize or make it generic
+- Pull real details from the unload (names, places, situations)
+- One principle per block — don't combine two insights into one
+- CATEGORY must be exactly one of the six options listed
+- Extract every significant principle you find — aim for 6-10 per session
+- Do not add any extra text before or after the blocks
+
+Here is my unload:
+
+[PASTE GEMINI OUTPUT HERE]`;
+
+  const [showPrompt,setShowPrompt]=useState(false);
+  const [promptCopied,setPromptCopied]=useState(false);
+
+  function copyPrompt(){
+    navigator.clipboard?.writeText(DEPOSIT_PROMPT).then(()=>{setPromptCopied(true);setTimeout(()=>setPromptCopied(false),2200);});
+  }
   const today=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
   const filtered=ac==="all"?library:library.filter(p=>p.category===ac);
   const counts=LCATS.reduce((a,c)=>{a[c.id]=library.filter(p=>p.category===c.id).length;return a;},{});
+  const latest=library[0]||null;
+  const latestCat=LCATS.find(c=>c.id===latest?.category)||LCATS[0];
+  const listEntries=ac==="all"?(library.length>1?library.slice(1):library):filtered;
+
   function parsePaste(text){
-    return text.split("\n").map(l=>l.trim()).filter(l=>l.length>10).map(line=>{
-      const cm=line.match(/\[(identity|relationships|capacity|warfare|stewardship|ministry)\]/i);
-      return{id:"lib"+Date.now()+Math.random(),category:cm?cm[1].toLowerCase():"identity",principle:line.replace(/\[[^\]]+\]/g,"").trim(),date:today};
+    // Split on --- separator
+    const blocks=text.split(/\n---+\n/).map(b=>b.trim()).filter(Boolean);
+    if(!blocks.length)return[];
+    const results=[];
+    blocks.forEach(block=>{
+      const get=(key)=>{
+        const m=block.match(new RegExp("^"+key+":\\s*(.+)$","mi"));
+        return m?m[1].trim():"";
+      };
+      const principle=get("PRINCIPLE");
+      const category=(get("CATEGORY")||"identity").toLowerCase().trim();
+      const date=get("DATE")||today;
+      const context=get("CONTEXT");
+      const pattern=get("PATTERN");
+      const scripture=get("SCRIPTURE");
+      const ref=get("REF");
+      if(principle){
+        results.push({
+          id:"lib"+Date.now()+Math.random(),
+          principle,
+          category:["identity","relationships","capacity","warfare","stewardship","ministry"].includes(category)?category:"identity",
+          date,context,pattern,scripture,scriptureRef:ref,
+        });
+      }
     });
+    return results;
   }
+
+  function handleDeposit(){
+    setParseError(false);
+    const items=parsePaste(pt);
+    if(!items.length){setParseError(true);return;}
+    setLibrary(p=>[...items,...p]);
+    setPt("");
+    setShowDeposit(false);
+    setAc("all");
+  }
+
+  function share(entry){
+    const cat=LCATS.find(c=>c.id===entry.category);
+    const lines=[`${cat?.icon||"✦"} ${cat?.label||""}`,``,`"${entry.principle}"`];
+    if(entry.context)lines.push(``,entry.context);
+    if(entry.scripture)lines.push(``,`"${entry.scripture}" — ${entry.scriptureRef||""}`);
+    lines.push(``,`— Joe Steen / Steen Growth Ministries`);
+    navigator.clipboard?.writeText(lines.join("\n")).then(()=>{setCopied(entry.id);setTimeout(()=>setCopied(null),2200);});
+  }
+
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
-      <SL>Working Library</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:14}}>Principles surfacing from your daily unloads — organized by what they are, not when they came.</p>
-      <button onClick={()=>setPm(!pm)} style={{width:"100%",marginBottom:20,padding:"10px",background:pm?OX:"transparent",border:"1px solid "+(pm?OX:TANL),color:pm?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-        {pm?"× Close":"✦ Add Principles from Unload"}
-      </button>
-      {pm&&(
-        <div style={{marginBottom:24,padding:"18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+TANL,borderRadius:2}}>
-          <SL>Paste from Claude</SL>
-          <p style={{fontSize:13,color:INK,lineHeight:1.7,marginBottom:12}}>Format each line: <span style={{fontFamily:"monospace",fontSize:12,color:OX}}>Principle text [category]</span></p>
-          <textarea value={pt} onChange={e=>setPt(e.target.value)} placeholder="Paste Claude's formatted principles here..." rows={6}
-            style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
-          <button onClick={()=>{const items=parsePaste(pt);if(items.length){setLibrary(p=>[...items,...p]);setPt("");setPm(false);}}}
-            style={{marginTop:10,width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Library</button>
+      {/* Deposit button + panel */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <SL>Principle Library</SL>
+        <button onClick={()=>{setShowDeposit(d=>!d);setParseError(false);}}
+          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,marginBottom:10}}>
+          {showDeposit?"× Close":"+ Deposit"}
+        </button>
+      </div>
+
+      {showDeposit&&(
+        <div style={{marginBottom:24,padding:"16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.3s ease"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+            <SL>Paste from Claude</SL>
+            <button onClick={()=>setShowPrompt(p=>!p)}
+              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
+          </div>
+          {showPrompt&&(
+            <div style={{marginBottom:14,padding:"12px 14px",background:"rgba(26,46,74,0.04)",border:"1px solid "+FINK,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+              <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
+              <pre style={{fontSize:11,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
+              <button onClick={copyPrompt}
+                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                {promptCopied?"✓ Copied":"Copy Prompt"}
+              </button>
+            </div>
+          )}
+          <p style={{fontSize:12,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
+          <textarea value={pt} onChange={e=>{setPt(e.target.value);setParseError(false);}}
+            placeholder={"PRINCIPLE: The vine has two axes working at once...\nCATEGORY: identity\nDATE: May 23, 2026\nCONTEXT: This came from a 4:30am session where...\nPATTERN: Over-reliance on personal framework\nSCRIPTURE: I am the vine; you are the branches.\nREF: John 15:5\n---\nPRINCIPLE: next principle here..."}
+            rows={10}
+            style={{width:"100%",padding:"12px",border:"1px solid "+(parseError?OX:TANL),background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:12,color:INK,outline:"none",resize:"vertical",lineHeight:1.7,borderRadius:2,marginBottom:10}}/>
+          {parseError&&<p style={{fontSize:12,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
+          <button onClick={handleDeposit} disabled={!pt.trim()}
+            style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,opacity:pt.trim()?1:0.5}}>
+            ✦ Add to Library
+          </button>
         </div>
       )}
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
-        <button onClick={()=>setAc("all")} style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>All ({library.length})</button>
+
+      {/* Category filter strip */}
+      <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:20,paddingBottom:2}}>
+        <button onClick={()=>setAc("all")}
+          style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
+          All ({library.length})
+        </button>
         {LCATS.map(cat=>(
-          <button key={cat.id} onClick={()=>setAc(cat.id)} style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+          <button key={cat.id} onClick={()=>setAc(cat.id)}
+            style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
             {cat.icon} {cat.label} ({counts[cat.id]||0})
           </button>
         ))}
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {filtered.map(item=>{
-          const cat=LCATS.find(c=>c.id===item.category);
-          const ie=exp[item.id];
-          return(
-            <div key={item.id} onClick={()=>setExp(e=>({...e,[item.id]:!e[item.id]}))} style={{padding:"14px 16px",cursor:"pointer",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+(cat?cat.color:TAN),borderRadius:2}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
-                <p style={{fontSize:14,color:INK,lineHeight:1.7,flex:1,margin:0}}>{item.principle}</p>
-                <span style={{color:TANL,fontSize:16,flexShrink:0,marginTop:2}}>{ie?"−":"+"}</span>
+
+      {/* Featured — latest deposit */}
+      {latest&&ac==="all"&&(
+        <div style={{marginBottom:20}}>
+          <div style={{borderLeft:"3px solid "+OX,padding:"10px 16px",marginBottom:14,background:"rgba(122,31,31,0.07)"}}>
+            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Latest Deposit</div>
+            <p style={{fontStyle:"italic",fontSize:12,lineHeight:1.6,margin:0,color:INK,opacity:0.75}}>What the Holy Spirit deposited most recently.</p>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.65)",border:"1px solid "+latestCat.color+"40",borderTop:"4px solid "+latestCat.color,borderRadius:2,overflow:"hidden"}}>
+            <div style={{padding:"13px 16px 0",display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:12,color:latestCat.color}}>{latestCat.icon}</span>
+              <span style={{fontSize:9,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{latestCat.label}</span>
+              <span style={{marginLeft:"auto",fontSize:10,color:TANL}}>{latest.date}</span>
+            </div>
+            <div style={{padding:"11px 16px 10px"}}>
+              <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>&ldquo;{latest.principle}&rdquo;</p>
+            </div>
+            <button onClick={()=>setExpanded(expanded===latest.id?null:latest.id)}
+              style={{width:"100%",padding:"9px 16px",background:expanded===latest.id?latestCat.color+"10":"transparent",border:"none",borderTop:"1px solid "+latestCat.color+"25",color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+              <span>{expanded===latest.id?"▲ Close":"↓ Full context + scripture"}</span>
+              <span style={{fontSize:10,color:TANL,fontStyle:"italic"}}>tap to expand</span>
+            </button>
+            {expanded===latest.id&&(
+              <div style={{padding:"16px",borderTop:"1px solid "+latestCat.color+"20",animation:"fadeIn 0.25s ease"}}>
+                {latest.context&&<><div style={{fontSize:9,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                <p style={{fontSize:13,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
+                {latest.pattern&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
+                {latest.scripture&&(
+                  <div style={{borderLeft:"3px solid "+latestCat.color,padding:"10px 14px",background:latestCat.color+"08",marginBottom:14}}>
+                    <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
+                    <p style={{color:GOLD,fontSize:11,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
+                  </div>
+                )}
+                <button onClick={()=>share(latest)}
+                  style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                  {copied===latest.id?"✓ Copied to clipboard":"↗ Share this principle"}
+                </button>
               </div>
-              {ie&&(
-                <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK,display:"flex",gap:8}}>
-                  {cat&&<span style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:cat.color,opacity:0.85}}>{cat.icon} {cat.label}</span>}
-                  <span style={{fontSize:10,color:TANL}}>· {item.date}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* List */}
+      {ac!=="all"&&<div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
+      {ac==="all"&&library.length>1&&<div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {listEntries.map(item=>{
+          const cat=LCATS.find(c=>c.id===item.category)||LCATS[0];
+          const isExp=expanded===item.id;
+          return(
+            <div key={item.id} style={{background:"rgba(255,255,255,0.60)",border:"1px solid "+(isExp?cat.color+"50":FINK),borderLeft:"4px solid "+cat.color,borderRadius:2,overflow:"hidden",transition:"border-color 0.2s"}}>
+              <div onClick={()=>setExpanded(isExp?null:item.id)} style={{padding:"13px 14px",cursor:"pointer"}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                  <span style={{fontSize:11,color:cat.color}}>{cat.icon}</span>
+                  <span style={{fontSize:9,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.label}</span>
+                  <span style={{marginLeft:"auto",fontSize:10,color:TANL,flexShrink:0}}>{item.date}</span>
+                </div>
+                <p style={{fontSize:13,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic"}}>&ldquo;{item.principle}&rdquo;</p>
+                <div style={{fontSize:11,color:isExp?cat.color:TANL,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
+              </div>
+              {isExp&&(
+                <div style={{padding:"0 14px 16px",borderTop:"1px solid "+cat.color+"20",animation:"fadeIn 0.25s ease"}}>
+                  {item.context&&<><div style={{paddingTop:14,fontSize:9,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                  <p style={{fontSize:13,lineHeight:1.8,color:INK,margin:"0 0 12px"}}>{item.context}</p></>}
+                  {item.pattern&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.scripture&&(
+                    <div style={{borderLeft:"3px solid "+cat.color,padding:"10px 14px",background:cat.color+"08",marginBottom:12}}>
+                      <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{item.scripture}&rdquo;</p>
+                      <p style={{color:GOLD,fontSize:11,margin:"6px 0 0"}}>{item.scriptureRef}</p>
+                    </div>
+                  )}
+                  <button onClick={()=>share(item)}
+                    style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                    {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
+                  </button>
                 </div>
               )}
             </div>
           );
         })}
-        {!filtered.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>No principles in this category yet.</div>}
+        {!listEntries.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}><div style={{fontSize:22,marginBottom:10}}>✦</div>No principles in this category yet.</div>}
       </div>
     </div>
   );
