@@ -585,6 +585,21 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   });
 
   // Calendar auth
+  // Handle OAuth redirect token on page load
+  useEffect(()=>{
+    const hash=window.location.hash;
+    if(hash&&hash.includes("access_token")){
+      const token=new URLSearchParams(hash.slice(1)).get("access_token");
+      if(token){
+        localStorage.setItem("sgm-cal-token",token);
+        setCalToken(token);
+        fetchEvents(token);
+        // Clean up URL
+        window.history.replaceState(null,"",window.location.pathname);
+      }
+    }
+  },[]);
+
   function connectCalendar(){
     if(!CLIENT_ID){setCalError("Client ID not configured.");return;}
     const params=new URLSearchParams({
@@ -594,23 +609,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
       scope:SCOPES,
       prompt:"consent"
     });
-    const popup=window.open("https://accounts.google.com/o/oauth2/v2/auth?"+params.toString(),"google-auth","width=500,height=600");
-    const check=setInterval(()=>{
-      try{
-        if(popup.closed){clearInterval(check);return;}
-        const hash=popup.location.hash;
-        if(hash&&hash.includes("access_token")){
-          const token=new URLSearchParams(hash.slice(1)).get("access_token");
-          if(token){
-            clearInterval(check);
-            popup.close();
-            localStorage.setItem("sgm-cal-token",token);
-            setCalToken(token);
-            fetchEvents(token);
-          }
-        }
-      }catch(e){}
-    },500);
+    window.location.href="https://accounts.google.com/o/oauth2/v2/auth?"+params.toString();
   }
 
   function initGoogleAuth(){}
