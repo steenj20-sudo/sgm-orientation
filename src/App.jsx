@@ -921,9 +921,9 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                       const isSelected=dk===selectedDay;
                       const evs=calToken?eventsForDate(date):[];
                       return(
-                        <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isSelected?INK:isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
-                          <div style={{fontSize:11,color:isSelected?"white":isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
-                          {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:isSelected?"white":"#2E6B8A",margin:"2px auto 0"}}/>}
+                        <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
+                          <div style={{fontSize:11,color:isSelected?INK:isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
+                          {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"#2E6B8A",margin:"2px auto 0"}}/>}
                         </div>
                       );
                     })}
