@@ -675,6 +675,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const overall=cats.length?Math.round(cats.flatMap(c=>c.tasks).filter(t=>t.done).length/Math.max(cats.flatMap(c=>c.tasks).length,1)*100):0;
   const activeP=prayers.filter(p=>!p.answered).length;
   const shelfWeek=shelf.filter(s=>s.timeframe==="week").length;
+  const [selectedDay,setSelectedDay]=useState(tk);
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
@@ -784,17 +785,45 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               {weekDays.map((d,i)=>{
                 const dk=d.toISOString().slice(0,10);
                 const isToday=dk===tk;
+                const isSelected=dk===selectedDay;
                 const dp2=planner[dk]||{};
                 const hasMorning=!!(dp2.morningThought||dp2.focus);
+                const evs=calToken?eventsForDate(d):[];
                 return(
-                  <div key={i} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isToday?OX:FINK),borderRadius:2}}>
-                    <div style={{fontSize:9,color:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
-                    <div style={{fontSize:16,fontWeight:"bold",color:isToday?OX:INK,marginTop:2}}>{d.getDate()}</div>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:hasMorning?"#4AB8C8":"transparent",border:"1px solid "+TANL,marginTop:4}}/>
+                  <div key={i} onClick={()=>setSelectedDay(dk)} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isSelected?INK:isToday?OX:FINK),borderRadius:2,cursor:"pointer"}}>
+                    <div style={{fontSize:9,color:isSelected?INK:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                    <div style={{fontSize:16,fontWeight:"bold",color:isSelected?INK:isToday?OX:INK,marginTop:2}}>{d.getDate()}</div>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:evs.length?"#2E6B8A":hasMorning?"#4AB8C8":"transparent",border:"1px solid "+TANL,marginTop:4}}/>
                   </div>
                 );
               })}
             </div>
+            {/* Selected day events */}
+            {selectedDay&&(()=>{
+              const selDate=new Date(selectedDay+"T12:00:00");
+              const selEvs=calToken?eventsForDate(selDate):[];
+              const selPlan=planner[selectedDay]||{};
+              return(
+                <div style={{marginTop:10,padding:"12px 14px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderRadius:2}}>
+                  <div style={{fontSize:10,color:INK,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>
+                    {selDate.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
+                  </div>
+                  {selEvs.length===0&&!selPlan.morningThought&&!selPlan.focus&&(
+                    <div style={{fontSize:12,color:TAN,fontStyle:"italic"}}>Nothing recorded for this day</div>
+                  )}
+                  {selEvs.map((e,j)=>{
+                    const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
+                    return(
+                      <div key={j} style={{display:"flex",gap:8,padding:"6px 0",borderBottom:"1px solid "+FINK}}>
+                        <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:55}}>{time}</div>
+                        <div style={{fontSize:12,color:INK}}>{e.summary||"(No title)"}</div>
+                      </div>
+                    );
+                  })}
+                  {selPlan.morningThought&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:6}}>"{selPlan.morningThought}"</div>}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Weekly intention */}
@@ -889,11 +918,12 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                       const date=new Date(year,month,d);
                       const dk=date.toISOString().slice(0,10);
                       const isToday=dk===tk;
+                      const isSelected=dk===selectedDay;
                       const evs=calToken?eventsForDate(date):[];
                       return(
-                        <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isToday?"rgba(122,31,31,0.08)":"transparent",border:isToday?"1px solid "+OX:"1px solid transparent",position:"relative"}}>
-                          <div style={{fontSize:11,color:isToday?OX:INK,fontWeight:isToday?"bold":"normal"}}>{d}</div>
-                          {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"#2E6B8A",margin:"2px auto 0"}}/>}
+                        <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isSelected?INK:isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
+                          <div style={{fontSize:11,color:isSelected?"white":isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
+                          {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:isSelected?"white":"#2E6B8A",margin:"2px auto 0"}}/>}
                         </div>
                       );
                     })}
