@@ -124,39 +124,7 @@ const INIT_CATS = [
   ]},
 ];
 
-const INIT_LIB = [
-  {id:"l01",category:"identity",principle:"Words are a real-time readout of which Joe is driving. The old survival anchor shows up first in your mouth.",date:"May 11, 2026"},
-  {id:"l02",category:"warfare",principle:"The dark night as a credibility deposit — you can't teach the Weight track from a distance. That experience deposited something real.",date:"May 11, 2026"},
-  {id:"l03",category:"identity",principle:"The vertical beam is the path home. Every emotional spike is a decision point. One step back toward the vertical counts.",date:"May 11, 2026"},
-  {id:"l04",category:"capacity",principle:"The fatigue is partly the energy cost of operating as Old Joe. Original Joe runs on a different fuel. Less management, more fruit.",date:"May 11, 2026"},
-  {id:"l05",category:"stewardship",principle:"Writing it down is a release. You stop carrying the weight of remembering. That creates room to live these principles.",date:"May 11, 2026"},
-  {id:"l06",category:"identity",principle:"Your access to truth isn't limited by what the Holy Spirit is willing to give — it's limited by what you can emotionally carry. That's wisdom, not failure.",date:"May 12, 2026"},
-  {id:"l07",category:"capacity",principle:"External truth you can receive cleanly. Internal and family truth is where your emotional tank hits its ceiling. Knowing the difference is self-awareness in the Spirit.",date:"May 12, 2026"},
-  {id:"l08",category:"identity",principle:"The anger, perfectionism, and wiring that didn't fit the box weren't character flaws. They were the conditions that shaped you. The residue is real but it's not the verdict.",date:"May 12, 2026"},
-  {id:"l09",category:"capacity",principle:"Emotional capacity doesn't come fast. It comes faithfully. Decades of transformation brought you here — to the groove.",date:"May 12, 2026"},
-  {id:"l10",category:"ministry",principle:"You don't have to go to the deepest emotional depths to pray effectively. High-level intercession is real. The Holy Spirit meets you where your capacity is.",date:"May 12, 2026"},
-  {id:"l11",category:"stewardship",principle:"These years are moving fast and you only get one pass at them. Setting your agenda aside wasn't just sacrifice — it was the price of entry into something you'd never had.",date:"May 13, 2026"},
-  {id:"l12",category:"identity",principle:"You weren't malicious — you were unanchored. The loneliness was the natural result of a man built for relationship living outside of it.",date:"May 13, 2026"},
-  {id:"l13",category:"relationships",principle:"To get back to center from that far off, you had to swing past neutral first. You're building a foundation of godly relationships that will carry you in your later years.",date:"May 13, 2026"},
-  {id:"l14",category:"relationships",principle:"God is letting you feel what your sons and daughter feel. You recognize it because you lived it. That's the empathy that makes you the father they need.",date:"May 13, 2026"},
-  {id:"l15",category:"identity",principle:"The old ambitions and pride had to go so the God-version could move in. Reluctant willingness still counts as willingness.",date:"May 13, 2026"},
-  {id:"l16",category:"capacity",principle:"The guilt you wake up with isn't a character flaw — it's unfinished business sitting in your nervous system. Close the loop, free the mind.",date:"May 15, 2026"},
-  {id:"l17",category:"warfare",principle:"The resistance isn't laziness — it's the cost of self-sufficiency that ran unchecked for decades. Not asking questions feels like strength but it keeps you stuck.",date:"May 15, 2026"},
-  {id:"l18",category:"capacity",principle:"Tasks aren't good or bad — they're neutral. The emotion you attach is the thing that costs you. Future Joe is the motivation.",date:"May 15, 2026"},
-  {id:"l19",category:"relationships",principle:"You don't resist collaboration — you resist entering it without knowing what you bring. The foundation isn't arrogance — it's the prerequisite for showing up well.",date:"May 15, 2026"},
-  {id:"l20",category:"identity",principle:"You can't manage your time until you know who you are in this season. Identity isn't a destination — it's the ongoing work of staying anchored to the God-version of Joe.",date:"May 15, 2026"},
-  {id:"l21",category:"stewardship",principle:"Planning the next day is stewardship toward the Joe who has to live it. A plan that doesn't account for Shawn and the kids isn't a plan — it's a wish.",date:"May 18, 2026"},
-  {id:"l22",category:"relationships",principle:"You carry real weight for every person close to you. That's not a problem to fix, it's a capacity to manage. Daily prayer is the anchor, not the afterthought.",date:"May 18, 2026"},
-  {id:"l23",category:"capacity",principle:"Depositing thoughts into the Notebook is the same motion as casting anxiety on Him. You release it, it lands somewhere organized, and your mental path clears.",date:"May 18, 2026"},
-  {id:"l24",category:"warfare",principle:"Old patterns don't just fade — they fight. The unconscious prefers the comfort of what it already knows. You don't muscle through it — you partner through it.",date:"May 18, 2026"},
-  {id:"l25",category:"capacity",principle:"The high standards aren't the enemy — the paralysis they produce is. Good enough to start beats perfect and stuck.",date:"May 18, 2026"},
-  {id:"l26",category:"stewardship",principle:"Financial discipline and physical decluttering eliminate daily friction that drains you before the real work starts. A clear environment for a clear mind.",date:"May 20, 2026"},
-  {id:"l27",category:"ministry",principle:"What people respond to when drawn to you isn't your accomplishments. They're encountering the Holy Spirit moving through a man who got out of the way enough to let Him through.",date:"May 20, 2026"},
-  {id:"l28",category:"ministry",principle:"Six years of stay-at-home fatherhood, late nights, exhausted listening, saturating your mind with scripture — that wasn't a pause. That was God building the tapestry.",date:"May 20, 2026"},
-  {id:"l29",category:"warfare",principle:"The guilt that hits when capacity is low is the entry point for everything else. The intercept happens before the family gets home — small wins, reorientation. That's the reset.",date:"May 20, 2026"},
-  {id:"l30",category:"capacity",principle:"On a depleted day, concentrated mental work is off the table in the afternoon. Pre-stage the system, queue background tasks. Keep momentum alive at low capacity.",date:"May 20, 2026"},
-  {id:"l31",category:"ministry",principle:"The kids are sleeping better. The physical exhaustion is lifting. The tapestry is organized. This is the season the last six years were preparing for.",date:"May 20, 2026"},
-];
+const INIT_LIB = [];
 
 const TABS_ROW1 = [
   {id:"dashboard",label:"Map",g:"◎",type:"g"},
@@ -958,6 +926,9 @@ function LibraryTab({library,setLibrary}){
   const [pt,setPt]=useState("");
   const [expanded,setExpanded]=useState(null);
   const [copied,setCopied]=useState(null);
+  const [showPrompt,setShowPrompt]=useState(false);
+  const [promptCopied,setPromptCopied]=useState(false);
+  const [parseError,setParseError]=useState(false);
   const DEPOSIT_PROMPT=`I'm going to paste my Gemini unload below. For each major insight or principle you find, format it exactly like this — one block per principle, separated by three dashes:
 
 PRINCIPLE: One clear sentence capturing the core insight, in my voice
@@ -980,9 +951,6 @@ Rules:
 Here is my unload:
 
 [PASTE GEMINI OUTPUT HERE]`;
-
-  const [showPrompt,setShowPrompt]=useState(false);
-  const [promptCopied,setPromptCopied]=useState(false);
 
   function copyPrompt(){
     navigator.clipboard?.writeText(DEPOSIT_PROMPT).then(()=>{setPromptCopied(true);setTimeout(()=>setPromptCopied(false),2200);});
@@ -1632,6 +1600,9 @@ export default function App(){
 
   useEffect(()=>{
     function load(){
+      // v27 — clear old library format, start fresh
+      const libVer=localStorage.getItem("sgm3-lib-version");
+      if(libVer!=="v27"){localStorage.removeItem("sgm3-library");localStorage.setItem("sgm3-lib-version","v27");}
       try{const r=localStorage.getItem("sgm3-cats");if(r)setCats(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-history");if(r)setHistory(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-library");if(r)setLibrary(JSON.parse(r));}catch(e){}
