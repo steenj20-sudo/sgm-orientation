@@ -569,6 +569,13 @@ function PrayerTab({prayers,setPrayers}){
 
 function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const [mode,setMode]=useState("day");
+  const [calEvents,setCalEvents]=useState([]);
+  const [calToken,setCalToken]=useState(localStorage.getItem("sgm-cal-token")||null);
+  const [calLoading,setCalLoading]=useState(false);
+  const [calError,setCalError]=useState(null);
+  const CLIENT_ID=import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const SCOPES="https://www.googleapis.com/auth/calendar.readonly";
+
   const tk=new Date().toISOString().slice(0,10);
   const today=new Date();
   const weekDays=Array.from({length:7},(_,i)=>{
@@ -576,6 +583,67 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     d.setDate(today.getDate()-today.getDay()+i);
     return d;
   });
+
+  // Calendar auth
+  function connectCalendar(){
+    if(!window.google){setCalError("Google not loaded yet. Try again.");return;}
+    const client=window.google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,
+      scope:SCOPES,
+      callback:(resp)=>{
+        if(resp.error){setCalError("Auth failed: "+resp.error);return;}
+        localStorage.setItem("sgm-cal-token",resp.access_token);
+        setCalToken(resp.access_token);
+        fetchEvents(resp.access_token);
+      }
+    });
+    client.requestAccessToken();
+  }
+
+  async function fetchEvents(token){
+    setCalLoading(true);setCalError(null);
+    try{
+      const now=new Date();
+      const start=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
+      const end=new Date(now.getFullYear(),now.getMonth()+2,0).toISOString();
+      const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime&maxResults=50`,{
+        headers:{Authorization:"Bearer "+token}
+      });
+      if(res.status===401){
+        localStorage.removeItem("sgm-cal-token");
+        setCalToken(null);
+        setCalError("Session expired. Please reconnect.");
+        setCalLoading(false);return;
+      }
+      const data=await res.json();
+      setCalEvents(data.items||[]);
+    }catch(e){setCalError("Failed to load calendar.");}
+    setCalLoading(false);
+  }
+
+  useEffect(()=>{
+    if(calToken)fetchEvents(calToken);
+  },[calToken]);
+
+  // Get events for a specific date
+  function eventsForDate(d){
+    const dk=d.toISOString().slice(0,10);
+    return calEvents.filter(e=>{
+      const start=(e.start?.dateTime||e.start?.date||"").slice(0,10);
+      return start===dk;
+    });
+  }
+
+  // Get events for today
+  const todayEvents=eventsForDate(today);
+
+  // Monthly calendar
+  const monthDays=()=>{
+    const year=today.getFullYear(),month=today.getMonth();
+    const first=new Date(year,month,1).getDay();
+    const days=new Date(year,month+1,0).getDate();
+    return{first,days,year,month};
+  };
 
   // Daily thought
   const dp=planner[tk]||{};
@@ -607,7 +675,32 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
       {mode==="day"&&(
         <div>
-          {/* Date + pulse stats */}
+          {/* Calendar connect / today events */}
+          {!calToken?(
+            <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2}}>
+              <div style={{fontSize:9,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Calendar</div>
+              <button onClick={connectCalendar} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #2E6B8A",color:"#2E6B8A",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                Connect Google Calendar
+              </button>
+              {calError&&<div style={{fontSize:11,color:OX,marginTop:8,fontStyle:"italic"}}>{calError}</div>}
+            </div>
+          ):(
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:9,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Today's Schedule</div>
+              {calLoading&&<div style={{fontSize:12,color:TAN,fontStyle:"italic"}}>Loading…</div>}
+              {!calLoading&&todayEvents.length===0&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments today</div>}
+              {todayEvents.map((e,i)=>{
+                const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
+                return(
+                  <div key={i} style={{display:"flex",gap:10,padding:"10px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:6}}>
+                    <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+                    <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
+                  </div>
+                );
+              })}
+              <button onClick={()=>{localStorage.removeItem("sgm-cal-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>Disconnect</button>
+            </div>
+          )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
             {[
               {label:"Orientation",value:overall+"%",color:INK},
@@ -730,6 +823,70 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               rows={4}
               style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
+          </div>
+
+          {/* Week events from calendar */}
+          {calToken&&(
+            <div style={{marginBottom:20}}>
+              <SL>This Week's Appointments</SL>
+              {weekDays.map((d,i)=>{
+                const evs=eventsForDate(d);
+                if(!evs.length)return null;
+                return(
+                  <div key={i} style={{marginBottom:10}}>
+                    <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:4}}>
+                      {d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
+                    </div>
+                    {evs.map((e,j)=>{
+                      const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
+                      return(
+                        <div key={j} style={{display:"flex",gap:10,padding:"8px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:4}}>
+                          <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+                          <div style={{fontSize:12,color:INK}}>{e.summary||"(No title)"}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              {weekDays.every(d=>eventsForDate(d).length===0)&&(
+                <div style={{fontSize:12,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments this week</div>
+              )}
+            </div>
+          )}
+
+          {/* Month Calendar */}
+          <div style={{marginBottom:20}}>
+            <SL>{today.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</SL>
+            {(()=>{
+              const {first,days,year,month}=monthDays();
+              const cells=[];
+              for(let i=0;i<first;i++)cells.push(null);
+              for(let d=1;d<=days;d++)cells.push(d);
+              const dayLabels=["Su","Mo","Tu","We","Th","Fr","Sa"];
+              return(
+                <div style={{background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,padding:"12px"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:6}}>
+                    {dayLabels.map(l=><div key={l} style={{textAlign:"center",fontSize:9,color:TAN,letterSpacing:"1px",padding:"3px 0"}}>{l}</div>)}
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
+                    {cells.map((d,i)=>{
+                      if(!d)return<div key={i}/>;
+                      const date=new Date(year,month,d);
+                      const dk=date.toISOString().slice(0,10);
+                      const isToday=dk===tk;
+                      const evs=calToken?eventsForDate(date):[];
+                      return(
+                        <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isToday?"rgba(122,31,31,0.08)":"transparent",border:isToday?"1px solid "+OX:"1px solid transparent",position:"relative"}}>
+                          <div style={{fontSize:11,color:isToday?OX:INK,fontWeight:isToday?"bold":"normal"}}>{d}</div>
+                          {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"#2E6B8A",margin:"2px auto 0"}}/>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Past week archive preview */}
