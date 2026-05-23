@@ -586,34 +586,34 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
   // Calendar auth
   function connectCalendar(){
-    if(!CLIENT_ID){setCalError("Client ID not configured. Check environment variables.");return;}
-    if(!window.google||!window.google.accounts){
-      // Wait for Google to load and retry
-      const interval=setInterval(()=>{
-        if(window.google&&window.google.accounts){
-          clearInterval(interval);
-          initGoogleAuth();
+    if(!CLIENT_ID){setCalError("Client ID not configured.");return;}
+    const params=new URLSearchParams({
+      client_id:CLIENT_ID,
+      redirect_uri:window.location.origin,
+      response_type:"token",
+      scope:SCOPES,
+      prompt:"consent"
+    });
+    const popup=window.open("https://accounts.google.com/o/oauth2/v2/auth?"+params.toString(),"google-auth","width=500,height=600");
+    const check=setInterval(()=>{
+      try{
+        if(popup.closed){clearInterval(check);return;}
+        const hash=popup.location.hash;
+        if(hash&&hash.includes("access_token")){
+          const token=new URLSearchParams(hash.slice(1)).get("access_token");
+          if(token){
+            clearInterval(check);
+            popup.close();
+            localStorage.setItem("sgm-cal-token",token);
+            setCalToken(token);
+            fetchEvents(token);
+          }
         }
-      },200);
-      setTimeout(()=>clearInterval(interval),5000);
-      return;
-    }
-    initGoogleAuth();
+      }catch(e){}
+    },500);
   }
 
-  function initGoogleAuth(){
-    const client=window.google.accounts.oauth2.initTokenClient({
-      client_id:CLIENT_ID,
-      scope:SCOPES,
-      callback:(resp)=>{
-        if(resp.error){setCalError("Auth failed: "+resp.error);return;}
-        localStorage.setItem("sgm-cal-token",resp.access_token);
-        setCalToken(resp.access_token);
-        fetchEvents(resp.access_token);
-      }
-    });
-    client.requestAccessToken();
-  }
+  function initGoogleAuth(){}
 
   async function fetchEvents(token){
     setCalLoading(true);setCalError(null);
