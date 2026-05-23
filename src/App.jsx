@@ -586,7 +586,21 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
   // Calendar auth
   function connectCalendar(){
-    if(!window.google){setCalError("Google not loaded yet. Try again.");return;}
+    if(!window.google||!window.google.accounts){
+      // Wait for Google to load and retry
+      const interval=setInterval(()=>{
+        if(window.google&&window.google.accounts){
+          clearInterval(interval);
+          initGoogleAuth();
+        }
+      },200);
+      setTimeout(()=>clearInterval(interval),5000);
+      return;
+    }
+    initGoogleAuth();
+  }
+
+  function initGoogleAuth(){
     const client=window.google.accounts.oauth2.initTokenClient({
       client_id:CLIENT_ID,
       scope:SCOPES,
