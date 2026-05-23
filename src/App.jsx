@@ -586,6 +586,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
   // Calendar auth
   function connectCalendar(){
+    if(!CLIENT_ID){setCalError("Client ID not configured. Check environment variables.");return;}
     if(!window.google||!window.google.accounts){
       // Wait for Google to load and retry
       const interval=setInterval(()=>{
