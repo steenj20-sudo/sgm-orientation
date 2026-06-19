@@ -127,16 +127,16 @@ const INIT_CATS = [
 const INIT_LIB = [];
 
 const TABS_ROW1 = [
-  {id:"dashboard",label:"Map",g:"◎",type:"g"},
-  {id:"habits",label:"Habits",g:"✓",type:"g"},
-  {id:"prayer",label:"Prayer",type:"cross"},
   {id:"planner",label:"Week",g:"◈",type:"g"},
+  {id:"habits",label:"Habits",g:"✓",type:"g"},
+  {id:"dashboard",label:"Map",g:"◎",type:"g"},
+  {id:"shelf",label:"Shelf",g:"⊡",type:"g"},
 ];
 const TABS_ROW2 = [
-  {id:"shelf",label:"Shelf",g:"⊡",type:"g"},
-  {id:"history",label:"Log",g:"◷",type:"g"},
   {id:"scripture",label:"Word",g:"✦",type:"g"},
   {id:"library",label:"Library",g:"☰",type:"g"},
+  {id:"history",label:"Log",g:"◷",type:"g"},
+  {id:"prayer",label:"Prayer",type:"cross"},
   {id:"archive",label:"Archive",g:"▣",type:"g"},
 ];
 const TABS=[...TABS_ROW1,...TABS_ROW2];
