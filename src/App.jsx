@@ -1855,11 +1855,11 @@ export default function App(){
                 {row.map(tab=>{
                   const isAct=view===tab.id;
                   return(
-                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(122,31,31,0.35)":"none",border:isAct?"1px solid "+OX:"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(109,220,232,0.14)":"none",border:isAct?"1px solid #6DDCE8":"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                       <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:24}}>
-                        {tab.type==="cross"?<CrossSVG color={isAct?"#E8A87C":TANL} size={19}/>:<span style={{fontSize:21,color:isAct?"#E8A87C":TANL,lineHeight:1}}>{tab.g}</span>}
+                        {tab.type==="cross"?<CrossSVG color={isAct?"#6DDCE8":TANL} size={19}/>:<span style={{fontSize:21,color:isAct?"#6DDCE8":TANL,lineHeight:1}}>{tab.g}</span>}
                       </span>
-                      <span style={{fontSize:10,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#E8A87C":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
+                      <span style={{fontSize:10,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#6DDCE8":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
                     </button>
                   );
                 })}
@@ -1867,7 +1867,8 @@ export default function App(){
             ))}
           </div>
         </div>
-        {/* Gradient transition into Paper body */}
+        {/* Gradient transition band — cyan to navy, matching app icon gradient */}
+        <div style={{height:6,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)"}}/>
         <div style={{height:14,background:"linear-gradient(to bottom, "+INK+", "+PAPER+")"}}/>
       </div>
 
