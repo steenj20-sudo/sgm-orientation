@@ -142,12 +142,12 @@ const TABS_ROW2 = [
 const TABS=[...TABS_ROW1,...TABS_ROW2];
 
 function SL({children,c=OX}){
-  return <div style={{fontSize:9,color:c,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {children}</div>;
+  return <div style={{fontSize:10,fontWeight:"bold",color:c,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.9}}>✦ {children}</div>;
 }
 
 function RDot({level}){
   const m={low:GRN,medium:AMB,high:OX};
-  return <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:"50%",background:m[level]||TAN,color:"white",fontSize:9,fontWeight:"bold",flexShrink:0}}>{(level||"l")[0].toUpperCase()}</span>;
+  return <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:"50%",background:m[level]||TAN,color:"white",fontSize:10,fontWeight:"bold",flexShrink:0}}>{(level||"l")[0].toUpperCase()}</span>;
 }
 
 function Ring({size,pct,color,color2,sw=6,main=false,children}){
@@ -239,15 +239,15 @@ function DailyMsg({cats,habits,prayers,streaks}){
       <div style={{padding:"14px 16px 12px"}}>
         <SL c={ac}>{isMorn?"Good Morning, Joe":"End of Day, Joe"}</SL>
         {!msg&&!loading
-          ?<button onClick={gen} style={{padding:"8px 16px",background:ac,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Get My Word</button>
+          ?<button onClick={gen} style={{padding:"8px 16px",background:ac,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Get My Word</button>
           :loading
-          ?<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:14,height:14,borderRadius:"50%",border:"2px solid "+ac,borderTopColor:"transparent",animation:"spin 0.8s linear infinite",flexShrink:0}}/><span style={{fontSize:13,fontStyle:"italic",color:TAN}}>Preparing your word…</span></div>
-          :<p style={{fontSize:14,lineHeight:1.8,color:INK,margin:0}}>{msg}</p>
+          ?<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:14,height:14,borderRadius:"50%",border:"2px solid "+ac,borderTopColor:"transparent",animation:"spin 0.8s linear infinite",flexShrink:0}}/><span style={{fontSize:14,fontStyle:"italic",color:TAN}}>Preparing your word…</span></div>
+          :<p style={{fontSize:15,lineHeight:1.8,color:INK,margin:0}}>{msg}</p>
         }
       </div>
       <div style={{display:"flex",borderTop:"1px solid "+ac+"20"}}>
-        <button onClick={()=>setDismissed(true)} style={{flex:1,padding:"9px",background:"transparent",border:"none",color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11}}>Dismiss</button>
-        <button onClick={gen} style={{flex:1,padding:"9px",background:"transparent",border:"none",borderLeft:"1px solid "+ac+"20",color:ac,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11}}>↺ Refresh</button>
+        <button onClick={()=>setDismissed(true)} style={{flex:1,padding:"9px",background:"transparent",border:"none",color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>Dismiss</button>
+        <button onClick={gen} style={{flex:1,padding:"9px",background:"transparent",border:"none",borderLeft:"1px solid "+ac+"20",color:ac,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>↺ Refresh</button>
       </div>
     </div>
   );
@@ -273,11 +273,11 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
     <div style={{position:"fixed",inset:0,background:PAPER,backgroundImage:BG,zIndex:200,overflowY:"auto",fontFamily:"Georgia,serif",color:INK}}>
       <div style={{background:INK,padding:"16px 20px",position:"sticky",top:0,zIndex:100}}>
         <div style={{maxWidth:700,margin:"0 auto"}}>
-          <button onClick={onBack} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:12,fontFamily:"Georgia,serif",marginBottom:12,padding:0}}>← Back</button>
+          <button onClick={onBack} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,fontFamily:"Georgia,serif",marginBottom:12,padding:0}}>← Back</button>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <Ring size={44} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:10,color:cat.color}}>{cat.icon}</span></Ring>
+            <Ring size={44} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:11,color:cat.color}}>{cat.icon}</span></Ring>
             <div>
-              <div style={{color:TAN,fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{cat.label}</div>
+              <div style={{color:TAN,fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{cat.label}</div>
               <div style={{fontSize:16,fontWeight:"bold",color:"white",lineHeight:1.2}}>{task.label}</div>
             </div>
           </div>
@@ -286,7 +286,7 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
               <div style={{flex:1,height:2,background:"rgba(255,255,255,0.1)",borderRadius:1}}>
                 <div style={{width:pct+"%",height:"100%",background:cat.color,borderRadius:1,transition:"width 0.4s"}}/>
               </div>
-              <span style={{color:TAN,fontSize:11}}>{pct}%</span>
+              <span style={{color:TAN,fontSize:12}}>{pct}%</span>
             </div>
           )}
         </div>
@@ -295,29 +295,29 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
         {task.roadblock&&SCVS[task.roadblock]&&(
           <div style={{background:OXF,borderLeft:"3px solid "+OX,padding:"14px 18px",marginBottom:28}}>
             <SL>Roadblock: {task.roadblock}</SL>
-            <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.75,margin:0}}>"{SCVS[task.roadblock].v}"</p>
-            <p style={{color:GOLD,fontSize:12,marginTop:6,marginBottom:0}}>{SCVS[task.roadblock].r}</p>
+            <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{SCVS[task.roadblock].v}"</p>
+            <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{SCVS[task.roadblock].r}</p>
           </div>
         )}
         {pasteMode?(
           <div>
             <SL>Break this down with Claude</SL>
-            <div style={{background:"rgba(255,255,255,0.5)",color:INK,padding:"14px 16px",fontSize:13,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:2,border:"1px solid "+FINK}}>
+            <div style={{background:"rgba(255,255,255,0.5)",color:INK,padding:"14px 16px",fontSize:14,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:2,border:"1px solid "+FINK}}>
               "Break down this project: <strong style={{color:"white"}}>{task.label}</strong>"
             </div>
             <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder={"Paste Claude's breakdown here...\nFormat: 1. Step [resistance] {roadblock}"} rows={7}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.65)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.65)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
             <div style={{display:"flex",gap:8,marginTop:12}}>
               <button onClick={()=>{const steps=parseSteps(pasteText);if(steps.length){onUpdate({...task,steps});setPasteMode(false);}}}
-                style={{flex:1,padding:"11px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Build My Project</button>
-              {task.steps&&task.steps.length>0&&<button onClick={()=>setPasteMode(false)} style={{padding:"11px 18px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>}
+                style={{flex:1,padding:"11px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2}}>Build My Project</button>
+              {task.steps&&task.steps.length>0&&<button onClick={()=>setPasteMode(false)} style={{padding:"11px 18px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>}
             </div>
           </div>
         ):(
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <SL>Project Steps</SL>
-              <button onClick={()=>setPasteMode(true)} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>↺ Rebuild</button>
+              <button onClick={()=>setPasteMode(true)} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>↺ Rebuild</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {task.steps.map((step,idx)=>(
@@ -327,14 +327,14 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
                     {step.done?"✓":idx+1}
                   </div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:14,color:step.done?TAN:INK,textDecoration:step.done?"line-through":"none",lineHeight:1.5}}>{step.label}</div>
+                    <div style={{fontSize:15,color:step.done?TAN:INK,textDecoration:step.done?"line-through":"none",lineHeight:1.5}}>{step.label}</div>
                     <div style={{display:"flex",gap:6,marginTop:6,alignItems:"center"}}>
                       <RDot level={step.resistance}/>
-                      {step.roadblock&&<span style={{fontSize:10,color:OX,fontStyle:"italic"}}>⚑ {step.roadblock}</span>}
+                      {step.roadblock&&<span style={{fontSize:11,color:OX,fontStyle:"italic"}}>⚑ {step.roadblock}</span>}
                     </div>
                     {step.roadblock&&SCVS[step.roadblock]&&!step.done&&(
-                      <div style={{marginTop:8,padding:"8px 12px",background:OXF,borderLeft:"2px solid rgba(122,31,31,0.3)",fontSize:12,fontStyle:"italic",lineHeight:1.65}}>
-                        "{SCVS[step.roadblock].v}" <span style={{color:GOLD,display:"block",marginTop:2,fontStyle:"normal",fontSize:11}}>{SCVS[step.roadblock].r}</span>
+                      <div style={{marginTop:8,padding:"8px 12px",background:OXF,borderLeft:"2px solid rgba(122,31,31,0.3)",fontSize:13,fontStyle:"italic",lineHeight:1.65}}>
+                        "{SCVS[step.roadblock].v}" <span style={{color:GOLD,display:"block",marginTop:2,fontStyle:"normal",fontSize:12}}>{SCVS[step.roadblock].r}</span>
                       </div>
                     )}
                   </div>
@@ -378,11 +378,11 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>Daily Habits</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:16}}>These reset every day. Check them off, watch the streaks build.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>These reset every day. Check them off, watch the streaks build.</p>
       <div style={{marginBottom:24}}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-          <span style={{fontSize:12,color:INK}}>{done} of {allHabits.length} done today</span>
-          <span style={{fontSize:12,color:GOLD,fontWeight:"bold"}}>{pct}%</span>
+          <span style={{fontSize:13,color:INK}}>{done} of {allHabits.length} done today</span>
+          <span style={{fontSize:13,color:GOLD,fontWeight:"bold"}}>{pct}%</span>
         </div>
         <div style={{height:4,background:TANL,borderRadius:2,opacity:0.4}}>
           <div style={{height:"100%",background:OX,borderRadius:2,width:pct+"%",transition:"width 0.4s"}}/>
@@ -390,7 +390,7 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
       </div>
       {HCATS.map(hc=>(
         <div key={hc.id} style={{marginBottom:24}}>
-          <div style={{fontSize:9,color:hc.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {hc.label}</div>
+          <div style={{fontSize:10,color:hc.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {hc.label}</div>
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
             {allHabits.filter(h=>h.cat===hc.id).map(hab=>{
               const dn=!!td[hab.id];
@@ -398,17 +398,17 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
               return(
                 <div key={hab.id} onClick={()=>toggle(hab.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:dn?hc.color+"10":"rgba(255,255,255,0.55)",border:"1px solid "+(dn?hc.color+"40":FINK),borderLeft:"3px solid "+(dn?hc.color:TANL),borderRadius:2,cursor:"pointer",transition:"all 0.2s"}}>
                   <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,border:"2px solid "+(dn?hc.color:TANL),background:dn?hc.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    {dn&&<span style={{color:"white",fontSize:11}}>✓</span>}
+                    {dn&&<span style={{color:"white",fontSize:12}}>✓</span>}
                   </div>
-                  <span style={{fontSize:13,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4}}>{hab.label}</span>
-                  {str>1&&<span style={{fontSize:11,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
+                  <span style={{fontSize:14,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4}}>{hab.label}</span>
+                  {str>1&&<span style={{fontSize:12,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
                 </div>
               );
             })}
           </div>
         </div>
       ))}
-      <button onClick={()=>setAddingHabit(!addingHabit)} style={{width:"100%",marginTop:4,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+      <button onClick={()=>setAddingHabit(!addingHabit)} style={{width:"100%",marginTop:4,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
         {addingHabit?"× Close":"+ Add Habit"}
       </button>
       {addingHabit&&(
@@ -416,14 +416,14 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
           <SL>New Habit</SL>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <input autoFocus value={newHabit.label} onChange={e=>setNewHabit(n=>({...n,label:e.target.value}))} placeholder="Habit name..." onKeyDown={e=>e.key==="Enter"&&addHabit()}
-              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2}}/>
             <select value={newHabit.cat} onChange={e=>setNewHabit(n=>({...n,cat:e.target.value}))}
-              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}>
+              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2}}>
               {HCATS.map(hc=><option key={hc.id} value={hc.id}>{hc.label}</option>)}
             </select>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={addHabit} style={{flex:1,padding:"9px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Habit</button>
-              <button onClick={()=>setAddingHabit(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+              <button onClick={addHabit} style={{flex:1,padding:"9px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add Habit</button>
+              <button onClick={()=>setAddingHabit(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
             </div>
           </div>
         </div>
@@ -441,17 +441,17 @@ function PrayerTab({prayers,setPrayers}){
   const active=prayers.filter(p=>!p.answered);
   const answered=prayers.filter(p=>p.answered);
   const grouped=RTAGS.reduce((acc,tag)=>{const items=active.filter(p=>p.relationship===tag.id);if(items.length)acc.push({tag,items});return acc;},[]);
-  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,width:"100%"};
+  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,width:"100%"};
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>Prayer</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:16}}>Carry them well. Record what God does.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>Carry them well. Record what God does.</p>
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {[["active","Active ("+active.length+")"],["answered","Answered ("+answered.length+")"]].map(([v,label])=>(
-          <button key={v} onClick={()=>setPv(v)} style={{flex:1,padding:"8px",background:pv===v?OX:"transparent",border:"1px solid "+(pv===v?OX:TANL),color:pv===v?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>{label}</button>
+          <button key={v} onClick={()=>setPv(v)} style={{flex:1,padding:"8px",background:pv===v?OX:"transparent",border:"1px solid "+(pv===v?OX:TANL),color:pv===v?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>{label}</button>
         ))}
       </div>
-      {pv==="active"&&<button onClick={()=>setAdding(!adding)} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>{adding?"× Close":"✦ Add Prayer"}</button>}
+      {pv==="active"&&<button onClick={()=>setAdding(!adding)} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>{adding?"× Close":"✦ Add Prayer"}</button>}
       {adding&&(
         <div style={{marginBottom:24,padding:"18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+TANL,borderRadius:2}}>
           <SL>New Prayer</SL>
@@ -464,8 +464,8 @@ function PrayerTab({prayers,setPrayers}){
             <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Notes — what God is doing (optional)..." rows={2} style={{...inp,resize:"vertical",lineHeight:1.6}}/>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>{if(!form.name.trim()||!form.request.trim())return;setPrayers(p=>[{id:"p"+Date.now(),...form,dateAdded:today,answered:false,answeredDate:null},...p]);setForm({name:"",relationship:"church",request:"",notes:""});setAdding(false);}}
-                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add to Prayer List</button>
-              <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add to Prayer List</button>
+              <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
             </div>
           </div>
         </div>
@@ -475,7 +475,7 @@ function PrayerTab({prayers,setPrayers}){
           {!active.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>No active prayers yet.</div>}
           {grouped.map(({tag,items})=>(
             <div key={tag.id} style={{marginBottom:24}}>
-              <div style={{fontSize:9,color:tag.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>{tag.icon} {tag.label}</div>
+              <div style={{fontSize:10,color:tag.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>{tag.icon} {tag.label}</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {items.map(pr=>{
                   const ie=expId===pr.id;
@@ -483,20 +483,20 @@ function PrayerTab({prayers,setPrayers}){
                     <div key={pr.id} style={{background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tag.color,borderRadius:2}}>
                       <div onClick={()=>setExpId(ie?null:pr.id)} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"12px 14px",cursor:"pointer"}}>
                         <div style={{flex:1}}>
-                          <div style={{fontSize:14,fontWeight:"bold",color:INK,marginBottom:4}}>{pr.name}</div>
-                          <div style={{fontSize:13,color:INK,lineHeight:1.6,opacity:0.85}}>{pr.request}</div>
-                          <div style={{fontSize:10,color:TAN,marginTop:6}}>Added {pr.dateAdded}</div>
+                          <div style={{fontSize:15,fontWeight:"bold",color:INK,marginBottom:4}}>{pr.name}</div>
+                          <div style={{fontSize:14,color:INK,lineHeight:1.6,opacity:0.85}}>{pr.request}</div>
+                          <div style={{fontSize:11,color:TAN,marginTop:6}}>Added {pr.dateAdded}</div>
                         </div>
                         <span style={{color:TANL,fontSize:16,flexShrink:0,marginTop:2}}>{ie?"−":"+"}</span>
                       </div>
                       {ie&&(
                         <div style={{padding:"12px 14px 14px",borderTop:"1px solid "+FINK}}>
-                          {pr.notes&&<div style={{fontSize:13,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
+                          {pr.notes&&<div style={{fontSize:14,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
                           <div style={{display:"flex",gap:8}}>
                             <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:true,answeredDate:today}:x))}
-                              style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>✓ Mark Answered</button>
+                              style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>✓ Mark Answered</button>
                             <button onClick={()=>setPrayers(p=>p.filter(x=>x.id!==pr.id))}
-                              style={{padding:"8px 12px",background:"transparent",color:OX,border:"1px solid "+OX+"40",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Remove</button>
+                              style={{padding:"8px 12px",background:"transparent",color:OX,border:"1px solid "+OX+"40",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Remove</button>
                           </div>
                         </div>
                       )}
@@ -517,19 +517,19 @@ function PrayerTab({prayers,setPrayers}){
             return(
               <div key={pr.id} style={{padding:"12px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:2,marginBottom:8}}>
                 <div onClick={()=>setExpId(ie?null:pr.id)} style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
-                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:"transparent",border:"2px solid "+GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:GRN,fontSize:11}}>✓</span></div>
+                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:"transparent",border:"2px solid "+GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:GRN,fontSize:12}}>✓</span></div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:14,fontWeight:"bold",color:INK}}>{pr.name}</div>
-                    <div style={{fontSize:12,color:INK,lineHeight:1.6,opacity:0.8,marginTop:2}}>{pr.request}</div>
-                    <div style={{fontSize:10,color:TAN,marginTop:4}}>{tag&&<span style={{color:tag.color}}>{tag.icon} {tag.label} · </span>}Answered {pr.answeredDate}</div>
+                    <div style={{fontSize:15,fontWeight:"bold",color:INK}}>{pr.name}</div>
+                    <div style={{fontSize:13,color:INK,lineHeight:1.6,opacity:0.8,marginTop:2}}>{pr.request}</div>
+                    <div style={{fontSize:11,color:TAN,marginTop:4}}>{tag&&<span style={{color:tag.color}}>{tag.icon} {tag.label} · </span>}Answered {pr.answeredDate}</div>
                   </div>
                   <span style={{color:TANL,fontSize:16,flexShrink:0}}>{ie?"−":"+"}</span>
                 </div>
                 {ie&&(
                   <div style={{marginTop:10}}>
-                    {pr.notes&&<div style={{padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:13,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:8}}>{pr.notes}</div>}
+                    {pr.notes&&<div style={{padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:14,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:8}}>{pr.notes}</div>}
                     <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:false,answeredDate:null}:x))}
-                      style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                      style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                       ↩ Move back to active prayer
                     </button>
                   </div>
@@ -696,7 +696,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
       {/* Toggle */}
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {["day","week"].map(m=>(
-          <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",background:mode===m?"transparent":"transparent",border:mode===m?"1px solid "+OX:"1px solid "+TANL,color:mode===m?OX:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,letterSpacing:"1px",textTransform:"uppercase",borderRadius:2,transition:"all 0.2s"}}>
+          <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",background:mode===m?"transparent":"transparent",border:mode===m?"1px solid "+OX:"1px solid "+TANL,color:mode===m?OX:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,letterSpacing:"1px",textTransform:"uppercase",borderRadius:2,transition:"all 0.2s"}}>
             {m==="day"?"Today":"This Week"}
           </button>
         ))}
@@ -707,27 +707,27 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
           {/* Calendar connect / today events */}
           {!calToken?(
             <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2}}>
-              <div style={{fontSize:9,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Calendar</div>
-              <button onClick={connectCalendar} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #2E6B8A",color:"#2E6B8A",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+              <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Calendar</div>
+              <button onClick={connectCalendar} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #2E6B8A",color:"#2E6B8A",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
                 Connect Google Calendar
               </button>
-              {calError&&<div style={{fontSize:11,color:OX,marginTop:8,fontStyle:"italic"}}>{calError}</div>}
+              {calError&&<div style={{fontSize:12,color:OX,marginTop:8,fontStyle:"italic"}}>{calError}</div>}
             </div>
           ):(
             <div style={{marginBottom:20}}>
-              <div style={{fontSize:9,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Today's Schedule</div>
-              {calLoading&&<div style={{fontSize:12,color:TAN,fontStyle:"italic"}}>Loading…</div>}
-              {!calLoading&&todayEvents.length===0&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments today</div>}
+              <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Today's Schedule</div>
+              {calLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Loading…</div>}
+              {!calLoading&&todayEvents.length===0&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments today</div>}
               {todayEvents.map((e,i)=>{
                 const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                 return(
                   <div key={i} style={{display:"flex",gap:10,padding:"10px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:6}}>
-                    <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
-                    <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
+                    <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+                    <div style={{fontSize:14,color:INK}}>{e.summary||"(No title)"}</div>
                   </div>
                 );
               })}
-              <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>Disconnect</button>
+              <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Disconnect</button>
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
@@ -738,7 +738,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
             ].map(s=>(
               <div key={s.label} style={{padding:"12px 8px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
                 <div style={{fontSize:18,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
-                <div style={{fontSize:9,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+                <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -751,7 +751,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               onChange={e=>updDay({...dp,morningThought:e.target.value})}
               placeholder="What's on your mind this morning? One honest sentence is enough."
               rows={3}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -763,16 +763,16 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               onChange={e=>updDay({...dp,focus:e.target.value})}
               placeholder="What is the one thing that would make today a win?"
               rows={2}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
           </div>
 
           {/* Shelf items due today */}
           {shelfWeek>0&&(
             <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
-              <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div>
-              <div style={{fontSize:13,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div>
-              <div style={{fontSize:11,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div>
+              <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div>
+              <div style={{fontSize:14,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div>
+              <div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div>
             </div>
           )}
 
@@ -784,7 +784,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               onChange={e=>updDay({...dp,evening:e.target.value})}
               placeholder="What happened today that's worth remembering?"
               rows={3}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
           </div>
         </div>
@@ -805,7 +805,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                 const evs=calToken?eventsForDate(d):[];
                 return(
                   <div key={i} onClick={()=>setSelectedDay(dk)} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isSelected?INK:isToday?OX:FINK),borderRadius:2,cursor:"pointer"}}>
-                    <div style={{fontSize:9,color:isSelected?INK:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                    <div style={{fontSize:10,color:isSelected?INK:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
                     <div style={{fontSize:16,fontWeight:"bold",color:isSelected?INK:isToday?OX:INK,marginTop:2}}>{d.getDate()}</div>
                     <div style={{width:6,height:6,borderRadius:"50%",background:evs.length?"#2E6B8A":hasMorning?"#4AB8C8":"transparent",border:"1px solid "+TANL,marginTop:4}}/>
                   </div>
@@ -819,22 +819,22 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               const selPlan=planner[selectedDay]||{};
               return(
                 <div style={{marginTop:10,padding:"12px 14px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderRadius:2}}>
-                  <div style={{fontSize:10,color:INK,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>
+                  <div style={{fontSize:11,color:INK,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>
                     {selDate.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
                   </div>
                   {selEvs.length===0&&!selPlan.morningThought&&!selPlan.focus&&(
-                    <div style={{fontSize:12,color:TAN,fontStyle:"italic"}}>Nothing recorded for this day</div>
+                    <div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Nothing recorded for this day</div>
                   )}
                   {selEvs.map((e,j)=>{
                     const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                     return(
                       <div key={j} style={{display:"flex",gap:8,padding:"6px 0",borderBottom:"1px solid "+FINK}}>
-                        <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:55}}>{time}</div>
-                        <div style={{fontSize:12,color:INK}}>{e.summary||"(No title)"}</div>
+                        <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:55}}>{time}</div>
+                        <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
                       </div>
                     );
                   })}
-                  {selPlan.morningThought&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:6}}>"{selPlan.morningThought}"</div>}
+                  {selPlan.morningThought&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:6}}>"{selPlan.morningThought}"</div>}
                 </div>
               );
             })()}
@@ -848,7 +848,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               onChange={e=>updWeek({...wp,intention:e.target.value})}
               placeholder="What does this week need to accomplish? One clear sentence."
               rows={2}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -864,7 +864,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               ].map(s=>(
                 <div key={s.label} style={{padding:"14px 12px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2}}>
                   <div style={{fontSize:22,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
-                  <div style={{fontSize:9,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+                  <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -878,7 +878,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               onChange={e=>updWeek({...wp,thoughts:e.target.value})}
               placeholder="Notes, observations, things God is showing you this week…"
               rows={4}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -891,15 +891,15 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                 if(!evs.length)return null;
                 return(
                   <div key={i} style={{marginBottom:10}}>
-                    <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:4}}>
+                    <div style={{fontSize:11,color:"#2E6B8A",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:4}}>
                       {d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
                     </div>
                     {evs.map((e,j)=>{
                       const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                       return(
                         <div key={j} style={{display:"flex",gap:10,padding:"8px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:4}}>
-                          <div style={{fontSize:11,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
-                          <div style={{fontSize:12,color:INK}}>{e.summary||"(No title)"}</div>
+                          <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+                          <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
                         </div>
                       );
                     })}
@@ -907,7 +907,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                 );
               })}
               {weekDays.every(d=>eventsForDate(d).length===0)&&(
-                <div style={{fontSize:12,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments this week</div>
+                <div style={{fontSize:13,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments this week</div>
               )}
             </div>
           )}
@@ -924,7 +924,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               return(
                 <div style={{background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,padding:"12px"}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:6}}>
-                    {dayLabels.map(l=><div key={l} style={{textAlign:"center",fontSize:9,color:TAN,letterSpacing:"1px",padding:"3px 0"}}>{l}</div>)}
+                    {dayLabels.map(l=><div key={l} style={{textAlign:"center",fontSize:10,color:TAN,letterSpacing:"1px",padding:"3px 0"}}>{l}</div>)}
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
                     {cells.map((d,i)=>{
@@ -936,7 +936,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                       const evs=calToken?eventsForDate(date):[];
                       return(
                         <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
-                          <div style={{fontSize:11,color:isSelected?INK:isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
+                          <div style={{fontSize:12,color:isSelected?INK:isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
                           {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"#2E6B8A",margin:"2px auto 0"}}/>}
                         </div>
                       );
@@ -953,9 +953,9 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
             if(!pw.intention&&!pw.thoughts)return null;
             return(
               <div key={k} style={{marginBottom:10,padding:"14px 16px",background:"rgba(255,255,255,0.35)",border:"1px solid "+FINK,borderRadius:2,opacity:0.7}}>
-                <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
-                {pw.intention&&<p style={{fontSize:13,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
-                {pw.thoughts&&typeof pw.thoughts==="string"&&<p style={{fontSize:12,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
+                <div style={{fontSize:10,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
+                {pw.intention&&<p style={{fontSize:14,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
+                {pw.thoughts&&typeof pw.thoughts==="string"&&<p style={{fontSize:13,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
               </div>
             );
           })}
@@ -1063,7 +1063,7 @@ Here is my unload:
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <SL>Principle Library</SL>
         <button onClick={()=>{setShowDeposit(d=>!d);setParseError(false);}}
-          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,marginBottom:10}}>
+          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,marginBottom:10}}>
           {showDeposit?"× Close":"+ Deposit"}
         </button>
       </div>
@@ -1073,26 +1073,26 @@ Here is my unload:
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
             <SL>Paste from Claude</SL>
             <button onClick={()=>setShowPrompt(p=>!p)}
-              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
+              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
           </div>
           {showPrompt&&(
             <div style={{marginBottom:14,padding:"12px 14px",background:"rgba(26,46,74,0.04)",border:"1px solid "+FINK,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-              <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
-              <pre style={{fontSize:11,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
+              <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
+              <pre style={{fontSize:12,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
               <button onClick={copyPrompt}
-                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                 {promptCopied?"✓ Copied":"Copy Prompt"}
               </button>
             </div>
           )}
-          <p style={{fontSize:12,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
+          <p style={{fontSize:13,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
           <textarea value={pt} onChange={e=>{setPt(e.target.value);setParseError(false);}}
             placeholder={"PRINCIPLE: The vine has two axes working at once...\nCATEGORY: identity\nDATE: May 23, 2026\nCONTEXT: This came from a 4:30am session where...\nPATTERN: Over-reliance on personal framework\nSCRIPTURE: I am the vine; you are the branches.\nREF: John 15:5\n---\nPRINCIPLE: next principle here..."}
             rows={10}
-            style={{width:"100%",padding:"12px",border:"1px solid "+(parseError?OX:TANL),background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:12,color:INK,outline:"none",resize:"vertical",lineHeight:1.7,borderRadius:2,marginBottom:10}}/>
-          {parseError&&<p style={{fontSize:12,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
+            style={{width:"100%",padding:"12px",border:"1px solid "+(parseError?OX:TANL),background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.7,borderRadius:2,marginBottom:10}}/>
+          {parseError&&<p style={{fontSize:13,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
           <button onClick={handleDeposit} disabled={!pt.trim()}
-            style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,opacity:pt.trim()?1:0.5}}>
+            style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,opacity:pt.trim()?1:0.5}}>
             ✦ Add to Library
           </button>
         </div>
@@ -1101,12 +1101,12 @@ Here is my unload:
       {/* Category filter strip */}
       <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:20,paddingBottom:2}}>
         <button onClick={()=>setAc("all")}
-          style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
+          style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
           All ({library.length})
         </button>
         {LCATS.map(cat=>(
           <button key={cat.id} onClick={()=>setAc(cat.id)}
-            style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
+            style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
             {cat.icon} {cat.label} ({counts[cat.id]||0})
           </button>
         ))}
@@ -1116,36 +1116,36 @@ Here is my unload:
       {latest&&ac==="all"&&(
         <div style={{marginBottom:20}}>
           <div style={{borderLeft:"3px solid "+OX,padding:"10px 16px",marginBottom:14,background:"rgba(122,31,31,0.07)"}}>
-            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Latest Deposit</div>
-            <p style={{fontStyle:"italic",fontSize:12,lineHeight:1.6,margin:0,color:INK,opacity:0.75}}>What the Holy Spirit deposited most recently.</p>
+            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Latest Deposit</div>
+            <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.6,margin:0,color:INK,opacity:0.75}}>What the Holy Spirit deposited most recently.</p>
           </div>
           <div style={{background:"rgba(255,255,255,0.65)",border:"1px solid "+latestCat.color+"40",borderTop:"4px solid "+latestCat.color,borderRadius:2,overflow:"hidden"}}>
             <div style={{padding:"13px 16px 0",display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:12,color:latestCat.color}}>{latestCat.icon}</span>
-              <span style={{fontSize:9,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{latestCat.label}</span>
-              <span style={{marginLeft:"auto",fontSize:10,color:TANL}}>{latest.date}</span>
+              <span style={{fontSize:13,color:latestCat.color}}>{latestCat.icon}</span>
+              <span style={{fontSize:10,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{latestCat.label}</span>
+              <span style={{marginLeft:"auto",fontSize:11,color:TANL}}>{latest.date}</span>
             </div>
             <div style={{padding:"11px 16px 10px"}}>
               <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>&ldquo;{latest.principle}&rdquo;</p>
             </div>
             <button onClick={()=>setExpanded(expanded===latest.id?null:latest.id)}
-              style={{width:"100%",padding:"9px 16px",background:expanded===latest.id?latestCat.color+"10":"transparent",border:"none",borderTop:"1px solid "+latestCat.color+"25",color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+              style={{width:"100%",padding:"9px 16px",background:expanded===latest.id?latestCat.color+"10":"transparent",border:"none",borderTop:"1px solid "+latestCat.color+"25",color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
               <span>{expanded===latest.id?"▲ Close":"↓ Full context + scripture"}</span>
-              <span style={{fontSize:10,color:TANL,fontStyle:"italic"}}>tap to expand</span>
+              <span style={{fontSize:11,color:TANL,fontStyle:"italic"}}>tap to expand</span>
             </button>
             {expanded===latest.id&&(
               <div style={{padding:"16px",borderTop:"1px solid "+latestCat.color+"20",animation:"fadeIn 0.25s ease"}}>
-                {latest.context&&<><div style={{fontSize:9,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
-                <p style={{fontSize:13,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
-                {latest.pattern&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
+                {latest.context&&<><div style={{fontSize:10,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
+                {latest.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
                 {latest.scripture&&(
                   <div style={{borderLeft:"3px solid "+latestCat.color,padding:"10px 14px",background:latestCat.color+"08",marginBottom:14}}>
-                    <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
-                    <p style={{color:GOLD,fontSize:11,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
+                    <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
+                    <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
                   </div>
                 )}
                 <button onClick={()=>share(latest)}
-                  style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                  style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
                   {copied===latest.id?"✓ Copied to clipboard":"↗ Share this principle"}
                 </button>
               </div>
@@ -1155,8 +1155,8 @@ Here is my unload:
       )}
 
       {/* List */}
-      {ac!=="all"&&<div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
-      {ac==="all"&&library.length>1&&<div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
+      {ac!=="all"&&<div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
+      {ac==="all"&&library.length>1&&<div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {listEntries.map(item=>{
           const cat=LCATS.find(c=>c.id===item.category)||LCATS[0];
@@ -1165,26 +1165,26 @@ Here is my unload:
             <div key={item.id} style={{background:"rgba(255,255,255,0.60)",border:"1px solid "+(isExp?cat.color+"50":FINK),borderLeft:"4px solid "+cat.color,borderRadius:2,overflow:"hidden",transition:"border-color 0.2s"}}>
               <div onClick={()=>setExpanded(isExp?null:item.id)} style={{padding:"13px 14px",cursor:"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                  <span style={{fontSize:11,color:cat.color}}>{cat.icon}</span>
-                  <span style={{fontSize:9,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.label}</span>
-                  <span style={{marginLeft:"auto",fontSize:10,color:TANL,flexShrink:0}}>{item.date}</span>
+                  <span style={{fontSize:12,color:cat.color}}>{cat.icon}</span>
+                  <span style={{fontSize:10,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.label}</span>
+                  <span style={{marginLeft:"auto",fontSize:11,color:TANL,flexShrink:0}}>{item.date}</span>
                 </div>
-                <p style={{fontSize:13,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic"}}>&ldquo;{item.principle}&rdquo;</p>
-                <div style={{fontSize:11,color:isExp?cat.color:TANL,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
+                <p style={{fontSize:14,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic"}}>&ldquo;{item.principle}&rdquo;</p>
+                <div style={{fontSize:12,color:isExp?cat.color:TANL,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
               </div>
               {isExp&&(
                 <div style={{padding:"0 14px 16px",borderTop:"1px solid "+cat.color+"20",animation:"fadeIn 0.25s ease"}}>
-                  {item.context&&<><div style={{paddingTop:14,fontSize:9,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
-                  <p style={{fontSize:13,lineHeight:1.8,color:INK,margin:"0 0 12px"}}>{item.context}</p></>}
-                  {item.pattern&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.context&&<><div style={{paddingTop:14,fontSize:10,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                  <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 12px"}}>{item.context}</p></>}
+                  {item.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:12}}>Pattern: {item.pattern}</div>}
                   {item.scripture&&(
                     <div style={{borderLeft:"3px solid "+cat.color,padding:"10px 14px",background:cat.color+"08",marginBottom:12}}>
-                      <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{item.scripture}&rdquo;</p>
-                      <p style={{color:GOLD,fontSize:11,margin:"6px 0 0"}}>{item.scriptureRef}</p>
+                      <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{item.scripture}&rdquo;</p>
+                      <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{item.scriptureRef}</p>
                     </div>
                   )}
                   <button onClick={()=>share(item)}
-                    style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                    style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
                     {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
                   </button>
                 </div>
@@ -1254,22 +1254,22 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history}){
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>Archive</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
         {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Categories",cats.length],["Completions",history.length]].map(([label,val])=>(
           <div key={label} style={{padding:"12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:"bold",color:INK,letterSpacing:"-0.5px"}}>{val}</div>
-            <div style={{fontSize:10,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
+            <div style={{fontSize:11,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
           </div>
         ))}
       </div>
       <button onClick={()=>navigator.clipboard.writeText(gen()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
-        style={{width:"100%",marginBottom:20,padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,transition:"background 0.3s"}}>
+        style={{width:"100%",marginBottom:20,padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2,transition:"background 0.3s"}}>
         {copied?"check Copied to Clipboard":"Copy Full Archive"}
       </button>
       <SL>Preview</SL>
       <div style={{background:"rgba(255,255,255,0.4)",border:"1px solid "+FINK,borderRadius:2,padding:"14px 16px",maxHeight:320,overflowY:"auto"}}>
-        <pre style={{fontSize:11,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif"}}>{gen()}</pre>
+        <pre style={{fontSize:12,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif"}}>{gen()}</pre>
       </div>
     </div>
   );
@@ -1309,38 +1309,38 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>The Shelf</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:13,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
 
       {/* Quick capture */}
       <div style={{marginBottom:24,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,padding:"14px 14px 12px"}}>
-        <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ Quick Capture</div>
+        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ Quick Capture</div>
         <input
           value={input}
           onChange={e=>setInput(e.target.value)}
           onKeyDown={e=>e.key==="Enter"&&quickAdd()}
           placeholder="What needs to get done..."
-          style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,marginBottom:10}}
+          style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:15,color:INK,outline:"none",borderRadius:2,marginBottom:10}}
         />
         <div style={{display:"flex",gap:6,marginBottom:10}}>
           {SHELF_TIMEFRAMES.map(tf=>(
             <button key={tf.id} onClick={()=>setTimeframe(tf.id)}
-              style={{flex:1,padding:"7px 4px",background:timeframe===tf.id?tf.color:"transparent",border:"1px solid "+(timeframe===tf.id?tf.color:TANL),color:timeframe===tf.id?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,transition:"all 0.2s"}}>
+              style={{flex:1,padding:"7px 4px",background:timeframe===tf.id?tf.color:"transparent",border:"1px solid "+(timeframe===tf.id?tf.color:TANL),color:timeframe===tf.id?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,transition:"all 0.2s"}}>
               {tf.label}
             </button>
           ))}
         </div>
-        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:"transparent",color:INK,border:"1px solid "+INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:"transparent",color:INK,border:"1px solid "+INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
           + Add to Shelf
         </button>
       </div>
 
       {/* Filter */}
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-        <button onClick={()=>setFilter("all")} style={{padding:"5px 12px",background:filter==="all"?INK:"transparent",color:filter==="all"?"white":TAN,border:"1px solid "+(filter==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+        <button onClick={()=>setFilter("all")} style={{padding:"5px 12px",background:filter==="all"?INK:"transparent",color:filter==="all"?"white":TAN,border:"1px solid "+(filter==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
           All ({shelf.length})
         </button>
         {SHELF_TIMEFRAMES.map(tf=>(
-          <button key={tf.id} onClick={()=>setFilter(tf.id)} style={{padding:"5px 12px",background:filter===tf.id?tf.color:"transparent",color:filter===tf.id?"white":TAN,border:"1px solid "+(filter===tf.id?tf.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+          <button key={tf.id} onClick={()=>setFilter(tf.id)} style={{padding:"5px 12px",background:filter===tf.id?tf.color:"transparent",color:filter===tf.id?"white":TAN,border:"1px solid "+(filter===tf.id?tf.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
             {tf.label} ({shelf.filter(s=>s.timeframe===tf.id).length})
           </button>
         ))}
@@ -1359,37 +1359,37 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
           if(!items.length)return null;
           return(
             <div key={tf.id} style={{marginBottom:8}}>
-              {filter==="all"&&<div style={{fontSize:9,color:tf.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ {tf.label}</div>}
+              {filter==="all"&&<div style={{fontSize:10,color:tf.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ {tf.label}</div>}
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 {items.map(item=>(
                   <div key={item.id} style={{padding:"11px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:13,color:INK,lineHeight:1.4}}>{item.label}</div>
-                        <div style={{fontSize:10,color:TAN,marginTop:3}}>{item.dateAdded}</div>
+                        <div style={{fontSize:14,color:INK,lineHeight:1.4}}>{item.label}</div>
+                        <div style={{fontSize:11,color:TAN,marginTop:3}}>{item.dateAdded}</div>
                       </div>
                       <div style={{display:"flex",gap:6,flexShrink:0}}>
                         <select value={item.timeframe} onChange={e=>changeTimeframe(item.id,e.target.value)}
-                          style={{padding:"3px 6px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:10,color:TAN,outline:"none",borderRadius:2,cursor:"pointer"}}>
+                          style={{padding:"3px 6px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:11,color:TAN,outline:"none",borderRadius:2,cursor:"pointer"}}>
                           {SHELF_TIMEFRAMES.map(tf=><option key={tf.id} value={tf.id}>{tf.label}</option>)}
                         </select>
                         <button onClick={()=>setPromotingId(promotingId===item.id?null:item.id)}
-                          style={{padding:"4px 8px",background:promotingId===item.id?OX:"transparent",color:promotingId===item.id?"white":OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2,whiteSpace:"nowrap"}}>
+                          style={{padding:"4px 8px",background:promotingId===item.id?OX:"transparent",color:promotingId===item.id?"white":OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap"}}>
                           → Project
                         </button>
                         <button onClick={()=>remove(item.id)}
-                          style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                          style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                           ×
                         </button>
                       </div>
                     </div>
                     {promotingId===item.id&&(
                       <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK}}>
-                        <div style={{fontSize:10,color:TAN,fontStyle:"italic",marginBottom:8}}>Move to which category?</div>
+                        <div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:8}}>Move to which category?</div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                           {cats.map(cat=>(
                             <button key={cat.id} onClick={()=>promoteToCat(item,cat.id)}
-                              style={{padding:"5px 10px",background:"transparent",color:cat.color,border:"1px solid "+cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                              style={{padding:"5px 10px",background:"transparent",color:cat.color,border:"1px solid "+cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                               {cat.icon} {cat.label}
                             </button>
                           ))}
@@ -1435,21 +1435,21 @@ function ManualScriptureAdd(){
   return(
     <div style={{marginBottom:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
+        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
         <button onClick={()=>setOpen(o=>!o)}
-          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
           {open?"× Close":"+ Add Scripture"}
         </button>
       </div>
       {open&&(
         <div style={{padding:"14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL,borderRadius:2,marginBottom:14,animation:"fadeIn 0.2s ease"}}>
           <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Label (e.g. Fear, Identity, Rest)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
           <textarea value={form.verse} onChange={e=>setForm(f=>({...f,verse:e.target.value}))} placeholder="Verse text..." rows={3}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
           <input value={form.ref} onChange={e=>setForm(f=>({...f,ref:e.target.value}))} placeholder="Reference (e.g. John 15:5)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
-          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
             Save Scripture
           </button>
         </div>
@@ -1458,22 +1458,22 @@ function ManualScriptureAdd(){
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
           {verses.map(v=>(
             <div key={v.id} style={{padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
-              {v.label&&<div style={{fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
-              <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.75,margin:0}}>"{v.verse}"</p>
+              {v.label&&<div style={{fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
+              <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{v.verse}"</p>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
-                <p style={{color:GOLD,fontSize:12,margin:0}}>{v.ref}</p>
+                <p style={{color:GOLD,fontSize:13,margin:0}}>{v.ref}</p>
                 <div style={{display:"flex",gap:6}}>
-                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>
+                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
                     {copied===v.id?"✓":"Copy"}
                   </button>
-                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>×</button>
+                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>×</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-      {!verses.length&&!open&&<p style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
+      {!verses.length&&!open&&<p style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
       <div style={{height:1,background:FINK,marginBottom:20}}/>
     </div>
   );
@@ -1510,18 +1510,18 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
       {/* Close / Print bar */}
       <div id="snap-close-bar" style={{background:INK,padding:"12px 20px",position:"sticky",top:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,fontFamily:"Georgia,serif",padding:0}}>← Back to Map</button>
-        <div style={{fontSize:9,color:TAN,letterSpacing:"2.5px",textTransform:"uppercase"}}>Life Snapshot</div>
-        <button onClick={handlePrint} style={{background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,padding:"6px 14px",borderRadius:2}}>⬇ Export PDF</button>
+        <button onClick={onClose} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:14,fontFamily:"Georgia,serif",padding:0}}>← Back to Map</button>
+        <div style={{fontSize:10,color:TAN,letterSpacing:"2.5px",textTransform:"uppercase"}}>Life Snapshot</div>
+        <button onClick={handlePrint} style={{background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,padding:"6px 14px",borderRadius:2}}>⬇ Export PDF</button>
       </div>
 
       <div id="life-snapshot" style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 60px"}}>
         {/* Header */}
         <div style={{borderBottom:"2px solid "+INK,paddingBottom:16,marginBottom:24,display:"flex",alignItems:"flex-end",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontSize:9,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:4}}>Steen Growth Ministries</div>
+            <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:4}}>Steen Growth Ministries</div>
             <div style={{fontSize:26,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Snapshot</div>
-            <div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:4}}>{today}</div>
+            <div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:4}}>{today}</div>
           </div>
           <Logo size={60}/>
         </div>
@@ -1536,14 +1536,14 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
           ].map(m=>(
             <div key={m.label} style={{padding:"12px 10px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderTop:"3px solid "+m.color,borderRadius:2,textAlign:"center"}}>
               <div style={{fontSize:22,fontWeight:"bold",color:m.color,lineHeight:1}}>{m.val}</div>
-              <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:INK,marginTop:4,opacity:0.7}}>{m.label}</div>
-              <div style={{fontSize:10,color:TAN,marginTop:2,fontStyle:"italic"}}>{m.sub}</div>
+              <div style={{fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",color:INK,marginTop:4,opacity:0.7}}>{m.label}</div>
+              <div style={{fontSize:11,color:TAN,marginTop:2,fontStyle:"italic"}}>{m.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Life Categories */}
-        <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Life Map</div>
+        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Life Map</div>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:32}}>
           {cats.map(cat=>{
             const done=cat.tasks.filter(t=>t.done).length;
@@ -1555,14 +1555,14 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:open.length?10:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontSize:15,color:cat.color}}>{cat.icon}</span>
-                    <span style={{fontSize:14,fontWeight:"bold",color:INK}}>{cat.label}</span>
-                    <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{cat.state}</span>
+                    <span style={{fontSize:15,fontWeight:"bold",color:INK}}>{cat.label}</span>
+                    <span style={{fontSize:12,color:TAN,fontStyle:"italic"}}>{cat.state}</span>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                     <div style={{width:60,height:4,background:"rgba(26,46,74,0.1)",borderRadius:2}}>
                       <div style={{width:pct+"%",height:"100%",background:cat.color,borderRadius:2,transition:"width 0.4s"}}/>
                     </div>
-                    <span style={{fontSize:11,color:cat.color,fontWeight:"bold",minWidth:28,textAlign:"right"}}>{done}/{total}</span>
+                    <span style={{fontSize:12,color:cat.color,fontWeight:"bold",minWidth:28,textAlign:"right"}}>{done}/{total}</span>
                   </div>
                 </div>
                 {open.length>0&&(
@@ -1570,7 +1570,7 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
                     {open.map(t=>(
                       <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,paddingLeft:4}}>
                         <div style={{width:6,height:6,borderRadius:"50%",background:cat.color,flexShrink:0,opacity:0.5}}/>
-                        <span style={{fontSize:12,color:INK,lineHeight:1.4}}>{t.label}</span>
+                        <span style={{fontSize:13,color:INK,lineHeight:1.4}}>{t.label}</span>
                         <RDot level={t.resistance}/>
                       </div>
                     ))}
@@ -1584,21 +1584,21 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
         {/* Prayer snapshot */}
         {activePrayers.length>0&&(
           <div style={{marginBottom:28}}>
-            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Active Prayer</div>
+            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Active Prayer</div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {activePrayers.slice(0,8).map(p=>{
                 const tag=RTAGS.find(t=>t.id===p.relationship)||RTAGS[0];
                 return(
                   <div key={p.id} style={{padding:"10px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,display:"flex",alignItems:"flex-start",gap:10}}>
-                    <span style={{fontSize:12,color:tag.color,flexShrink:0}}>{tag.icon}</span>
+                    <span style={{fontSize:13,color:tag.color,flexShrink:0}}>{tag.icon}</span>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:13,color:INK,fontWeight:"bold"}}>{p.name}</div>
-                      <div style={{fontSize:12,color:TAN,lineHeight:1.4,marginTop:2}}>{p.request}</div>
+                      <div style={{fontSize:14,color:INK,fontWeight:"bold"}}>{p.name}</div>
+                      <div style={{fontSize:13,color:TAN,lineHeight:1.4,marginTop:2}}>{p.request}</div>
                     </div>
                   </div>
                 );
               })}
-              {activePrayers.length>8&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",textAlign:"center",padding:"6px"}}>+{activePrayers.length-8} more on your prayer list</div>}
+              {activePrayers.length>8&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",textAlign:"center",padding:"6px"}}>+{activePrayers.length-8} more on your prayer list</div>}
             </div>
           </div>
         )}
@@ -1606,18 +1606,18 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
         {/* Shelf snapshot */}
         {shelf.length>0&&(
           <div style={{marginBottom:28}}>
-            <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ The Shelf</div>
+            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ The Shelf</div>
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
               {SHELF_TIMEFRAMES.map(tf=>{
                 const items=shelf.filter(s=>s.timeframe===tf.id);
                 if(!items.length)return null;
                 return(
                   <div key={tf.id}>
-                    <div style={{fontSize:9,color:tf.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:5,opacity:0.85}}>— {tf.label}</div>
+                    <div style={{fontSize:10,color:tf.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:5,opacity:0.85}}>— {tf.label}</div>
                     {items.slice(0,5).map(item=>(
-                      <div key={item.id} style={{padding:"7px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2,marginBottom:4,fontSize:12,color:INK}}>{item.label}</div>
+                      <div key={item.id} style={{padding:"7px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2,marginBottom:4,fontSize:13,color:INK}}>{item.label}</div>
                     ))}
-                    {items.length>5&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",paddingLeft:14,marginBottom:6}}>+{items.length-5} more</div>}
+                    {items.length>5&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",paddingLeft:14,marginBottom:6}}>+{items.length-5} more</div>}
                   </div>
                 );
               })}
@@ -1627,17 +1627,17 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
         {/* Habits snapshot */}
         <div style={{marginBottom:28}}>
-          <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Habits Today</div>
+          <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Habits Today</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
             {allHabits.map(h=>{
               const done=!!th[h.id];
               const str=streaks[h.id]?.count||0;
               const hcat=HCATS.find(hc=>hc.id===h.cat);
               return(
-                <div key={h.id} style={{padding:"5px 10px",background:done?((hcat?.color||GRN)+"18"):"rgba(255,255,255,0.5)",border:"1px solid "+(done?(hcat?.color||GRN)+"50":FINK),borderRadius:2,fontSize:11,color:done?(hcat?.color||GRN):TAN,display:"flex",alignItems:"center",gap:5}}>
-                  <span style={{fontSize:10}}>{done?"✓":"○"}</span>
+                <div key={h.id} style={{padding:"5px 10px",background:done?((hcat?.color||GRN)+"18"):"rgba(255,255,255,0.5)",border:"1px solid "+(done?(hcat?.color||GRN)+"50":FINK),borderRadius:2,fontSize:12,color:done?(hcat?.color||GRN):TAN,display:"flex",alignItems:"center",gap:5}}>
+                  <span style={{fontSize:11}}>{done?"✓":"○"}</span>
                   {h.label}
-                  {str>1&&<span style={{fontSize:10,opacity:0.8}}>{str}🔥</span>}
+                  {str>1&&<span style={{fontSize:11,opacity:0.8}}>{str}🔥</span>}
                 </div>
               );
             })}
@@ -1646,8 +1646,8 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
         {/* Footer */}
         <div style={{borderTop:"1px solid rgba(26,46,74,0.15)",paddingTop:16,marginTop:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontSize:10,color:TAN,fontStyle:"italic"}}>"Trust in the Lord with all your heart." — Proverbs 3:5</div>
-          <div style={{fontSize:9,color:TAN,opacity:0.6,letterSpacing:"1px"}}>SGM Orientation</div>
+          <div style={{fontSize:11,color:TAN,fontStyle:"italic"}}>"Trust in the Lord with all your heart." — Proverbs 3:5</div>
+          <div style={{fontSize:10,color:TAN,opacity:0.6,letterSpacing:"1px"}}>SGM Orientation</div>
         </div>
       </div>
     </div>
@@ -1684,7 +1684,7 @@ function AISuggestButton({cats,planner,setPlanner}){
   }
   return(
     <div>
-      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
         {aiLoad?"◎ Planning your day…":"✦ Suggest My Day"}
       </button>
       {aiSug&&(
@@ -1695,14 +1695,14 @@ function AISuggestButton({cats,planner,setPlanner}){
             if(!tasks.length)return null;
             return(
               <div key={block.id} style={{marginBottom:8}}>
-                <div style={{fontSize:10,color:GOLD,letterSpacing:"1px",textTransform:"uppercase",marginBottom:3}}>{block.label}</div>
-                {tasks.map((t,i)=><div key={i} style={{fontSize:12,color:INK,padding:"2px 0"}}>· {t}</div>)}
+                <div style={{fontSize:11,color:GOLD,letterSpacing:"1px",textTransform:"uppercase",marginBottom:3}}>{block.label}</div>
+                {tasks.map((t,i)=><div key={i} style={{fontSize:13,color:INK,padding:"2px 0"}}>· {t}</div>)}
               </div>
             );
           })}
           <div style={{display:"flex",gap:8,marginTop:10}}>
-            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Apply to Week Tab</button>
-            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Dismiss</button>
+            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Apply to Week Tab</button>
+            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Dismiss</button>
           </div>
         </div>
       )}
@@ -1714,7 +1714,7 @@ export default function App(){
   const [cats,setCats]=useState(INIT_CATS);
   const [library,setLibrary]=useState(INIT_LIB);
   const [activeCat,setActiveCat]=useState(null);
-  const [view,setView]=useState("dashboard");
+  const [view,setView]=useState("planner");
   const [history,setHistory]=useState([]);
   const [loaded,setLoaded]=useState(false);
   const [saveStatus,setSaveStatus]=useState("");
@@ -1830,37 +1830,36 @@ export default function App(){
 
   const aC=cats.find(c=>c.id===activeCat);
   const overall=getOverall();
-  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2};
+  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2};
 
   return(
     <div style={{minHeight:"100vh",background:PAPER,backgroundImage:"radial-gradient(ellipse at 60% 20%, rgba(184,149,106,0.03) 0%, transparent 60%), "+BG,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
-      <div style={{background:PAPER,position:"sticky",top:0,zIndex:100,borderBottom:"3px solid "+INK}}>
+      <div style={{background:INK,position:"sticky",top:0,zIndex:100}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
             <div onClick={()=>setView("dashboard")} style={{cursor:"pointer"}}>
               <Logo size={100}/>
             </div>
-            <div style={{width:1,height:90,background:"rgba(26,46,74,0.15)"}}/>
+            <div style={{width:1,height:90,background:"rgba(255,255,255,0.18)"}}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
-              <div style={{fontSize:22,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
-              <div style={{fontSize:11,color:INK,fontStyle:"italic",opacity:0.75,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).replace(",", " —")}</div>
+              <div style={{fontSize:11,color:TANL,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
+              <div style={{fontSize:22,fontWeight:"bold",color:"white",letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
+              <div style={{fontSize:12,color:TANL,fontStyle:"italic",opacity:0.85,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).replace(",", " —")}</div>
             </div>
           </div>
-          <div style={{borderTop:"1px solid rgba(26,46,74,0.12)",paddingTop:4}}>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:4}}>
             {[TABS_ROW1,TABS_ROW2].map((row,ri)=>(
               <div key={ri} style={{display:"flex",paddingBottom:ri===1?4:0}}>
                 {row.map(tab=>{
                   const isAct=view===tab.id;
-                  const ic=isAct?"white":INK;
                   return(
-                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(122,31,31,0.06)":"none",border:isAct?"1px solid "+OX:"1px solid transparent",borderRadius:3,padding:"6px 2px 7px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                      <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:20}}>
-                        {tab.type==="cross"?<CrossSVG color={isAct?OX:INK} size={15}/>:<span style={{fontSize:17,color:isAct?OX:INK,lineHeight:1}}>{tab.g}</span>}
+                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(122,31,31,0.35)":"none",border:isAct?"1px solid "+OX:"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                      <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:24}}>
+                        {tab.type==="cross"?<CrossSVG color={isAct?"#E8A87C":TANL} size={19}/>:<span style={{fontSize:21,color:isAct?"#E8A87C":TANL,lineHeight:1}}>{tab.g}</span>}
                       </span>
-                      <span style={{fontSize:9,letterSpacing:"0.05em",color:isAct?OX:TAN,opacity:isAct?1:0.9,lineHeight:1}}>{tab.label}</span>
+                      <span style={{fontSize:10,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#E8A87C":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
                     </button>
                   );
                 })}
@@ -1868,13 +1867,15 @@ export default function App(){
             ))}
           </div>
         </div>
+        {/* Gradient transition into Paper body */}
+        <div style={{height:14,background:"linear-gradient(to bottom, "+INK+", "+PAPER+")"}}/>
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
         <div style={{borderLeft:"3px solid "+OX,padding:"12px 18px",marginBottom:28,background:OXF}}>
-          <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>Today's Anchor</div>
-          <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.75,margin:0}}>"{todayVerse.v}"</p>
-          <p style={{color:GOLD,fontSize:12,marginTop:6,marginBottom:0}}>{todayVerse.r}</p>
+          <div style={{fontSize:10,fontWeight:"bold",color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ Today's Anchor</div>
+          <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{todayVerse.v}"</p>
+          <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{todayVerse.r}</p>
         </div>
 
         {view==="dashboard"&&(
@@ -1884,14 +1885,14 @@ export default function App(){
               <div style={{textAlign:"center"}}>
                 <Ring size={140} pct={overall} color="#6DDCE8" color2="#1A2E4A" sw={12} main={true}>
                   <div style={{fontSize:32,fontWeight:"bold",color:INK,lineHeight:1,letterSpacing:"-1px"}}>{overall}%</div>
-                  <div style={{fontSize:9,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Overall</div>
+                  <div style={{fontSize:10,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Overall</div>
                 </Ring>
-                <div style={{marginTop:10,fontSize:13,fontStyle:"italic",color:GOLD}}>Life Projects</div>
+                <div style={{marginTop:10,fontSize:14,fontStyle:"italic",color:GOLD}}>Life Projects</div>
               </div>
             </div>
             <div style={{marginBottom:12}}>
-              <button onClick={()=>setShowSnapshot(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+INK,color:INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:14}}>◎</span> Life Snapshot
+              <button onClick={()=>setShowSnapshot(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+INK,color:INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <span style={{fontSize:15}}>◎</span> Life Snapshot
               </button>
             </div>
             <div style={{marginBottom:16}}>
@@ -1903,9 +1904,9 @@ export default function App(){
                 const isAct=activeCat===cat.id;
                 return(
                   <div key={cat.id} onClick={()=>setActiveCat(isAct?null:cat.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 6px",cursor:"pointer",background:isAct?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.25)",border:"1px solid "+(isAct?cat.color:FINK),borderRadius:2,transition:"all 0.2s"}}>
-                    <Ring size={56} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:13,color:cat.color}}>{cat.icon}</span></Ring>
-                    <div style={{marginTop:6,fontSize:9,fontWeight:"bold",color:INK,textAlign:"center",lineHeight:1.2}}>{cat.label}</div>
-                    <div style={{fontSize:9,color:TAN,marginTop:2}}>{cat.tasks.filter(t=>t.done).length}/{cat.tasks.length}</div>
+                    <Ring size={56} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:14,color:cat.color}}>{cat.icon}</span></Ring>
+                    <div style={{marginTop:6,fontSize:10,fontWeight:"bold",color:INK,textAlign:"center",lineHeight:1.2}}>{cat.label}</div>
+                    <div style={{fontSize:10,color:TAN,marginTop:2}}>{cat.tasks.filter(t=>t.done).length}/{cat.tasks.length}</div>
                   </div>
                 );
               })}
@@ -1915,7 +1916,7 @@ export default function App(){
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
                   <div>
                     <div style={{fontSize:17,fontWeight:"bold",color:aC.color}}>{aC.icon} {aC.label}</div>
-                    <div style={{fontStyle:"italic",fontSize:13,color:INK,marginTop:2,opacity:0.7}}>{aC.state}</div>
+                    <div style={{fontStyle:"italic",fontSize:14,color:INK,marginTop:2,opacity:0.7}}>{aC.state}</div>
                   </div>
                   <button onClick={()=>setActiveCat(null)} style={{background:"none",border:"none",color:TAN,cursor:"pointer",fontSize:20}}>x</button>
                 </div>
@@ -1927,19 +1928,19 @@ export default function App(){
                       <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px"}}>
                         <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:20,height:20,borderRadius:"50%",flexShrink:0,marginTop:1,cursor:"pointer",border:"2px solid "+TANL,background:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}/>
                         <div style={{flex:1}}>
-                          <div style={{fontSize:13,color:INK,lineHeight:1.4}}>{task.label}</div>
+                          <div style={{fontSize:14,color:INK,lineHeight:1.4}}>{task.label}</div>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
                             <RDot level={task.resistance}/>
                             {(task.roadblocks&&task.roadblocks.length>0?task.roadblocks:[task.roadblock].filter(Boolean)).map(rb=>(
-                              <span key={rb} style={{fontSize:10,color:OX,fontStyle:"italic"}}>{rb}</span>
+                              <span key={rb} style={{fontSize:11,color:OX,fontStyle:"italic"}}>{rb}</span>
                             ))}
-                            {task.steps&&task.steps.length>0&&<span style={{fontSize:10,color:aC.color}}>{task.steps.filter(s=>s.done).length}/{task.steps.length} steps</span>}
+                            {task.steps&&task.steps.length>0&&<span style={{fontSize:11,color:aC.color}}>{task.steps.filter(s=>s.done).length}/{task.steps.length} steps</span>}
                           </div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0}}>
-                          <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>Break down</button>
+                          <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:11,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>Break down</button>
                           <button onClick={()=>{setShelf(s=>[...s,{id:"sh"+Date.now(),label:task.label,timeframe:"week",note:"From "+aC.label}]);setCats(prev=>prev.map(c=>c.id!==aC.id?c:{...c,tasks:c.tasks.filter(t=>t.id!==task.id)}));}}
-                            style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>→ Shelf</button>
+                            style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:11,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>→ Shelf</button>
                         </div>
                       </div>
                       {task.steps&&task.steps.length>0&&(
@@ -1955,7 +1956,7 @@ export default function App(){
                 {aC.tasks.filter(t=>t.done).length>0&&(
                   <div style={{marginTop:12}}>
                     <button onClick={()=>setShowCompleted(s=>({...s,[aC.id]:!s[aC.id]}))}
-                      style={{width:"100%",padding:"6px",background:"transparent",border:"1px solid "+FINK,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,fontStyle:"italic",borderRadius:2,textAlign:"left"}}>
+                      style={{width:"100%",padding:"6px",background:"transparent",border:"1px solid "+FINK,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,fontStyle:"italic",borderRadius:2,textAlign:"left"}}>
                       {showCompleted[aC.id]?"▲":"▼"} Completed ({aC.tasks.filter(t=>t.done).length})
                     </button>
                     {showCompleted[aC.id]&&(
@@ -1963,9 +1964,9 @@ export default function App(){
                         {aC.tasks.filter(t=>t.done).map(task=>(
                           <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:aC.color+"08",border:"1px solid "+aC.color+"25",borderRadius:2}}>
                             <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:18,height:18,borderRadius:"50%",flexShrink:0,cursor:"pointer",border:"2px solid "+aC.color,background:aC.color,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                              <span style={{color:"white",fontSize:9}}>✓</span>
+                              <span style={{color:"white",fontSize:10}}>✓</span>
                             </div>
-                            <div style={{fontSize:12,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
+                            <div style={{fontSize:13,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
                           </div>
                         ))}
                       </div>
@@ -1981,13 +1982,13 @@ export default function App(){
                       <option value="low">Low resistance</option><option value="medium">Medium resistance</option><option value="high">High resistance</option>
                     </select>
                     <div>
-                      <div style={{fontSize:11,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
+                      <div style={{fontSize:12,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                         {Object.keys(SCVS).map(k=>{
                           const sel=(newTask.roadblocks||[]).includes(k);
                           return(
                             <button key={k} onClick={()=>setNewTask(n=>{const rb=n.roadblocks||[];return{...n,roadblocks:sel?rb.filter(r=>r!==k):[...rb,k]};})}
-                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                               {k}
                             </button>
                           );
@@ -1995,12 +1996,12 @@ export default function App(){
                       </div>
                     </div>
                     <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Add Project</button>
-                      <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add Project</button>
+                      <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
                     </div>
                   </div>
                 ):(
-                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,fontStyle:"italic",borderRadius:2}}>+ Add project</button>
+                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,fontStyle:"italic",borderRadius:2}}>+ Add project</button>
                 )}
               </div>
             )}
@@ -2015,15 +2016,15 @@ export default function App(){
         {view==="history"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <SL>Completion Log</SL>
-            <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:20,lineHeight:1.65}}>Proof that things get done.</p>
+            <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.65}}>Proof that things get done.</p>
             {!history.length
               ?<div style={{textAlign:"center",padding:"48px",color:TAN,fontStyle:"italic"}}>Complete your first task and it will appear here.</div>
               :history.map(item=>(
                 <div key={item.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:6}}>
-                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"white",fontSize:11}}>v</span></div>
+                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"white",fontSize:12}}>v</span></div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:13,color:INK}}>{item.task}</div>
-                    <div style={{fontSize:11,color:TAN,marginTop:2}}>{item.category} - {item.date}</div>
+                    <div style={{fontSize:14,color:INK}}>{item.task}</div>
+                    <div style={{fontSize:12,color:TAN,marginTop:2}}>{item.category} - {item.date}</div>
                   </div>
                   <RDot level={item.resistance}/>
                 </div>
@@ -2035,16 +2036,16 @@ export default function App(){
         {view==="scripture"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <SL>Scripture for the Roadblocks</SL>
-            <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
+            <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
 
             {/* Manual scripture add */}
             <ManualScriptureAdd/>
 
             {Object.entries(SCVS).map(([key,val])=>(
               <div key={key} style={{padding:"16px 18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,marginBottom:10}}>
-                <div style={{fontSize:9,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
-                <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.75,margin:0}}>"{val.v}"</p>
-                <p style={{color:GOLD,fontSize:12,marginTop:6,marginBottom:0}}>{val.r}</p>
+                <div style={{fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
+                <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{val.v}"</p>
+                <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{val.r}</p>
               </div>
             ))}
           </div>
