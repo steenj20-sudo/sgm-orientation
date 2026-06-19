@@ -546,7 +546,6 @@ function PrayerTab({prayers,setPrayers}){
 function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
-  const [calToken,setCalToken]=useState(localStorage.getItem("sgm-cal-token")||null);
   const [calLoading,setCalLoading]=useState(false);
   const [calError,setCalError]=useState(null);
   const CLIENT_ID=import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -560,20 +559,52 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     return d;
   });
 
-  // Calendar auth
-  // Handle OAuth redirect token on page load
-  useEffect(()=>{
-    const hash=window.location.hash;
-    if(hash&&hash.includes("access_token")){
-      const token=new URLSearchParams(hash.slice(1)).get("access_token");
-      if(token){
-        localStorage.setItem("sgm-cal-token",token);
-        setCalToken(token);
-        fetchEvents(token);
-        // Clean up URL
-        window.history.replaceState(null,"",window.location.pathname);
+  // Calendar auth — authorization code + refresh token flow (long-lived)
+  const [calToken,setCalToken]=useState(localStorage.getItem("sgm-cal-access-token")||null);
+
+  function getRefreshToken(){return localStorage.getItem("sgm-cal-refresh-token");}
+
+  async function exchangeCode(code){
+    setCalLoading(true);setCalError(null);
+    try{
+      const res=await fetch("/api/google-token",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"exchange",code,redirect_uri:window.location.origin})});
+      const data=await res.json();
+      if(data.access_token){
+        localStorage.setItem("sgm-cal-access-token",data.access_token);
+        if(data.refresh_token)localStorage.setItem("sgm-cal-refresh-token",data.refresh_token);
+        setCalToken(data.access_token);
+        fetchEvents(data.access_token);
+      }else{
+        setCalError("Could not connect calendar.");
       }
-    }
+    }catch(e){setCalError("Could not connect calendar.");}
+    window.history.replaceState(null,"",window.location.pathname);
+    setCalLoading(false);
+  }
+
+  async function refreshAccessToken(){
+    const rt=getRefreshToken();
+    if(!rt)return null;
+    try{
+      const res=await fetch("/api/google-token",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"refresh",refresh_token:rt})});
+      const data=await res.json();
+      if(data.access_token){
+        localStorage.setItem("sgm-cal-access-token",data.access_token);
+        setCalToken(data.access_token);
+        return data.access_token;
+      }
+    }catch(e){}
+    return null;
+  }
+
+  // Handle OAuth redirect — authorization code arrives in query string
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const code=params.get("code");
+    if(code)exchangeCode(code);
+    // Migrate old implicit-flow token if present
+    const legacy=localStorage.getItem("sgm-cal-token");
+    if(legacy){localStorage.removeItem("sgm-cal-token");}
   },[]);
 
   function connectCalendar(){
@@ -581,9 +612,11 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     const params=new URLSearchParams({
       client_id:CLIENT_ID,
       redirect_uri:window.location.origin,
-      response_type:"token",
+      response_type:"code",
       scope:SCOPES,
-      prompt:"consent"
+      access_type:"offline",
+      prompt:"consent",
+      include_granted_scopes:"true"
     });
     window.location.href="https://accounts.google.com/o/oauth2/v2/auth?"+params.toString();
   }
@@ -596,14 +629,19 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
       const now=new Date();
       const start=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
       const end=new Date(now.getFullYear(),now.getMonth()+2,0).toISOString();
-      const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime&maxResults=50`,{
-        headers:{Authorization:"Bearer "+token}
-      });
+      const url=`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime&maxResults=50`;
+      let res=await fetch(url,{headers:{Authorization:"Bearer "+token}});
       if(res.status===401){
-        localStorage.removeItem("sgm-cal-token");
-        setCalToken(null);
-        setCalError("Session expired. Please reconnect.");
-        setCalLoading(false);return;
+        const newToken=await refreshAccessToken();
+        if(newToken){
+          res=await fetch(url,{headers:{Authorization:"Bearer "+newToken}});
+        }else{
+          localStorage.removeItem("sgm-cal-access-token");
+          localStorage.removeItem("sgm-cal-refresh-token");
+          setCalToken(null);
+          setCalError("Session expired. Please reconnect.");
+          setCalLoading(false);return;
+        }
       }
       const data=await res.json();
       setCalEvents(data.items||[]);
@@ -689,7 +727,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                   </div>
                 );
               })}
-              <button onClick={()=>{localStorage.removeItem("sgm-cal-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>Disconnect</button>
+              <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:10,borderRadius:2}}>Disconnect</button>
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
