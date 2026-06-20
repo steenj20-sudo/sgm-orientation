@@ -682,6 +682,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   }
 
 
+  async function createEvent(eventData,token){
     const body={
       summary:eventData.title,
       location:eventData.location||undefined,
