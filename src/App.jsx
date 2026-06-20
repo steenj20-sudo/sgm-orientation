@@ -1869,7 +1869,7 @@ export default function App(){
         </div>
         {/* Gradient transition band — cyan to navy, matching app icon gradient */}
         <div style={{height:6,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)"}}/>
-        <div style={{height:14,background:"linear-gradient(to bottom, "+INK+", "+PAPER+")"}}/>
+        <div style={{height:3,background:INK,borderBottom:"1px solid rgba(0,0,0,0.3)"}}/>
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
