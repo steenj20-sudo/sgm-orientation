@@ -135,8 +135,8 @@ const TABS_ROW1 = [
 const TABS_ROW2 = [
   {id:"scripture",label:"Word",g:"✦",type:"g"},
   {id:"library",label:"Library",g:"☰",type:"g"},
-  {id:"history",label:"Log",g:"◷",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
+  {id:"history",label:"Log",g:"◷",type:"g"},
   {id:"archive",label:"Archive",g:"▣",type:"g"},
 ];
 const TABS=[...TABS_ROW1,...TABS_ROW2];
