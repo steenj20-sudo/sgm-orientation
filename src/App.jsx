@@ -549,7 +549,20 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const [calLoading,setCalLoading]=useState(false);
   const [calError,setCalError]=useState(null);
   const CLIENT_ID=import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const SCOPES="https://www.googleapis.com/auth/calendar.readonly";
+  const SCOPES="https://www.googleapis.com/auth/calendar";
+
+  const [showNewEvent,setShowNewEvent]=useState(false);
+  const [creatingEvent,setCreatingEvent]=useState(false);
+  const [createError,setCreateError]=useState(null);
+  const [newEvent,setNewEvent]=useState({
+    title:"",
+    date:new Date().toISOString().slice(0,10),
+    startTime:"09:00",
+    endTime:"10:00",
+    allDay:false,
+    location:"",
+    notes:"",
+  });
 
   const tk=new Date().toISOString().slice(0,10);
   const today=new Date();
@@ -653,6 +666,46 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     if(calToken)fetchEvents(calToken);
   },[calToken]);
 
+  async function handleCreateEvent(){
+    if(!newEvent.title.trim()){setCreateError("Add a title for the event.");return;}
+    if(!newEvent.allDay&&newEvent.startTime>=newEvent.endTime){setCreateError("End time must be after start time.");return;}
+    setCreatingEvent(true);setCreateError(null);
+    try{
+      await createEvent(newEvent,calToken);
+      setShowNewEvent(false);
+      setNewEvent({title:"",date:new Date().toISOString().slice(0,10),startTime:"09:00",endTime:"10:00",allDay:false,location:"",notes:""});
+      fetchEvents(calToken);
+    }catch(e){
+      setCreateError(e.message||"Could not create event.");
+    }
+    setCreatingEvent(false);
+  }
+
+
+    const body={
+      summary:eventData.title,
+      location:eventData.location||undefined,
+      description:eventData.notes||undefined,
+      start:eventData.allDay?{date:eventData.date}:{dateTime:new Date(eventData.date+"T"+eventData.startTime).toISOString()},
+      end:eventData.allDay?{date:eventData.date}:{dateTime:new Date(eventData.date+"T"+eventData.endTime).toISOString()},
+    };
+    const url="https://www.googleapis.com/calendar/v3/calendars/primary/events";
+    let res=await fetch(url,{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(res.status===401){
+      const newToken=await refreshAccessToken();
+      if(newToken){
+        res=await fetch(url,{method:"POST",headers:{Authorization:"Bearer "+newToken,"Content-Type":"application/json"},body:JSON.stringify(body)});
+      }else{
+        throw new Error("Session expired. Please reconnect.");
+      }
+    }
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.error?.message||"Could not create event.");
+    }
+    return await res.json();
+  }
+
   // Get events for a specific date
   function eventsForDate(d){
     const dk=d.toISOString().slice(0,10);
@@ -715,7 +768,59 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
             </div>
           ):(
             <div style={{marginBottom:20}}>
-              <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Today's Schedule</div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase"}}>✦ Today's Schedule</div>
+                <button onClick={()=>{setShowNewEvent(s=>!s);setCreateError(null);}}
+                  style={{background:showNewEvent?"#2E6B8A":"transparent",border:"1px solid #2E6B8A",color:showNewEvent?"white":"#2E6B8A",padding:"4px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                  {showNewEvent?"× Close":"+ New Event"}
+                </button>
+              </div>
+
+              {showNewEvent&&(
+                <div style={{marginBottom:16,padding:"14px",background:"rgba(255,255,255,0.6)",border:"1px solid #2E6B8A40",borderRadius:2,animation:"fadeIn 0.25s ease"}}>
+                  <input value={newEvent.title} onChange={e=>setNewEvent(n=>({...n,title:e.target.value}))} placeholder="Event title..."
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+
+                  <div style={{display:"flex",gap:8,marginBottom:8}}>
+                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent(n=>({...n,date:e.target.value}))}
+                      style={{flex:1,padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                  </div>
+
+                  <label style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,cursor:"pointer"}}>
+                    <input type="checkbox" checked={newEvent.allDay} onChange={e=>setNewEvent(n=>({...n,allDay:e.target.checked}))}/>
+                    <span style={{fontSize:12,color:TAN,fontStyle:"italic"}}>All day</span>
+                  </label>
+
+                  {!newEvent.allDay&&(
+                    <div style={{display:"flex",gap:8,marginBottom:8}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,color:TAN,marginBottom:4}}>Start</div>
+                        <input type="time" value={newEvent.startTime} onChange={e=>setNewEvent(n=>({...n,startTime:e.target.value}))}
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,color:TAN,marginBottom:4}}>End</div>
+                        <input type="time" value={newEvent.endTime} onChange={e=>setNewEvent(n=>({...n,endTime:e.target.value}))}
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                      </div>
+                    </div>
+                  )}
+
+                  <input value={newEvent.location} onChange={e=>setNewEvent(n=>({...n,location:e.target.value}))} placeholder="Location (optional)..."
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+
+                  <textarea value={newEvent.notes} onChange={e=>setNewEvent(n=>({...n,notes:e.target.value}))} placeholder="Notes (optional)..." rows={3}
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.6,marginBottom:10}}/>
+
+                  {createError&&<div style={{fontSize:12,color:OX,fontStyle:"italic",marginBottom:10}}>{createError}</div>}
+
+                  <button onClick={handleCreateEvent} disabled={creatingEvent}
+                    style={{width:"100%",padding:"10px",background:creatingEvent?"transparent":"#2E6B8A",border:"1px solid #2E6B8A",color:creatingEvent?"#2E6B8A":"white",cursor:creatingEvent?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    {creatingEvent?"Adding to calendar…":"Add to Calendar"}
+                  </button>
+                </div>
+              )}
+
               {calLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Loading…</div>}
               {!calLoading&&todayEvents.length===0&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments today</div>}
               {todayEvents.map((e,i)=>{
