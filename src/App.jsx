@@ -784,7 +784,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
                   <div style={{display:"flex",gap:8,marginBottom:8}}>
                     <input type="date" value={newEvent.date} onChange={e=>setNewEvent(n=>({...n,date:e.target.value}))}
-                      style={{flex:1,padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                      style={{flex:1,padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
                   </div>
 
                   <label style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,cursor:"pointer"}}>
@@ -793,16 +793,16 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                   </label>
 
                   {!newEvent.allDay&&(
-                    <div style={{display:"flex",gap:8,marginBottom:8}}>
-                      <div style={{flex:1}}>
+                    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:8}}>
+                      <div>
                         <div style={{fontSize:10,color:TAN,marginBottom:4}}>Start</div>
                         <input type="time" value={newEvent.startTime} onChange={e=>setNewEvent(n=>({...n,startTime:e.target.value}))}
-                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
                       </div>
-                      <div style={{flex:1}}>
+                      <div>
                         <div style={{fontSize:10,color:TAN,marginBottom:4}}>End</div>
                         <input type="time" value={newEvent.endTime} onChange={e=>setNewEvent(n=>({...n,endTime:e.target.value}))}
-                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
                       </div>
                     </div>
                   )}
