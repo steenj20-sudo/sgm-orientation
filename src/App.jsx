@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
 const PAPER = "#F5F0E8";
@@ -24,10 +24,26 @@ const SCVS = {
 };
 
 const ANCH = [
-  {v:"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",r:"Proverbs 3:5-6"},
-  {v:"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you.",r:"Jeremiah 29:11"},
-  {v:"I can do all this through him who gives me strength.",r:"Philippians 4:13"},
-  {v:"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you.",r:"Joshua 1:9"},
+  {v:"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",r:"Proverbs 3:5-6",app:"Where are you leaning on your own understanding today instead of trusting Him with the next step? Name it, then hand it over — out loud if you have to."},
+  {v:"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you.",r:"Jeremiah 29:11",app:"The uncertainty you're carrying isn't evidence He's absent. Let this be permission to stop trying to see the whole plan today — just take the next right step."},
+  {v:"I can do all this through him who gives me strength.",r:"Philippians 4:13",app:"What's the one task you've been avoiding because it feels too big? Ask for strength specifically for that thing, then start it for five minutes."},
+  {v:"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you.",r:"Joshua 1:9",app:"Courage isn't the absence of fear — it's moving anyway. What's one thing fear has been keeping you from doing today?"},
+  {v:"Cast all your anxiety on him because he cares for you.",r:"1 Peter 5:7",app:"What's the thing sitting heaviest on you right now? Write it down, hand it to Him in prayer, and notice if your shoulders drop even a little."},
+  {v:"He gives strength to the weary and increases the power of the weak.",r:"Isaiah 40:29",app:"If you're running on empty today, that's not a disqualifier — it's exactly where He meets you. Ask for strength instead of pushing through alone."},
+  {v:"Let your yes be yes and your no be no.",r:"Matthew 5:37",app:"Where have you been over-explaining or hedging instead of just being clear today? Practice one direct, simple answer."},
+  {v:"Carry each other's burdens, and in this way you will fulfill the law of Christ.",r:"Galatians 6:2",app:"Who in your life is carrying something heavy right now? One small act today — a text, a prayer, a question — can lighten it."},
+  {v:"Fix your eyes on Jesus, the author and perfecter of faith.",r:"Hebrews 12:2",app:"When the spike of anger or anxiety hits today, that's your cue. One breath back toward Him counts as a win — it doesn't have to be perfect."},
+  {v:"And we know that in all things God works for the good of those who love him.",r:"Romans 8:28",app:"Think of one thing from your past that felt wasted or wrong. Ask Him to show you, even briefly, how He's already redeeming it."},
+  {v:"My grace is sufficient for you, for my power is made perfect in weakness.",r:"2 Corinthians 12:9",app:"Where do you feel least capable today? That's not the place to hide — it's the place His strength shows up clearest."},
+  {v:"Commit to the Lord whatever you do, and he will establish your plans.",r:"Proverbs 16:3",app:"Before you dive into today's tasks, name one of them out loud as an offering to Him — not just a to-do."},
+  {v:"Do not be anxious about anything, but in every situation, by prayer and petition, present your requests to God.",r:"Philippians 4:6",app:"What's the specific anxious thought looping today? Turn it into a specific prayer request instead of letting it just spin."},
+  {v:"For it is by grace you have been saved, through faith — and this is not from yourselves, it is the gift of God.",r:"Ephesians 2:8",app:"Notice today if you're trying to earn approval — from God, from people, from yourself. Grace means you can stop performing."},
+  {v:"I planted the seed, Apollos watered it, but God has been making it grow.",r:"1 Corinthians 3:6",app:"You don't have to have every answer today. Just plant the seed in front of you and trust Him with the growth."},
+  {v:"Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!",r:"2 Corinthians 5:17",app:"If someone today treats you like the old version of you, that's their lens, not your identity. You don't have to defend the new — just live it."},
+  {v:"For am I now seeking the approval of man, or of God?",r:"Galatians 1:10",app:"Where today are you tempted to shape your words around what someone wants to hear? Choose honesty over approval, even gently."},
+  {v:"Guard your heart above all else, for it determines the course of your life.",r:"Proverbs 4:23",app:"What's trying to get into your heart today — comparison, offense, fear? Naming it is the first guard rail."},
+  {v:"But whoever lives by the truth comes into the light, so that it may be seen plainly that what they have done has been done in the sight of God.",r:"John 3:21",app:"Is there something you've been keeping in the dark out of discomfort? Bringing it into the light, even to one trusted person, breaks its power."},
+  {v:"Do not worry about tomorrow, for tomorrow will worry about itself.",r:"Matthew 6:34",app:"Today only needs today's grace. If your mind jumps ahead, gently bring it back to what's actually in front of you right now."},
 ];
 
 const LCATS = [
@@ -543,6 +559,66 @@ function PrayerTab({prayers,setPrayers}){
   );
 }
 
+function SwipeableEventCard({event,time,onEdit,onDelete}){
+  const [dragX,setDragX]=useState(0);
+  const [dragging,setDragging]=useState(false);
+  const [confirmDelete,setConfirmDelete]=useState(false);
+  const startXRef=useRef(0);
+  const startDragXRef=useRef(0);
+  const ACTION_W=140; // total width of revealed action buttons
+
+  function onTouchStart(e){
+    startXRef.current=e.touches[0].clientX;
+    startDragXRef.current=dragX;
+    setDragging(true);
+  }
+  function onTouchMove(e){
+    if(!dragging)return;
+    const dx=e.touches[0].clientX-startXRef.current;
+    const clamped=Math.max(-ACTION_W,Math.min(0,startDragXRef.current+dx));
+    setDragX(clamped);
+  }
+  function onTouchEnd(){
+    setDragging(false);
+    setDragX(d=>d<-ACTION_W/2?-ACTION_W:0);
+  }
+
+  return(
+    <div style={{position:"relative",marginBottom:6,borderRadius:2,overflow:"hidden"}}>
+      {/* Action buttons revealed behind the card */}
+      <div style={{position:"absolute",top:0,right:0,bottom:0,width:ACTION_W,display:"flex"}}>
+        <button onClick={()=>{onEdit();setDragX(0);}}
+          style={{flex:1,background:"#2E6B8A",border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>
+          Edit
+        </button>
+        <button onClick={()=>{if(confirmDelete){onDelete();setDragX(0);setConfirmDelete(false);}else{setConfirmDelete(true);}}}
+          style={{flex:1,background:OX,border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>
+          {confirmDelete?"Confirm?":"Delete"}
+        </button>
+      </div>
+
+      {/* Foreground card content — slides left on swipe */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onClick={()=>{if(dragX!==0){setDragX(0);setConfirmDelete(false);}}}
+        style={{
+          display:"flex",gap:10,padding:"10px 12px",
+          background:PAPER,border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,
+          transform:`translateX(${dragX}px)`,
+          transition:dragging?"none":"transform 0.2s ease",
+          touchAction:"pan-y",
+          position:"relative",zIndex:1,
+        }}>
+        <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+        <div style={{fontSize:14,color:INK,flex:1}}>{event.summary||"(No title)"}</div>
+        <button onClick={(ev)=>{ev.stopPropagation();onEdit();}} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,flexShrink:0,padding:"0 2px"}}>✎</button>
+      </div>
+    </div>
+  );
+}
+
 function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
@@ -554,9 +630,11 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   const [showNewEvent,setShowNewEvent]=useState(false);
   const [creatingEvent,setCreatingEvent]=useState(false);
   const [createError,setCreateError]=useState(null);
+  const [editingEventId,setEditingEventId]=useState(null);
   const [newEvent,setNewEvent]=useState({
     title:"",
     date:new Date().toISOString().slice(0,10),
+    endDate:new Date().toISOString().slice(0,10),
     startTime:"09:00",
     endTime:"10:00",
     allDay:false,
@@ -668,27 +746,79 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
   async function handleCreateEvent(){
     if(!newEvent.title.trim()){setCreateError("Add a title for the event.");return;}
-    if(!newEvent.allDay&&newEvent.startTime>=newEvent.endTime){setCreateError("End time must be after start time.");return;}
+    const ed=newEvent.endDate||newEvent.date;
+    if(ed<newEvent.date){setCreateError("End date can't be before start date.");return;}
+    if(!newEvent.allDay&&ed===newEvent.date&&newEvent.startTime>=newEvent.endTime){setCreateError("End time must be after start time.");return;}
     setCreatingEvent(true);setCreateError(null);
     try{
-      await createEvent(newEvent,calToken);
+      if(editingEventId){
+        await updateCalEvent(editingEventId,newEvent,calToken);
+      }else{
+        await createEvent(newEvent,calToken);
+      }
       setShowNewEvent(false);
-      setNewEvent({title:"",date:new Date().toISOString().slice(0,10),startTime:"09:00",endTime:"10:00",allDay:false,location:"",notes:""});
+      setEditingEventId(null);
+      const todayStr=new Date().toISOString().slice(0,10);
+      setNewEvent({title:"",date:todayStr,endDate:todayStr,startTime:"09:00",endTime:"10:00",allDay:false,location:"",notes:""});
       fetchEvents(calToken);
     }catch(e){
-      setCreateError(e.message||"Could not create event.");
+      setCreateError(e.message||"Could not save event.");
     }
     setCreatingEvent(false);
   }
 
+  function startEditEvent(ev){
+    const isAllDay=!!ev.start?.date;
+    const startD=ev.start?.date||(ev.start?.dateTime?new Date(ev.start.dateTime).toISOString().slice(0,10):new Date().toISOString().slice(0,10));
+    let endD=startD;
+    if(isAllDay&&ev.end?.date){
+      endD=addDaysISO(ev.end.date,-1); // convert from exclusive back to inclusive
+    }else if(ev.end?.dateTime){
+      endD=new Date(ev.end.dateTime).toISOString().slice(0,10);
+    }
+    setNewEvent({
+      title:ev.summary||"",
+      date:startD,
+      endDate:endD,
+      startTime:ev.start?.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):"09:00",
+      endTime:ev.end?.dateTime?new Date(ev.end.dateTime).toTimeString().slice(0,5):"10:00",
+      allDay:isAllDay,
+      location:ev.location||"",
+      notes:ev.description||"",
+    });
+    setEditingEventId(ev.id);
+    setShowNewEvent(true);
+    setCreateError(null);
+  }
+
+  async function handleDeleteEvent(eventId){
+    try{
+      await deleteCalEvent(eventId,calToken);
+      fetchEvents(calToken);
+    }catch(e){
+      setCalError(e.message||"Could not delete event.");
+    }
+  }
+
+
+  function addDaysISO(dateStr,days){
+    const d=new Date(dateStr+"T00:00:00");
+    d.setDate(d.getDate()+days);
+    return d.toISOString().slice(0,10);
+  }
 
   async function createEvent(eventData,token){
+    const endDate=eventData.endDate||eventData.date;
     const body={
       summary:eventData.title,
       location:eventData.location||undefined,
       description:eventData.notes||undefined,
-      start:eventData.allDay?{date:eventData.date}:{dateTime:new Date(eventData.date+"T"+eventData.startTime).toISOString()},
-      end:eventData.allDay?{date:eventData.date}:{dateTime:new Date(eventData.date+"T"+eventData.endTime).toISOString()},
+      start:eventData.allDay
+        ?{date:eventData.date}
+        :{dateTime:new Date(eventData.date+"T"+eventData.startTime).toISOString()},
+      end:eventData.allDay
+        ?{date:addDaysISO(endDate,1)} // Google's all-day end date is exclusive
+        :{dateTime:new Date(endDate+"T"+eventData.endTime).toISOString()},
     };
     const url="https://www.googleapis.com/calendar/v3/calendars/primary/events";
     let res=await fetch(url,{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
@@ -703,6 +833,52 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
       throw new Error(err.error?.message||"Could not create event.");
+    }
+    return await res.json();
+  }
+
+  async function deleteCalEvent(eventId,token){
+    const url="https://www.googleapis.com/calendar/v3/calendars/primary/events/"+eventId;
+    let res=await fetch(url,{method:"DELETE",headers:{Authorization:"Bearer "+token}});
+    if(res.status===401){
+      const newToken=await refreshAccessToken();
+      if(newToken){
+        res=await fetch(url,{method:"DELETE",headers:{Authorization:"Bearer "+newToken}});
+      }else{
+        throw new Error("Session expired. Please reconnect.");
+      }
+    }
+    if(!res.ok&&res.status!==410){
+      throw new Error("Could not delete event.");
+    }
+  }
+
+  async function updateCalEvent(eventId,eventData,token){
+    const endDate=eventData.endDate||eventData.date;
+    const body={
+      summary:eventData.title,
+      location:eventData.location||undefined,
+      description:eventData.notes||undefined,
+      start:eventData.allDay
+        ?{date:eventData.date}
+        :{dateTime:new Date(eventData.date+"T"+eventData.startTime).toISOString()},
+      end:eventData.allDay
+        ?{date:addDaysISO(endDate,1)}
+        :{dateTime:new Date(endDate+"T"+eventData.endTime).toISOString()},
+    };
+    const url="https://www.googleapis.com/calendar/v3/calendars/primary/events/"+eventId;
+    let res=await fetch(url,{method:"PATCH",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(res.status===401){
+      const newToken=await refreshAccessToken();
+      if(newToken){
+        res=await fetch(url,{method:"PATCH",headers:{Authorization:"Bearer "+newToken,"Content-Type":"application/json"},body:JSON.stringify(body)});
+      }else{
+        throw new Error("Session expired. Please reconnect.");
+      }
+    }
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.error?.message||"Could not update event.");
     }
     return await res.json();
   }
@@ -771,7 +947,15 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
             <div style={{marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                 <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase"}}>✦ Today's Schedule</div>
-                <button onClick={()=>{setShowNewEvent(s=>!s);setCreateError(null);}}
+                <button onClick={()=>{
+                    if(showNewEvent){
+                      setShowNewEvent(false);setEditingEventId(null);setCreateError(null);
+                    }else{
+                      const todayStr=new Date().toISOString().slice(0,10);
+                      setNewEvent({title:"",date:todayStr,endDate:todayStr,startTime:"09:00",endTime:"10:00",allDay:false,location:"",notes:""});
+                      setEditingEventId(null);setShowNewEvent(true);setCreateError(null);
+                    }
+                  }}
                   style={{background:showNewEvent?"#2E6B8A":"transparent",border:"1px solid #2E6B8A",color:showNewEvent?"white":"#2E6B8A",padding:"4px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
                   {showNewEvent?"× Close":"+ New Event"}
                 </button>
@@ -782,9 +966,20 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                   <input value={newEvent.title} onChange={e=>setNewEvent(n=>({...n,title:e.target.value}))} placeholder="Event title..."
                     style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
 
-                  <div style={{display:"flex",gap:8,marginBottom:8}}>
-                    <input type="date" value={newEvent.date} onChange={e=>setNewEvent(n=>({...n,date:e.target.value}))}
-                      style={{flex:1,padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                  <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:8}}>
+                    <div>
+                      <div style={{fontSize:11,color:TAN,marginBottom:4}}>Start date</div>
+                      <input type="date" value={newEvent.date} onChange={e=>{
+                        const v=e.target.value;
+                        setNewEvent(n=>({...n,date:v,endDate:(n.endDate&&n.endDate>=v)?n.endDate:v}));
+                      }}
+                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:11,color:TAN,marginBottom:4}}>End date <span style={{opacity:0.7,fontStyle:"italic"}}>(only change for multi-day, like a trip)</span></div>
+                      <input type="date" value={newEvent.endDate} min={newEvent.date} onChange={e=>setNewEvent(n=>({...n,endDate:e.target.value}))}
+                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                    </div>
                   </div>
 
                   <label style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,cursor:"pointer"}}>
@@ -817,7 +1012,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
 
                   <button onClick={handleCreateEvent} disabled={creatingEvent}
                     style={{width:"100%",padding:"10px",background:creatingEvent?"transparent":"#2E6B8A",border:"1px solid #2E6B8A",color:creatingEvent?"#2E6B8A":"white",cursor:creatingEvent?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-                    {creatingEvent?"Adding to calendar…":"Add to Calendar"}
+                    {creatingEvent?(editingEventId?"Saving changes…":"Adding to calendar…"):(editingEventId?"Save Changes":"Add to Calendar")}
                   </button>
                 </div>
               )}
@@ -827,10 +1022,9 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               {todayEvents.map((e,i)=>{
                 const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                 return(
-                  <div key={i} style={{display:"flex",gap:10,padding:"10px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:6}}>
-                    <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
-                    <div style={{fontSize:14,color:INK}}>{e.summary||"(No title)"}</div>
-                  </div>
+                  <SwipeableEventCard key={e.id||i} event={e} time={time}
+                    onEdit={()=>startEditEvent(e)}
+                    onDelete={()=>handleDeleteEvent(e.id)}/>
                 );
               })}
               <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Disconnect</button>
@@ -1090,6 +1284,7 @@ CONTEXT: 2-3 sentences in my voice, first person. What was happening, what God s
 PATTERN: The specific struggle or survival anchor this speaks to (one phrase — e.g. perfectionism, shame, over-explanation, avoidance, unbelief)
 SCRIPTURE: Short verse, 15 words or less
 REF: Book chapter:verse
+TAG: A short reference tag, 2-4 words, for finding this principle later (e.g. "office move", "empath switch", "morning anchor")
 ---
 
 Rules:
@@ -1097,6 +1292,7 @@ Rules:
 - Pull real details from the unload (names, places, situations)
 - One principle per block — don't combine two insights into one
 - CATEGORY must be exactly one of the six options listed
+- TAG should be short and specific enough to search for later, not generic
 - Extract every significant principle you find — aim for 6-10 per session
 - Do not add any extra text before or after the blocks
 
@@ -1132,16 +1328,22 @@ Here is my unload:
       const pattern=get("PATTERN");
       const scripture=get("SCRIPTURE");
       const ref=get("REF");
+      const tag=get("TAG");
       if(principle){
         results.push({
           id:"lib"+Date.now()+Math.random(),
           principle,
           category:["identity","relationships","capacity","warfare","stewardship","ministry"].includes(category)?category:"identity",
-          date,context,pattern,scripture,scriptureRef:ref,
+          date,context,pattern,scripture,scriptureRef:ref,tag,
         });
       }
     });
     return results;
+  }
+
+  function deleteEntry(id){
+    setLibrary(p=>p.filter(item=>item.id!==id));
+    setExpanded(null);
   }
 
   function handleDeposit(){
@@ -1159,6 +1361,7 @@ Here is my unload:
     const lines=[`${cat?.icon||"✦"} ${cat?.label||""}`,``,`"${entry.principle}"`];
     if(entry.context)lines.push(``,entry.context);
     if(entry.scripture)lines.push(``,`"${entry.scripture}" — ${entry.scriptureRef||""}`);
+    if(entry.tag)lines.push(``,`#${entry.tag}`);
     lines.push(``,`— Joe Steen / Steen Growth Ministries`);
     navigator.clipboard?.writeText(lines.join("\n")).then(()=>{setCopied(entry.id);setTimeout(()=>setCopied(null),2200);});
   }
@@ -1244,16 +1447,23 @@ Here is my unload:
                 {latest.context&&<><div style={{fontSize:10,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
                 <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
                 {latest.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
+                {latest.tag&&<div style={{display:"inline-block",fontSize:11,color:latestCat.color,border:"1px solid "+latestCat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:14}}>#{latest.tag}</div>}
                 {latest.scripture&&(
                   <div style={{borderLeft:"3px solid "+latestCat.color,padding:"10px 14px",background:latestCat.color+"08",marginBottom:14}}>
                     <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
                     <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
                   </div>
                 )}
-                <button onClick={()=>share(latest)}
-                  style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-                  {copied===latest.id?"✓ Copied to clipboard":"↗ Share this principle"}
-                </button>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>share(latest)}
+                    style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    {copied===latest.id?"✓ Copied to clipboard":"↗ Share this principle"}
+                  </button>
+                  <button onClick={()=>{if(window.confirm("Delete this principle? This can't be undone."))deleteEntry(latest.id);}}
+                    style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1283,16 +1493,23 @@ Here is my unload:
                   {item.context&&<><div style={{paddingTop:14,fontSize:10,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
                   <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 12px"}}>{item.context}</p></>}
                   {item.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.tag&&<div style={{display:"inline-block",fontSize:11,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12}}>#{item.tag}</div>}
                   {item.scripture&&(
                     <div style={{borderLeft:"3px solid "+cat.color,padding:"10px 14px",background:cat.color+"08",marginBottom:12}}>
                       <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{item.scripture}&rdquo;</p>
                       <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{item.scriptureRef}</p>
                     </div>
                   )}
-                  <button onClick={()=>share(item)}
-                    style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-                    {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
-                  </button>
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>share(item)}
+                      style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                      {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
+                    </button>
+                    <button onClick={()=>{if(window.confirm("Delete this principle? This can't be undone."))deleteEntry(item.id);}}
+                      style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                      Delete
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1836,7 +2053,9 @@ export default function App(){
   const [showSnapshot,setShowSnapshot]=useState(false);
   const [showCompleted,setShowCompleted]=useState({});
 
-  const todayVerse=ANCH[new Date().getDay()%ANCH.length];
+  const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+  const todayVerse=ANCH[dayOfYear%ANCH.length];
+  const [anchorExpanded,setAnchorExpanded]=useState(false);
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   // Fix iOS bounce-scroll bleed — match body/html background to the dark header
@@ -1990,10 +2209,16 @@ export default function App(){
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
-        <div style={{borderLeft:"3px solid "+OX,padding:"12px 18px",marginBottom:28,background:OXF}}>
+        <div onClick={()=>setAnchorExpanded(e=>!e)} style={{borderLeft:"3px solid "+OX,padding:"12px 18px",marginBottom:28,background:OXF,cursor:"pointer"}}>
           <div style={{fontSize:10,fontWeight:"bold",color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ Today's Anchor</div>
           <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{todayVerse.v}"</p>
           <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{todayVerse.r}</p>
+          <div style={{fontSize:11,color:OX,opacity:0.7,marginTop:8,fontStyle:"italic"}}>{anchorExpanded?"▲ Close":"↓ Tap for practical application"}</div>
+          {anchorExpanded&&todayVerse.app&&(
+            <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+OX+"25",animation:"fadeIn 0.25s ease"}}>
+              <p style={{fontSize:13,lineHeight:1.7,margin:0,color:INK}}>{todayVerse.app}</p>
+            </div>
+          )}
         </div>
 
         {view==="dashboard"&&(
