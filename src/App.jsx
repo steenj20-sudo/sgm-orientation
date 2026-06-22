@@ -47,6 +47,8 @@ const ANCH = [
 ];
 
 const STACK_COLORS=["#9C7A3A","#1BAEE8","#1A5C2A","#7A1F1F","#6B4E7A","#B8700A"];
+
+const LCATS = [
   {id:"identity",label:"Identity",icon:"✦",color:OX},
   {id:"relationships",label:"Relationships",icon:"♡",color:"#7A4F6A"},
   {id:"capacity",label:"Capacity",icon:"◈",color:GRN},
