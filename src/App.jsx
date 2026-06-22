@@ -372,9 +372,15 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
   const td=habits[tk]||{};
   const [addingHabit,setAddingHabit]=useState(false);
   const [newHabit,setNewHabit]=useState({label:"",cat:"health"});
-  const allHabits=[...HABITS,...customHabits];
+  const [deletedHabits,setDeletedHabits]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("sgm3-deleted-habits")||"[]");}catch(e){return[];}
+  });
+  const [editMode,setEditMode]=useState(false);
+
+  const allHabits=[...HABITS.filter(h=>!deletedHabits.includes(h.id)),...customHabits];
   const done=allHabits.filter(h=>td[h.id]).length;
-  const pct=Math.round(done/allHabits.length*100);
+  const pct=Math.round(done/allHabits.length*100)||0;
+
   function toggle(id){
     const cur=habits[tk]||{};
     const nowDone=!cur[id];
@@ -387,22 +393,32 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
       });
     }
   }
+
+  function deleteHabit(id,isCustom){
+    if(isCustom){
+      setCustomHabits(p=>p.filter(h=>h.id!==id));
+    }else{
+      const updated=[...deletedHabits,id];
+      setDeletedHabits(updated);
+      localStorage.setItem("sgm3-deleted-habits",JSON.stringify(updated));
+    }
+  }
+
   function addHabit(){
     if(!newHabit.label.trim())return;
     setCustomHabits(p=>[...p,{id:"ch"+Date.now(),label:newHabit.label,cat:newHabit.cat}]);
     setNewHabit({label:"",cat:"health"});
     setAddingHabit(false);
   }
-
-  function deleteHabit(id){
-    // only custom habits can be deleted
-    setCustomHabits(p=>p.filter(h=>h.id!==id));
-  }
-
-  const [managing,setManaging]=useState(false);
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
-      <SL>Daily Habits</SL>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+        <SL>Daily Habits</SL>
+        <button onClick={()=>setEditMode(e=>!e)}
+          style={{background:editMode?OX:"transparent",border:"1px solid "+(editMode?OX:TANL),color:editMode?"white":TAN,padding:"4px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,marginBottom:10}}>
+          {editMode?"Done":"Edit"}
+        </button>
+      </div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>These reset every day. Check them off, watch the streaks build.</p>
       <div style={{marginBottom:24}}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
@@ -417,22 +433,19 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
         <div key={hc.id} style={{marginBottom:24}}>
           <div style={{fontSize:10,color:hc.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {hc.label}</div>
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {allHabits.filter(h=>h.cat===hc.id).map(hab=>{
+            {allHabits.filter(h=>h.cat===hc.id).map(hab=>{
               const dn=!!td[hab.id];
               const str=streaks[hab.id]?.count||0;
-              const isCustom=customHabits.some(c=>c.id===hab.id);
               return(
                 <div key={hab.id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:dn?hc.color+"10":"rgba(255,255,255,0.55)",border:"1px solid "+(dn?hc.color+"40":FINK),borderLeft:"3px solid "+(dn?hc.color:TANL),borderRadius:2,transition:"all 0.2s"}}>
-                  <div onClick={()=>{if(!managing)toggle(hab.id);}} style={{width:22,height:22,borderRadius:"50%",flexShrink:0,border:"2px solid "+(dn?hc.color:TANL),background:dn?hc.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:managing?"default":"pointer"}}>
+                  <div onClick={()=>!editMode&&toggle(hab.id)} style={{width:22,height:22,borderRadius:"50%",flexShrink:0,border:"2px solid "+(dn?hc.color:TANL),background:dn?hc.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:editMode?"default":"pointer"}}>
                     {dn&&<span style={{color:"white",fontSize:12}}>✓</span>}
                   </div>
-                  <span onClick={()=>{if(!managing)toggle(hab.id);}} style={{fontSize:14,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4,cursor:managing?"default":"pointer"}}>{hab.label}</span>
-                  {!managing&&str>1&&<span style={{fontSize:12,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
-                  {managing&&(
-                    <button onClick={()=>deleteHabit(hab.id)} disabled={!isCustom}
-                      style={{background:"none",border:"1px solid "+(isCustom?OX:FINK),color:isCustom?OX:TANL,cursor:isCustom?"pointer":"default",borderRadius:2,padding:"3px 8px",fontFamily:"Georgia,serif",fontSize:12,flexShrink:0}}>
-                      {isCustom?"Remove":"Built-in"}
-                    </button>
+                  <span onClick={()=>!editMode&&toggle(hab.id)} style={{fontSize:14,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4,cursor:editMode?"default":"pointer"}}>{hab.label}</span>
+                  {!editMode&&str>1&&<span style={{fontSize:12,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
+                  {editMode&&(
+                    <button onClick={()=>deleteHabit(hab.id,!!hab.id.startsWith("ch"))}
+                      style={{background:"transparent",border:"1px solid "+OX,color:OX,width:26,height:26,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0,lineHeight:1}}>×</button>
                   )}
                 </div>
               );
@@ -440,14 +453,9 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
           </div>
         </div>
       ))}
-      <div style={{display:"flex",gap:8,marginTop:4}}>
-        <button onClick={()=>{setAddingHabit(!addingHabit);setManaging(false);}} style={{flex:1,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
-          {addingHabit?"× Close":"+ Add Habit"}
-        </button>
-        <button onClick={()=>{setManaging(!managing);setAddingHabit(false);}} style={{flex:1,padding:"10px",background:managing?OX:"transparent",border:"1px solid "+(managing?OX:TANL),color:managing?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
-          {managing?"✓ Done":"Manage"}
-        </button>
-      </div>
+      <button onClick={()=>setAddingHabit(!addingHabit)} style={{width:"100%",marginTop:4,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+        {addingHabit?"× Close":"+ Add Habit"}
+      </button>
       {addingHabit&&(
         <div style={{marginTop:12,padding:"16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+TANL,borderRadius:2}}>
           <SL>New Habit</SL>
@@ -1320,19 +1328,12 @@ function StackSection({stack,setStack}){
     setStack(s=>s.filter(w=>w.id!==id));
   }
 
-  const stackHour=new Date().getHours();
-  const isEvening=stackHour>=22;
-  const stackPrompt=isEvening
-    ?"This is what you've done today. Freeze up that pressure of putting things down and allow for an openness and creativity when stacking things together."
-    :"What's on your mind today? Go ahead and start stacking.";
-
   return(
     <div style={{marginBottom:28}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
         <SL>The Stack</SL>
         <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{stack.length} win{stack.length!==1?"s":""} today</span>
       </div>
-      <p style={{fontSize:13,color:TAN,fontStyle:"italic",lineHeight:1.65,marginBottom:14}}>{stackPrompt}</p>
 
       {/* Add input */}
       <div style={{display:"flex",gap:8,marginBottom:14}}>
@@ -1340,7 +1341,7 @@ function StackSection({stack,setStack}){
           value={input}
           onChange={e=>setInput(e.target.value)}
           onKeyDown={e=>e.key==="Enter"&&addWin()}
-          placeholder="What did you move forward today?"
+          placeholder="Start stacking — completed, partial, anything you moved."
           style={{flex:1,padding:"10px 14px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.75)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}
         />
         <button onClick={addWin}
@@ -1352,7 +1353,7 @@ function StackSection({stack,setStack}){
       {/* Win cards */}
       {stack.length===0&&(
         <div style={{textAlign:"center",padding:"24px",color:TAN,fontStyle:"italic",fontSize:13,border:"1px dashed "+TANL,borderRadius:2}}>
-          Drop your first win in — anything you moved forward counts.
+          What's on your mind today? Go ahead and start stacking — completed, partial, anything you touched counts.
         </div>
       )}
       <div style={{display:"flex",flexDirection:"column",gap:6}}>
@@ -2323,7 +2324,7 @@ export default function App(){
                   return(
                     <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(109,220,232,0.14)":"none",border:isAct?"1px solid #6DDCE8":"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                       <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:24}}>
-                        {tab.type==="cross"?<CrossSVG color={isAct?"#6DDCE8":TANL} size={19}/>:<span style={{fontSize:21,color:isAct?"#6DDCE8":TANL,lineHeight:1}}>{tab.g}</span>}
+                        {tab.type==="cross"?<CrossSVG color={isAct?"#6DDCE8":TANL} size={19}/>:<span style={{fontSize:tab.g==="✦"?26:21,color:isAct?"#6DDCE8":TANL,lineHeight:1}}>{tab.g}</span>}
                       </span>
                       <span style={{fontSize:10,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#6DDCE8":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
                     </button>
@@ -2333,9 +2334,9 @@ export default function App(){
             ))}
           </div>
         </div>
-        {/* Gradient band — full width, outside the maxWidth container */}
-        <div style={{height:5,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)"}}/>
-        <div style={{height:1,background:"rgba(0,0,0,0.25)"}}/>
+        {/* Gradient transition band — cyan to navy, matching app icon gradient */}
+        <div style={{height:6,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)",width:"100vw",marginLeft:"calc(-50vw + 50%)"}}/>
+        <div style={{height:2,background:INK,width:"100vw",marginLeft:"calc(-50vw + 50%)"}}/>
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
