@@ -46,7 +46,7 @@ const ANCH = [
   {v:"Do not worry about tomorrow, for tomorrow will worry about itself.",r:"Matthew 6:34",app:"Today only needs today's grace. If your mind jumps ahead, gently bring it back to what's actually in front of you right now."},
 ];
 
-const LCATS = [
+const STACK_COLORS=["#9C7A3A","#1BAEE8","#1A5C2A","#7A1F1F","#6B4E7A","#B8700A"];
   {id:"identity",label:"Identity",icon:"✦",color:OX},
   {id:"relationships",label:"Relationships",icon:"♡",color:"#7A4F6A"},
   {id:"capacity",label:"Capacity",icon:"◈",color:GRN},
@@ -619,7 +619,7 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
   );
 }
 
-function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
+function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
   const [calLoading,setCalLoading]=useState(false);
@@ -1030,7 +1030,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
               <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Disconnect</button>
             </div>
           )}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,marginBottom:20}}>
             {[
               {label:"Orientation",value:overall+"%",color:INK},
               {label:"Habits",value:habitDone+"/"+totalHabits,color:"#4AB8C8"},
@@ -1041,6 +1041,18 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
                 <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
               </div>
             ))}
+            {/* Stack pulse card */}
+            <div onClick={()=>setView("history")} style={{padding:"10px 6px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center",cursor:"pointer"}}>
+              <div style={{fontSize:18,fontWeight:"bold",color:GOLD,lineHeight:1}}>{stack.length}</div>
+              <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>The Stack</div>
+              {stack.length>0&&(
+                <div style={{display:"flex",justifyContent:"center",gap:3,marginTop:6,flexWrap:"wrap"}}>
+                  {stack.slice(-5).map((w,i)=>(
+                    <div key={w.id} style={{width:10,height:10,borderRadius:"50%",background:STACK_COLORS[w.colorIdx%STACK_COLORS.length],flexShrink:0}}/>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Morning thought */}
@@ -1265,6 +1277,83 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history}){
   );
 }
 
+
+function StackSection({stack,setStack}){
+  const [input,setInput]=useState("");
+  const today=new Date().toISOString().slice(0,10);
+
+  function addWin(){
+    if(!input.trim())return;
+    const win={
+      id:"sw"+Date.now(),
+      label:input.trim(),
+      colorIdx:stack.length, // rotates from 0 on each day reset
+      time:new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}),
+      date:today,
+    };
+    setStack(s=>[...s,win]);
+    setInput("");
+  }
+
+  function removeWin(id){
+    setStack(s=>s.filter(w=>w.id!==id));
+  }
+
+  return(
+    <div style={{marginBottom:28}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <SL>The Stack</SL>
+        <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{stack.length} win{stack.length!==1?"s":""} today</span>
+      </div>
+
+      {/* Add input */}
+      <div style={{display:"flex",gap:8,marginBottom:14}}>
+        <input
+          value={input}
+          onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&addWin()}
+          placeholder="What did you move forward today?"
+          style={{flex:1,padding:"10px 14px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.75)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}
+        />
+        <button onClick={addWin}
+          style={{padding:"10px 16px",background:GOLD,border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
+          Stack it
+        </button>
+      </div>
+
+      {/* Win cards */}
+      {stack.length===0&&(
+        <div style={{textAlign:"center",padding:"24px",color:TAN,fontStyle:"italic",fontSize:13,border:"1px dashed "+TANL,borderRadius:2}}>
+          Drop your first win in — anything you moved forward counts.
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {stack.map((win,i)=>{
+          const col=STACK_COLORS[win.colorIdx%STACK_COLORS.length];
+          return(
+            <div key={win.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.6)",border:"1px solid "+col+"40",borderLeft:"4px solid "+col,borderRadius:2}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:col,flexShrink:0}}/>
+              <div style={{flex:1,fontSize:13,color:INK,lineHeight:1.5}}>{win.label}</div>
+              <div style={{fontSize:11,color:TANL,flexShrink:0}}>{win.time}</div>
+              <button onClick={()=>removeWin(win.id)}
+                style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:14,padding:"0 2px",flexShrink:0,lineHeight:1}}>×</button>
+            </div>
+          );
+        })}
+      </div>
+
+      {stack.length>0&&(
+        <div style={{marginTop:10,display:"flex",gap:4,flexWrap:"wrap"}}>
+          {stack.map(w=>(
+            <div key={w.id} style={{width:12,height:12,borderRadius:"50%",background:STACK_COLORS[w.colorIdx%STACK_COLORS.length]}}/>
+          ))}
+        </div>
+      )}
+
+      <div style={{height:1,background:FINK,margin:"20px 0"}}/>
+    </div>
+  );
+}
 
 function LibraryTab({library,setLibrary}){
   const [ac,setAc]=useState("all");
@@ -2039,6 +2128,13 @@ export default function App(){
   const [activeCat,setActiveCat]=useState(null);
   const [view,setView]=useState("planner");
   const [history,setHistory]=useState([]);
+  const [stack,setStack]=useState(()=>{
+    try{
+      const saved=JSON.parse(localStorage.getItem("sgm3-stack")||"{}");
+      const todayKey=new Date().toISOString().slice(0,10);
+      return saved[todayKey]||[];
+    }catch(e){return[];}
+  });
   const [loaded,setLoaded]=useState(false);
   const [saveStatus,setSaveStatus]=useState("");
   const [addingTask,setAddingTask]=useState(false);
@@ -2100,9 +2196,15 @@ export default function App(){
       try{localStorage.setItem("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
       try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
       try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
+      try{
+        const todayKey=new Date().toISOString().slice(0,10);
+        const saved=JSON.parse(localStorage.getItem("sgm3-stack")||"{}");
+        saved[todayKey]=stack;
+        localStorage.setItem("sgm3-stack",JSON.stringify(saved));
+      }catch(e){}
     },800);
     return()=>clearTimeout(timer);
-  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,loaded]);
+  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,loaded]);
 
   function addTask(catId){
     if(!newTask.label.trim())return;
@@ -2354,10 +2456,14 @@ export default function App(){
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
-        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history}/>}
+        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView}/>}
 
         {view==="history"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
+
+            {/* THE STACK */}
+            <StackSection stack={stack} setStack={setStack}/>
+
             <SL>Completion Log</SL>
             <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.65}}>Proof that things get done.</p>
             {!history.length
