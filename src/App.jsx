@@ -14,6 +14,23 @@ const OXF = "rgba(122,31,31,0.07)";
 
 const BG = "repeating-linear-gradient(transparent,transparent 27px,rgba(26,46,74,0.025) 27px,rgba(26,46,74,0.025) 28px)";
 
+async function claudeAPI(prompt,max_tokens=1000){
+  const key=import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":key||"",
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true",
+    },
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens,messages:[{role:"user",content:prompt}]})
+  });
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message||"API error");
+  return data.content?.find(b=>b.type==="text")?.text||"";
+}
+
 const SCVS = {
   perfectionism:{v:"She is clothed with strength and dignity; she can laugh at the days to come.",r:"Proverbs 31:25"},
   shame:{v:"There is now no condemnation for those who are in Christ Jesus.",r:"Romans 8:1"},
@@ -155,7 +172,7 @@ const TABS_ROW2 = [
   {id:"library",label:"Library",g:"☰",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
   {id:"history",label:"Field Notes",g:"◷",type:"g"},
-  {id:"archive",label:"Archive",g:"▣",type:"g"},
+  {id:"letstalk",label:"Let's Talk",g:"♡",type:"g"},
 ];
 const TABS=[...TABS_ROW1,...TABS_ROW2];
 
@@ -245,9 +262,8 @@ function DailyMsg({cats,habits,prayers,streaks}){
       const p=isMorn
         ?"Write a 4-6 sentence morning orientation for Joe Steen. Christian man, SGM founder, stay-at-home dad, 20 years sober. Anchor: Proverbs 3:5-6. Yesterday: "+yD+"/12 habits. Open tasks: "+pendT+". Praying for "+actP+" people. Direct, warm, faith-grounded. Start with who he is. End with scripture or prayer prompt. No filler."
         :"Write a 4-6 sentence evening wrap-up for Joe Steen. Christian man, SGM founder, stay-at-home dad, 20 years sober. Today: "+tD+"/12 habits, "+doneT+" tasks done, "+pendT+" still open. Direct, warm. Acknowledge what got done. If habits low — data not shame. One thing to hold going into tomorrow. End with rest or prayer.";
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:p}]})});
-      const data=await res.json();
-      setMsg(data.content?.find(b=>b.type==="text")?.text||"Trust in the Lord with all your heart. Today is a new opportunity.");
+      const text=await claudeAPI(p,1000);
+      setMsg(text||"Trust in the Lord with all your heart. Today is a new opportunity.");
     }catch(e){setMsg("Trust in the Lord with all your heart. Today is a new opportunity.");}
     setLoading(false);
   }
@@ -698,9 +714,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
     if(yLib.length)dataParts.push("Library deposits: "+yLib.map(p=>p.principle).filter(Boolean).join(" | "));
     if(yStudy?.ref)dataParts.push("Anchor verse: "+yStudy.ref+(yStudy.observation?" — Joe wrote: \""+yStudy.observation.slice(0,200)+"\"":""));
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:200,messages:[{role:"user",content:`You are writing a brief morning recap for Joe Steen — stay-at-home dad, founder of Steen Growth Ministries, 20 years sober, leads Celebrate Recovery. Write 2-3 warm sentences (no more) that acknowledge what he did yesterday and set a forward tone for today. Use his data below. Sound like a trusted friend — honest, warm, direct. No self-help filler. No "great job" cheerleading. Just name what happened and hand him toward today.\n\nYesterday's data:\n${dataParts.join("\n")}\n\nReturn only the 2-3 sentence paragraph. Nothing else.`}]})});
-      const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text||null;
+      const text=await claudeAPI(`You are writing a brief morning recap for Joe Steen — stay-at-home dad, founder of Steen Growth Ministries, 20 years sober, leads Celebrate Recovery. Write 2-3 warm sentences (no more) that acknowledge what he did yesterday and set a forward tone for today. Use his data below. Sound like a trusted friend — honest, warm, direct. No self-help filler. No "great job" cheerleading. Just name what happened and hand him toward today.\n\nYesterday's data:\n${dataParts.join("\n")}\n\nReturn only the 2-3 sentence paragraph. Nothing else.`,200);
       if(text){
         setRecapContent(text);
         localStorage.setItem("sgm3-recap",JSON.stringify({date:yesterday,text}));
@@ -848,9 +862,7 @@ Generate a concise morning Bible study in this exact JSON format:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
-      const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text||"{}";
+      const text=await claudeAPI(prompt,1000);
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       setStudyContent(parsed);
       localStorage.setItem("sgm3-study-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed,verse,ref}));
@@ -876,9 +888,7 @@ Write a short article in this exact JSON format:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1200,messages:[{role:"user",content:prompt}]})});
-      const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text||"{}";
+      const text=await claudeAPI(prompt,1200);
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       setArticleContent(parsed);
       localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed}));
@@ -2617,9 +2627,7 @@ function AISuggestButton({cats,planner,setPlanner}){
     try{
       const tasks=cats.flatMap(c=>c.tasks.filter(t=>!t.done).map(t=>"- "+t.label+" ["+t.resistance+"] ("+c.label+")")).join("\n");
       const prompt="Help Joe plan his day. Highest energy morning, lowest afternoon, evenings are family.\n\nOpen tasks:\n"+tasks+"\n\nDistribute across Morning, Midday, Afternoon, Evening. Morning: 2-3 high/medium. Midday: 2-3 medium. Afternoon: low only. Evening: family/rest.\n\nRespond ONLY:\nMORNING: task | task\nMIDDAY: task | task\nAFTERNOON: task | task\nEVENING: task";
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
-      const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text||"";
+      const text=await claudeAPI(prompt,1000);
       const parsed={};
       ["MORNING","MIDDAY","AFTERNOON","EVENING"].forEach(b=>{
         const m=text.match(new RegExp(b+": (.+)"));
@@ -2662,6 +2670,210 @@ function AISuggestButton({cats,planner,setPlanner}){
   );
 }
 
+const LT_SECTIONS=[
+  {id:"home",label:"Home",icon:"⌂",color:"#2E6B8A",desc:"Shawn & the kids. Articulating life, growth, vision to the people closest to you."},
+  {id:"faith",label:"Faith Conversations",icon:"✦",color:OX,desc:"Friends, pastors, conference connections. Deep faith dialogue, your positions."},
+  {id:"just",label:"Just Talking",icon:"◎",color:GOLD,desc:"Casual social. Who you are, what you love. Faith may come up naturally."},
+  {id:"new",label:"New Believers",icon:"◈",color:GRN,desc:"Keeping it simple and warm, not overwhelming."},
+  {id:"gospel",label:"Sharing the Gospel",icon:"⊕",color:PUR,desc:"How you'd actually start it, what you'd say, common responses."},
+  {id:"people",label:"People I Love",icon:"♡",color:"#7A4F6A",desc:"Private relational profiles. Your internal map to love them better."},
+];
+
+const LT_PROMPT=`Let's Talk Card Deposit Prompt — SGM Orientation
+
+Use this prompt to develop a Let's Talk card with Claude, then paste the result back.
+
+Format your card like this:
+TOPIC: [Name or topic]
+SECTION: [Home / Faith Conversations / Just Talking / New Believers / Sharing the Gospel / People I Love]
+YOUR POSITION: [What you actually believe or want to communicate]
+KEY POINTS: [2-3 things that need to land]
+HOW IT USUALLY GOES: [What typically happens in this kind of conversation]
+SCRIPTURE: [Optional — one verse that anchors it]
+IN JOE'S WORDS: [Anything extra in your own voice]
+
+Ask Claude: "Help me develop a Let's Talk card for [name/topic]. Here's my raw thinking: [your notes]"`;
+
+function LetsTalkTab({letstalk,setLetstalk}){
+  const [section,setSection]=useState("home");
+  const [showAdd,setShowAdd]=useState(false);
+  const [showPrompt,setShowPrompt]=useState(false);
+  const [copied,setCopied]=useState(false);
+  const [newCard,setNewCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
+  const [expandedCard,setExpandedCard]=useState(null);
+  const [pasteMode,setPasteMode]=useState(false);
+  const [pasteText,setPasteText]=useState("");
+
+  const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
+  const cards=(letstalk||[]).filter(c=>c.section===section);
+
+  function addCard(){
+    if(!newCard.topic.trim())return;
+    const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...newCard};
+    setLetstalk(p=>[card,...(p||[])]);
+    setNewCard({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
+    setShowAdd(false);
+  }
+
+  function parsePaste(text){
+    const get=(label)=>{const m=text.match(new RegExp(label+":(.+?)(?=\\n[A-Z]|$)","si"));return m?m[1].trim():"";};
+    return{
+      topic:get("TOPIC"),
+      section,
+      position:get("YOUR POSITION"),
+      keypoints:get("KEY POINTS"),
+      howgoes:get("HOW IT USUALLY GOES"),
+      scripture:get("SCRIPTURE"),
+      inwords:get("IN JOE'S WORDS"),
+      id:Date.now(),
+      date:new Date().toISOString().slice(0,10),
+    };
+  }
+
+  function depositPaste(){
+    const card=parsePaste(pasteText);
+    if(!card.topic)return;
+    setLetstalk(p=>[card,...(p||[])]);
+    setPasteText("");setPasteMode(false);
+  }
+
+  function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));}
+
+  function copyPrompt(){
+    navigator.clipboard.writeText(LT_PROMPT).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+  }
+
+  const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2};
+  const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2};
+
+  return(
+    <div style={{animation:"fadeIn 0.4s ease"}}>
+      <SL>Let's Talk</SL>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:16,lineHeight:1.65}}>Conversation prep for the people in your life.</p>
+
+      {/* Section pills */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
+        {LT_SECTIONS.map(s=>(
+          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);}}
+            style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
+            {s.icon} {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Section description */}
+      <div style={{padding:"10px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:2,marginBottom:16}}>
+        <div style={{fontSize:11,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,fontWeight:"bold"}}>{sec.icon} {sec.label}</div>
+        <p style={{fontSize:13,color:INK,margin:0,lineHeight:1.6,fontStyle:"italic"}}>{sec.desc}</p>
+      </div>
+
+      {/* ? prompt button */}
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <button onClick={()=>setShowAdd(s=>!s)}
+          style={{flex:1,padding:"9px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+          {showAdd?"× Cancel":"+ Add Card"}
+        </button>
+        <button onClick={()=>setShowPrompt(s=>!s)}
+          style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>?</button>
+      </div>
+
+      {/* Deposit prompt overlay */}
+      {showPrompt&&(
+        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ How to Build a Card</div>
+          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{LT_PROMPT}</pre>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={copyPrompt} style={{flex:1,padding:"8px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"background 0.3s"}}>
+              {copied?"✓ Copied":"Copy Prompt"}
+            </button>
+            <button onClick={()=>{setShowPrompt(false);setPasteMode(true);setShowAdd(false);}}
+              style={{flex:1,padding:"8px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+              Paste Card
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Paste mode */}
+      {pasteMode&&(
+        <div style={{marginBottom:16,animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>✦ Paste Formatted Card</div>
+          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder={"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."} rows={8} style={ta}/>
+          <div style={{display:"flex",gap:8,marginTop:8}}>
+            <button onClick={depositPaste} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Deposit Card</button>
+            <button onClick={()=>setPasteMode(false)} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Quick add form */}
+      {showAdd&&(
+        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,fontWeight:"bold"}}>✦ New Card — {sec.label}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Topic / Person</div>
+              <input value={newCard.topic} onChange={e=>setNewCard(n=>({...n,topic:e.target.value}))} placeholder="Who or what is this about?" style={inp2}/></div>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Your position</div>
+              <textarea value={newCard.position} onChange={e=>setNewCard(n=>({...n,position:e.target.value}))} placeholder="What you actually believe or want to communicate..." rows={2} style={ta}/></div>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Key points to land</div>
+              <textarea value={newCard.keypoints} onChange={e=>setNewCard(n=>({...n,keypoints:e.target.value}))} placeholder="2-3 things that need to land..." rows={2} style={ta}/></div>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>How it usually goes</div>
+              <textarea value={newCard.howgoes} onChange={e=>setNewCard(n=>({...n,howgoes:e.target.value}))} placeholder="What typically happens in this kind of conversation..." rows={2} style={ta}/></div>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Scripture (optional)</div>
+              <input value={newCard.scripture} onChange={e=>setNewCard(n=>({...n,scripture:e.target.value}))} placeholder="One verse that anchors it..." style={inp2}/></div>
+            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>In Joe's Words</div>
+              <textarea value={newCard.inwords} onChange={e=>setNewCard(n=>({...n,inwords:e.target.value}))} placeholder="Anything extra in your own voice..." rows={2} style={ta}/></div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save Card</button>
+              <button onClick={()=>setShowAdd(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cards list */}
+      {cards.length===0&&!showAdd&&!pasteMode&&(
+        <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
+          <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste a card from Claude.</p>
+        </div>
+      )}
+
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {cards.map(card=>(
+          <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+            <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
+                {card.position&&<div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>{card.position.slice(0,80)}{card.position.length>80?"…":""}</div>}
+              </div>
+              <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
+            </div>
+            {expandedCard===card.id&&(
+              <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+                {[
+                  {label:"Your Position",val:card.position},
+                  {label:"Key Points",val:card.keypoints},
+                  {label:"How It Usually Goes",val:card.howgoes},
+                  {label:"Scripture",val:card.scripture},
+                  {label:"In Joe's Words",val:card.inwords},
+                ].filter(f=>f.val).map(f=>(
+                  <div key={f.label} style={{marginTop:12}}>
+                    <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
+                    <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{f.val}</p>
+                  </div>
+                ))}
+                <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
+                  <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
   const [cats,setCats]=useState(INIT_CATS);
   const [library,setLibrary]=useState(INIT_LIB);
@@ -2686,6 +2898,7 @@ export default function App(){
   const [prayers,setPrayers]=useState([]);
   const [planner,setPlanner]=useState({});
   const [shelf,setShelf]=useState([]);
+  const [letstalk,setLetstalk]=useState([]);
   const [showSnapshot,setShowSnapshot]=useState(false);
   const [showCompleted,setShowCompleted]=useState({});
 
@@ -2718,6 +2931,7 @@ export default function App(){
       try{const r=localStorage.getItem("sgm3-prayers");if(r)setPrayers(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-planner");if(r)setPlanner(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-shelf");if(r)setShelf(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-letstalk");if(r)setLetstalk(JSON.parse(r));}catch(e){}
       setLoaded(true);
     }
     load();
@@ -2735,6 +2949,7 @@ export default function App(){
       try{localStorage.setItem("sgm3-prayers",JSON.stringify(prayers));}catch(e){}
       try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
       try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
+      try{localStorage.setItem("sgm3-letstalk",JSON.stringify(letstalk));}catch(e){}
       try{
         const todayKey=new Date().toISOString().slice(0,10);
         const saved=JSON.parse(localStorage.getItem("sgm3-stack")||"{}");
@@ -2743,7 +2958,7 @@ export default function App(){
       }catch(e){}
     },800);
     return()=>clearTimeout(timer);
-  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,loaded]);
+  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,letstalk,loaded]);
 
   function addTask(catId){
     if(!newTask.label.trim())return;
@@ -3019,6 +3234,7 @@ export default function App(){
 
         {view==="library"&&<LibraryTab library={library} setLibrary={setLibrary}/>}
         {view==="archive"&&<ArchiveTab cats={cats} library={library} prayers={prayers} habits={habits} streaks={streaks} history={history}/>}
+        {view==="letstalk"&&<LetsTalkTab letstalk={letstalk} setLetstalk={setLetstalk}/>}
 
       </div>
     </div>
