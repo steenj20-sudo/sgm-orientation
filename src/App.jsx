@@ -874,7 +874,29 @@ Return ONLY valid JSON, no markdown, no extra text.`;
     setArticleLoading(true);
     try{
       const themes=["early church fathers","apostle Paul","the Gospels","church history","biblical archaeology","Christian theology","the Desert Fathers","reformation history","biblical geography","the Holy Land"];
+      const metSearchTerms=["Christ","biblical","saint","apostle","Jerusalem","Madonna","angel","Moses","David","Crucifixion","resurrection","gospel","church","holy","prayer"];
       const theme=themes[new Date().getDate()%themes.length];
+      const searchTerm=metSearchTerms[new Date().getDate()%metSearchTerms.length];
+
+      // Fetch a real image from the Met Museum (free, no key needed)
+      let imageUrl=null;
+      let imageCredit="";
+      try{
+        const searchRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&isPublicDomain=true&medium=Paintings`);
+        const searchData=await searchRes.json();
+        if(searchData.objectIDs&&searchData.objectIDs.length>0){
+          // Pick a random one from the first 20
+          const ids=searchData.objectIDs.slice(0,20);
+          const randomId=ids[new Date().getDate()%ids.length];
+          const objRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`);
+          const objData=await objRes.json();
+          if(objData.primaryImage){
+            imageUrl=objData.primaryImage;
+            imageCredit=`${objData.title||""}${objData.artistDisplayName?" by "+objData.artistDisplayName:""}${objData.objectDate?", "+objData.objectDate:""}`;
+          }
+        }
+      }catch(imgErr){console.log("Met API failed, continuing without image");}
+
       const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning. He needs content that feeds his creative mind and deepens his theological knowledge.
 
 Today's theme: ${theme}
@@ -882,7 +904,7 @@ Today's theme: ${theme}
 Write a short article in this exact JSON format:
 {
   "headline": "A compelling headline — specific, not generic",
-  "image_description": "Describe a specific real painting, photograph, or artwork related to this theme — artist name, title if known, what it depicts, why it's visually striking. Be specific enough that Joe can visualize it clearly.",
+  "image_description": "One sentence describing what the viewer is seeing and why it matters spiritually.",
   "body": "3-4 paragraphs. Structured like enriching journalism — informs, enriches, invites creative pondering. Written in a warm, intelligent voice. Not a sermon, not an academic paper. Something a curious, faith-filled person would genuinely want to read at 6am."
 }
 
@@ -890,8 +912,9 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
       const text=await claudeAPI(prompt,1200);
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      setArticleContent(parsed);
-      localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed}));
+      const result={...parsed,imageUrl,imageCredit};
+      setArticleContent(result);
+      localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
     }catch(e){
       console.error("Article error:",e);
       setArticleContent({error:true,msg:e.message||"Could not load enrichment."});
@@ -1136,23 +1159,35 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           {/* Daily Image + Article */}
           <div style={{marginBottom:16,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
             {/* Always visible — image placeholder + headline + teaser */}
-            <div style={{background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)",height:160,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
-              {!articleContent&&(
-                <button onClick={generateArticle} disabled={articleLoading}
-                  style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
-                  {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
-                </button>
+            <div style={{position:"relative",overflow:"hidden",minHeight:180}}>
+              {articleContent&&!articleContent.error&&articleContent.imageUrl?(
+                <img src={articleContent.imageUrl} alt={articleContent.headline}
+                  style={{width:"100%",height:220,objectFit:"cover",display:"block"}}/>
+              ):(
+                <div style={{background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)",height:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
+                </div>
               )}
+              {/* Overlay with headline when content loaded */}
               {articleContent&&!articleContent.error&&(
-                <div style={{padding:"0 20px",textAlign:"center",position:"relative",zIndex:10}}>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.7)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:8}}>Daily Enrichment</div>
-                  <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.4}}>{articleContent.headline}</div>
+                <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top, rgba(26,46,74,0.92) 0%, rgba(26,46,74,0.4) 60%, transparent 100%)",padding:"20px 16px 12px"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:4}}>Daily Enrichment</div>
+                  <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.35}}>{articleContent.headline}</div>
+                  {articleContent.imageCredit&&<div style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginTop:4,fontStyle:"italic"}}>{articleContent.imageCredit}</div>}
+                </div>
+              )}
+              {/* Load button when no content */}
+              {!articleContent&&(
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:10}}>
+                  <button onClick={generateArticle} disabled={articleLoading}
+                    style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
+                    {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
+                  </button>
                 </div>
               )}
               {articleContent?.error&&(
-                <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,padding:"0 20px",textAlign:"center",position:"relative",zIndex:10}}>
-                  <div style={{fontStyle:"italic",marginBottom:8}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
+                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10}}>
+                  <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
                   <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
                     style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
                     Try Again
