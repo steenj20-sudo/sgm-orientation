@@ -1137,20 +1137,28 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           <div style={{marginBottom:16,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
             {/* Always visible — image placeholder + headline + teaser */}
             <div style={{background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)",height:160,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)"}}/>
+              <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
               {!articleContent&&(
                 <button onClick={generateArticle} disabled={articleLoading}
-                  style={{background:"transparent",border:"1px solid rgba(255,255,255,0.5)",color:"white",padding:"10px 20px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                  style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
                   {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
                 </button>
               )}
               {articleContent&&!articleContent.error&&(
-                <div style={{padding:"0 20px",textAlign:"center"}}>
+                <div style={{padding:"0 20px",textAlign:"center",position:"relative",zIndex:10}}>
                   <div style={{fontSize:11,color:"rgba(255,255,255,0.7)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:8}}>Daily Enrichment</div>
                   <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.4}}>{articleContent.headline}</div>
                 </div>
               )}
-              {articleContent?.error&&<div style={{color:"rgba(255,255,255,0.7)",fontStyle:"italic",fontSize:13,padding:"0 20px",textAlign:"center"}}>{articleContent.msg||"Could not load enrichment. Tap to retry."}<br/><button onClick={generateArticle} style={{marginTop:8,background:"transparent",border:"1px solid rgba(255,255,255,0.4)",color:"white",padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Retry</button></div>}
+              {articleContent?.error&&(
+                <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,padding:"0 20px",textAlign:"center",position:"relative",zIndex:10}}>
+                  <div style={{fontStyle:"italic",marginBottom:8}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
+                  <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
+                    style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                    Try Again
+                  </button>
+                </div>
+              )}
             </div>
 
             {articleContent&&!articleContent.error&&(
