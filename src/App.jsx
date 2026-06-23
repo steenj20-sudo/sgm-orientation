@@ -874,30 +874,34 @@ Return ONLY valid JSON, no markdown, no extra text.`;
     setArticleLoading(true);
     try{
       const themes=["early church fathers","apostle Paul","the Gospels","church history","biblical archaeology","Christian theology","the Desert Fathers","reformation history","biblical geography","the Holy Land"];
-      const metSearchTerms=["Christ","biblical","saint","apostle","Jerusalem","Madonna","angel","Moses","David","Crucifixion","resurrection","gospel","church","holy","prayer"];
       const theme=themes[new Date().getDate()%themes.length];
-      const searchTerm=metSearchTerms[new Date().getDate()%metSearchTerms.length];
 
       // Fetch a real image from the Met Museum (free, no key needed)
       let imageUrl=null;
       let imageCredit="";
       try{
-        const searchRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&isPublicDomain=true&medium=Paintings`);
+        // Use specific known search terms that reliably return biblical paintings
+        const metTerms=["Christ","Madonna","saint Paul","Moses","angel","crucifixion","resurrection","biblical","Jerusalem","apostle"];
+        const searchTerm=metTerms[new Date().getDate()%metTerms.length];
+        const searchRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&isPublicDomain=true&medium=Paintings&hasImages=true`);
         const searchData=await searchRes.json();
         if(searchData.objectIDs&&searchData.objectIDs.length>0){
-          // Pick a random one from the first 20
-          const ids=searchData.objectIDs.slice(0,20);
-          const randomId=ids[new Date().getDate()%ids.length];
-          const objRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`);
-          const objData=await objRes.json();
-          if(objData.primaryImage){
-            imageUrl=objData.primaryImage;
-            imageCredit=`${objData.title||""}${objData.artistDisplayName?" by "+objData.artistDisplayName:""}${objData.objectDate?", "+objData.objectDate:""}`;
+          // Try up to 5 objects to find one with a real image
+          const ids=searchData.objectIDs.slice(0,30);
+          for(let i=0;i<5;i++){
+            const idx=(new Date().getDate()+i)%ids.length;
+            const objRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${ids[idx]}`);
+            const objData=await objRes.json();
+            if(objData.primaryImage&&objData.primaryImage.length>0){
+              imageUrl=objData.primaryImage;
+              imageCredit=[objData.title,objData.artistDisplayName,objData.objectDate].filter(Boolean).join(" · ");
+              break;
+            }
           }
         }
-      }catch(imgErr){console.log("Met API failed, continuing without image");}
+      }catch(imgErr){console.log("Met API:",imgErr.message);}
 
-      const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning. He needs content that feeds his creative mind and deepens his theological knowledge.
+      const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning.
 
 Today's theme: ${theme}
 
@@ -905,7 +909,7 @@ Write a short article in this exact JSON format:
 {
   "headline": "A compelling headline — specific, not generic",
   "image_description": "One sentence describing what the viewer is seeing and why it matters spiritually.",
-  "body": "3-4 paragraphs. Structured like enriching journalism — informs, enriches, invites creative pondering. Written in a warm, intelligent voice. Not a sermon, not an academic paper. Something a curious, faith-filled person would genuinely want to read at 6am."
+  "body": "3-4 paragraphs. Enriching journalism — informs, enriches, invites creative pondering. Warm, intelligent voice. Something a curious faith-filled person would genuinely want to read at 6am."
 }
 
 Return ONLY valid JSON, no markdown, no extra text.`;
@@ -914,7 +918,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const result={...parsed,imageUrl,imageCredit};
       setArticleContent(result);
-      localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
+      localStorage.setItem("sgm3-article-v2",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
     }catch(e){
       console.error("Article error:",e);
       setArticleContent({error:true,msg:e.message||"Could not load enrichment."});
@@ -930,7 +934,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       if(sc.date===today&&sc.content)setStudyContent(sc.content);
     }catch(e){}
     try{
-      const ac=JSON.parse(localStorage.getItem("sgm3-article-content")||"{}");
+      const ac=JSON.parse(localStorage.getItem("sgm3-article-v2")||"{}");
       if(ac.date===today&&ac.content)setArticleContent(ac.content);
     }catch(e){}
   },[]);
