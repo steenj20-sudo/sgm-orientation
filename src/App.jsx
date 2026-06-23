@@ -3069,7 +3069,7 @@ export default function App(){
   const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2};
 
   return(
-    <div style={{minHeight:"100vh",background:PAPER,backgroundImage:"radial-gradient(ellipse at 60% 20%, rgba(184,149,106,0.03) 0%, transparent 60%), "+BG,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
+    <div style={{minHeight:"100vh",background:INK,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
       <div style={{background:INK,position:"sticky",top:0,zIndex:100,width:"100%",left:0,right:0}}>
@@ -3108,7 +3108,7 @@ export default function App(){
         <div style={{height:2,background:INK,width:"100vw",marginLeft:"calc(-50vw + 50%)"}}/>
       </div>
 
-      <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
+      <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0",background:PAPER,minHeight:"calc(100vh - 180px)"}}>
 
         {view==="dashboard"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
