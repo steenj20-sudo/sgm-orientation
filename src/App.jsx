@@ -873,6 +873,8 @@ Return ONLY valid JSON, no markdown, no extra text.`;
   async function generateArticle(){
     setArticleLoading(true);
     try{
+      const key=import.meta.env.VITE_ANTHROPIC_API_KEY;
+      if(!key){setArticleContent({error:true,msg:"API key not configured."});setArticleLoading(false);return;}
       const themes=["early church fathers","apostle Paul","the Gospels","church history","biblical archaeology","Christian theology","the Desert Fathers","reformation history","biblical geography","the Holy Land"];
       const theme=themes[new Date().getDate()%themes.length];
       const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning. He needs content that feeds his creative mind and deepens his theological knowledge.
@@ -888,11 +890,26 @@ Write a short article in this exact JSON format:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-      const text=await claudeAPI(prompt,1200);
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":key,
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true",
+        },
+        body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1200,messages:[{role:"user",content:prompt}]})
+      });
+      const data=await res.json();
+      if(data.error)throw new Error(data.error.message||"API error");
+      const text=data.content?.find(b=>b.type==="text")?.text||"";
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       setArticleContent(parsed);
       localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed}));
-    }catch(e){setArticleContent({error:true});}
+    }catch(e){
+      console.error("Article error:",e);
+      setArticleContent({error:true,msg:e.message||"Could not load enrichment."});
+    }
     setArticleLoading(false);
   }
 
@@ -1147,7 +1164,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                   <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.4}}>{articleContent.headline}</div>
                 </div>
               )}
-              {articleContent?.error&&<div style={{color:"rgba(255,255,255,0.7)",fontStyle:"italic",fontSize:13}}>Could not load today's enrichment.</div>}
+              {articleContent?.error&&<div style={{color:"rgba(255,255,255,0.7)",fontStyle:"italic",fontSize:13,padding:"0 20px",textAlign:"center"}}>{articleContent.msg||"Could not load enrichment. Tap to retry."}<br/><button onClick={generateArticle} style={{marginTop:8,background:"transparent",border:"1px solid rgba(255,255,255,0.4)",color:"white",padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Retry</button></div>}
             </div>
 
             {articleContent&&!articleContent.error&&(
