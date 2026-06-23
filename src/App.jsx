@@ -673,30 +673,49 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   const [articleContent,setArticleContent]=useState(null);
   const [studySaved,setStudySaved]=useState(false);
   const [recapExpanded,setRecapExpanded]=useState(false);
+  const [recapContent,setRecapContent]=useState(()=>{
+    try{const r=JSON.parse(localStorage.getItem("sgm3-recap")||"{}");const yk=new Date(Date.now()-86400000).toISOString().slice(0,10);return r.date===yk?r.text:null;}catch(e){return null;}
+  });
+  const [recapLoading,setRecapLoading]=useState(false);
 
-  // Build yesterday's recap from available data
   const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
-  function buildRecap(){
-    const lines=[];
+
+  function buildRecapData(){
     const yStack=JSON.parse(localStorage.getItem("sgm3-stack")||"{}")[yesterday]||[];
     const yStudy=JSON.parse(localStorage.getItem("sgm3-bible-study")||"{}")[yesterday];
     const yHistory=history.filter(h=>h.date===yesterday);
-    if(yStack.length>0){
-      lines.push("Yesterday you stacked "+yStack.length+" win"+(yStack.length!==1?"s":"")+" — "+yStack.slice(0,3).map(w=>w.label.toLowerCase()).join(", ")+(yStack.length>3?" and more":"")+".");
-    }
-    if(yHistory.length>0){
-      lines.push("You completed "+yHistory.length+" project task"+(yHistory.length!==1?"s":"")+" across "+[...new Set(yHistory.map(h=>h.category))].join(", ")+".");
-    }
-    if(yStudy?.verse){
-      lines.push("Your anchor was "+yStudy.ref+" — carry what that deposited.");
-    }
-    if(yStudy?.observation){
-      lines.push("You wrote: \""+yStudy.observation.slice(0,120)+(yStudy.observation.length>120?"...":"")+"\"");
-    }
-    if(!lines.length)return null;
-    return lines.join(" ");
+    const yLib=JSON.parse(localStorage.getItem("sgm3-library")||"[]").filter(p=>p.date&&p.date.slice(0,10)===yesterday);
+    return{yStack,yStudy,yHistory,yLib};
   }
-  const recap=buildRecap();
+
+  async function generateRecap(){
+    const{yStack,yStudy,yHistory,yLib}=buildRecapData();
+    if(!yStack.length&&!yStudy&&!yHistory.length&&!yLib.length)return;
+    setRecapLoading(true);
+    const dataParts=[];
+    if(yStack.length)dataParts.push("Stack wins: "+yStack.map(w=>w.label).join(", "));
+    if(yHistory.length)dataParts.push("Completed tasks: "+yHistory.map(h=>h.label||h.task).filter(Boolean).join(", "));
+    if(yLib.length)dataParts.push("Library deposits: "+yLib.map(p=>p.principle).filter(Boolean).join(" | "));
+    if(yStudy?.ref)dataParts.push("Anchor verse: "+yStudy.ref+(yStudy.observation?" — Joe wrote: \""+yStudy.observation.slice(0,200)+"\"":""));
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:200,messages:[{role:"user",content:`You are writing a brief morning recap for Joe Steen — stay-at-home dad, founder of Steen Growth Ministries, 20 years sober, leads Celebrate Recovery. Write 2-3 warm sentences (no more) that acknowledge what he did yesterday and set a forward tone for today. Use his data below. Sound like a trusted friend — honest, warm, direct. No self-help filler. No "great job" cheerleading. Just name what happened and hand him toward today.\n\nYesterday's data:\n${dataParts.join("\n")}\n\nReturn only the 2-3 sentence paragraph. Nothing else.`}]})});
+      const data=await res.json();
+      const text=data.content?.find(b=>b.type==="text")?.text||null;
+      if(text){
+        setRecapContent(text);
+        localStorage.setItem("sgm3-recap",JSON.stringify({date:yesterday,text}));
+      }
+    }catch(e){}
+    setRecapLoading(false);
+  }
+
+  // Auto-generate recap on mount if data exists and no cached version
+  useEffect(()=>{
+    if(!recapContent&&!recapLoading){
+      const{yStack,yStudy,yHistory,yLib}=buildRecapData();
+      if(yStack.length||yStudy||yHistory.length||yLib.length)generateRecap();
+    }
+  },[]);
   const [newEvent,setNewEvent]=useState({
     title:"",
     date:new Date().toISOString().slice(0,10),
@@ -889,7 +908,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
     setTimeout(()=>setStudySaved(false),2500);
   }
 
-
+  async function handleSaveEvent(){
     if(!newEvent.title.trim()){setCreateError("Add a title for the event.");return;}
     const ed=newEvent.endDate||newEvent.date;
     if(ed<newEvent.date){setCreateError("End date can't be before start date.");return;}
@@ -1083,15 +1102,20 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           {/* MOVEMENT 1 — RECEIVE */}
 
           {/* Yesterday's Recap */}
-          {recap&&(
-            <div onClick={()=>setRecapExpanded(e=>!e)} style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL+"60",borderLeft:"4px solid "+GOLD,borderRadius:2,cursor:"pointer",animation:"fadeIn 0.4s ease"}}>
+          {(recapContent||recapLoading)&&(
+            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL+"60",borderLeft:"4px solid "+GOLD,borderRadius:2,animation:"fadeIn 0.4s ease"}}>
               <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold",opacity:0.9}}>✦ Yesterday</div>
-              <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:"0 0 6px"}}>{recap}</p>
-              <div style={{fontSize:11,color:GOLD,opacity:0.7,fontStyle:"italic"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
-              {recapExpanded&&(
-                <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+TANL+"40",animation:"fadeIn 0.2s ease"}}>
-                  <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
-                </div>
+              {recapLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Reflecting on yesterday…</div>}
+              {recapContent&&(
+                <>
+                  <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:"0 0 6px"}}>{recapContent}</p>
+                  <div onClick={()=>setRecapExpanded(e=>!e)} style={{fontSize:11,color:GOLD,opacity:0.7,fontStyle:"italic",cursor:"pointer"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
+                  {recapExpanded&&(
+                    <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+TANL+"40",animation:"fadeIn 0.2s ease"}}>
+                      <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -1315,7 +1339,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
                   {createError&&<div style={{fontSize:12,color:OX,fontStyle:"italic",marginBottom:10}}>{createError}</div>}
 
-                  <button onClick={handleCreateEvent} disabled={creatingEvent}
+                  <button onClick={handleSaveEvent} disabled={creatingEvent}
                     style={{width:"100%",padding:"10px",background:creatingEvent?"transparent":"#2E6B8A",border:"1px solid #2E6B8A",color:creatingEvent?"#2E6B8A":"white",cursor:creatingEvent?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
                     {creatingEvent?(editingEventId?"Saving changes…":"Adding to calendar…"):(editingEventId?"Save Changes":"Add to Calendar")}
                   </button>
