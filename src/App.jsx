@@ -1162,54 +1162,48 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
           {/* Daily Image + Article */}
           <div style={{marginBottom:16,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
-            {/* Always visible — image placeholder + headline + teaser */}
-            <div style={{position:"relative",overflow:"hidden",minHeight:180}}>
+
+            {/* Image — clean, no text overlay */}
+            <div style={{position:"relative",overflow:"hidden",minHeight:180,background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)"}}>
               {articleContent&&!articleContent.error&&articleContent.imageUrl?(
                 <img src={articleContent.imageUrl} alt={articleContent.headline}
-                  style={{width:"100%",height:220,objectFit:"cover",display:"block"}}/>
+                  style={{width:"100%",height:240,objectFit:"cover",display:"block",filter:"brightness(1.15) contrast(1.05) saturate(1.1)"}}/>
               ):(
-                <div style={{background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)",height:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
-                </div>
-              )}
-              {/* Overlay with headline when content loaded */}
-              {articleContent&&!articleContent.error&&(
-                <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top, rgba(26,46,74,0.92) 0%, rgba(26,46,74,0.4) 60%, transparent 100%)",padding:"20px 16px 12px"}}>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:4}}>Daily Enrichment</div>
-                  <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.35}}>{articleContent.headline}</div>
-                  {articleContent.imageCredit&&<div style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginTop:4,fontStyle:"italic"}}>{articleContent.imageCredit}</div>}
-                </div>
-              )}
-              {/* Load button when no content */}
-              {!articleContent&&(
-                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:10}}>
-                  <button onClick={generateArticle} disabled={articleLoading}
-                    style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
-                    {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
-                  </button>
-                </div>
-              )}
-              {articleContent?.error&&(
-                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10}}>
-                  <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
-                  <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
-                    style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
-                    Try Again
-                  </button>
+                  {!articleContent&&(
+                    <button onClick={generateArticle} disabled={articleLoading}
+                      style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
+                      {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
+                    </button>
+                  )}
+                  {articleContent?.error&&(
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",zIndex:10,position:"relative"}}>
+                      <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
+                      <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
+                        style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                        Try Again
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
+            {/* Text below the image — headline, credit, expand */}
             {articleContent&&!articleContent.error&&(
               <>
-                <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"12px 16px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
-                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 6px",lineHeight:1.5}}>{articleContent.image_description?.slice(0,120)}…</p>
+                <div style={{padding:"12px 16px 8px"}}>
+                  <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ Daily Enrichment</div>
+                  <div style={{fontSize:15,fontWeight:"bold",color:INK,lineHeight:1.35,marginBottom:4}}>{articleContent.headline}</div>
+                  {articleContent.imageCredit&&<div style={{fontSize:10,color:TANL,fontStyle:"italic"}}>{articleContent.imageCredit}</div>}
+                </div>
+                <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"6px 16px 12px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
+                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 4px",lineHeight:1.5}}>{articleContent.image_description?.slice(0,120)}…</p>
                   <div style={{fontSize:11,color:"#2E6B8A",opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full enrichment"}</div>
                 </div>
                 {articleExpanded&&(
                   <div style={{padding:"0 16px 16px",animation:"fadeIn 0.25s ease"}}>
-                    <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Image</div>
-                    <p style={{fontSize:13,lineHeight:1.75,color:TAN,fontStyle:"italic",marginBottom:16}}>{articleContent.image_description}</p>
                     <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
                     <p style={{fontSize:14,lineHeight:1.85,color:INK,margin:0,whiteSpace:"pre-line"}}>{articleContent.body}</p>
                   </div>
