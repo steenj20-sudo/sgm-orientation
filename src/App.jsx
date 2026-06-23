@@ -648,7 +648,7 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
   );
 }
 
-function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView}){
+function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
   const [calLoading,setCalLoading]=useState(false);
@@ -660,6 +660,43 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   const [creatingEvent,setCreatingEvent]=useState(false);
   const [createError,setCreateError]=useState(null);
   const [editingEventId,setEditingEventId]=useState(null);
+
+  // Morning flow state
+  const [bibleStudy,setBibleStudy]=useState(()=>{
+    try{const s=JSON.parse(localStorage.getItem("sgm3-bible-study")||"{}");return s[new Date().toISOString().slice(0,10)]||{};}catch(e){return{};}
+  });
+  const [studyExpanded,setStudyExpanded]=useState(false);
+  const [articleExpanded,setArticleExpanded]=useState(false);
+  const [studyLoading,setStudyLoading]=useState(false);
+  const [articleLoading,setArticleLoading]=useState(false);
+  const [studyContent,setStudyContent]=useState(null);
+  const [articleContent,setArticleContent]=useState(null);
+  const [studySaved,setStudySaved]=useState(false);
+  const [recapExpanded,setRecapExpanded]=useState(false);
+
+  // Build yesterday's recap from available data
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  function buildRecap(){
+    const lines=[];
+    const yStack=JSON.parse(localStorage.getItem("sgm3-stack")||"{}")[yesterday]||[];
+    const yStudy=JSON.parse(localStorage.getItem("sgm3-bible-study")||"{}")[yesterday];
+    const yHistory=history.filter(h=>h.date===yesterday);
+    if(yStack.length>0){
+      lines.push("Yesterday you stacked "+yStack.length+" win"+(yStack.length!==1?"s":"")+" — "+yStack.slice(0,3).map(w=>w.label.toLowerCase()).join(", ")+(yStack.length>3?" and more":"")+".");
+    }
+    if(yHistory.length>0){
+      lines.push("You completed "+yHistory.length+" project task"+(yHistory.length!==1?"s":"")+" across "+[...new Set(yHistory.map(h=>h.category))].join(", ")+".");
+    }
+    if(yStudy?.verse){
+      lines.push("Your anchor was "+yStudy.ref+" — carry what that deposited.");
+    }
+    if(yStudy?.observation){
+      lines.push("You wrote: \""+yStudy.observation.slice(0,120)+(yStudy.observation.length>120?"...":"")+"\"");
+    }
+    if(!lines.length)return null;
+    return lines.join(" ");
+  }
+  const recap=buildRecap();
   const [newEvent,setNewEvent]=useState({
     title:"",
     date:new Date().toISOString().slice(0,10),
@@ -773,7 +810,86 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
     if(calToken)fetchEvents(calToken);
   },[calToken]);
 
-  async function handleCreateEvent(){
+  async function generateStudy(verse,ref){
+    setStudyLoading(true);
+    try{
+      const prompt=`You are generating a structured morning Bible study for Joe Steen, founder of Steen Growth Ministries. Joe is a stay-at-home dad, 20 years sober, leads Celebrate Recovery, and is building a digital formation platform. His anchor verse is Proverbs 3:5-6. His voice: honest, warm, direct — like a trusted friend over coffee.
+
+Today's verse: "${verse}" — ${ref}
+
+Generate a concise morning Bible study in this exact JSON format:
+{
+  "who": "Who wrote this, when, and what was happening in their world (2 sentences max)",
+  "jesus_thread": "How this connects to Jesus — one clear sentence",
+  "theological_point": "The core truth this passage makes — one sentence",
+  "book_structure": "Where this sits in the larger book and why it matters here — one sentence",
+  "spiritual_application": "One practical spiritual application for Joe today — direct, personal, specific",
+  "emotional_application": "One emotional/relational application for Joe today — honest, warm, not generic"
+}
+
+Return ONLY valid JSON, no markdown, no extra text.`;
+
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+      const data=await res.json();
+      const text=data.content?.find(b=>b.type==="text")?.text||"{}";
+      const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
+      setStudyContent(parsed);
+      localStorage.setItem("sgm3-study-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed,verse,ref}));
+    }catch(e){setStudyContent({error:true});}
+    setStudyLoading(false);
+  }
+
+  async function generateArticle(){
+    setArticleLoading(true);
+    try{
+      const themes=["early church fathers","apostle Paul","the Gospels","church history","biblical archaeology","Christian theology","the Desert Fathers","reformation history","biblical geography","the Holy Land"];
+      const theme=themes[new Date().getDate()%themes.length];
+      const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning. He needs content that feeds his creative mind and deepens his theological knowledge.
+
+Today's theme: ${theme}
+
+Write a short article in this exact JSON format:
+{
+  "headline": "A compelling headline — specific, not generic",
+  "image_description": "Describe a specific real painting, photograph, or artwork related to this theme — artist name, title if known, what it depicts, why it's visually striking. Be specific enough that Joe can visualize it clearly.",
+  "body": "3-4 paragraphs. Structured like enriching journalism — informs, enriches, invites creative pondering. Written in a warm, intelligent voice. Not a sermon, not an academic paper. Something a curious, faith-filled person would genuinely want to read at 6am."
+}
+
+Return ONLY valid JSON, no markdown, no extra text.`;
+
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1200,messages:[{role:"user",content:prompt}]})});
+      const data=await res.json();
+      const text=data.content?.find(b=>b.type==="text")?.text||"{}";
+      const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
+      setArticleContent(parsed);
+      localStorage.setItem("sgm3-article-content",JSON.stringify({date:new Date().toISOString().slice(0,10),content:parsed}));
+    }catch(e){setArticleContent({error:true});}
+    setArticleLoading(false);
+  }
+
+  // Load cached content on mount
+  useEffect(()=>{
+    const today=new Date().toISOString().slice(0,10);
+    try{
+      const sc=JSON.parse(localStorage.getItem("sgm3-study-content")||"{}");
+      if(sc.date===today&&sc.content)setStudyContent(sc.content);
+    }catch(e){}
+    try{
+      const ac=JSON.parse(localStorage.getItem("sgm3-article-content")||"{}");
+      if(ac.date===today&&ac.content)setArticleContent(ac.content);
+    }catch(e){}
+  },[]);
+
+  function saveStudy(){
+    const today=new Date().toISOString().slice(0,10);
+    const saved=JSON.parse(localStorage.getItem("sgm3-bible-study")||"{}");
+    saved[today]={...bibleStudy,verse:todayVerse.v,ref:todayVerse.r,studyContent,date:today};
+    localStorage.setItem("sgm3-bible-study",JSON.stringify(saved));
+    setStudySaved(true);
+    setTimeout(()=>setStudySaved(false),2500);
+  }
+
+
     if(!newEvent.title.trim()){setCreateError("Add a title for the event.");return;}
     const ed=newEvent.endDate||newEvent.date;
     if(ed<newEvent.date){setCreateError("End date can't be before start date.");return;}
@@ -963,6 +1079,166 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
 
       {mode==="day"&&(
         <div>
+
+          {/* MOVEMENT 1 — RECEIVE */}
+
+          {/* Yesterday's Recap */}
+          {recap&&(
+            <div onClick={()=>setRecapExpanded(e=>!e)} style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL+"60",borderLeft:"4px solid "+GOLD,borderRadius:2,cursor:"pointer",animation:"fadeIn 0.4s ease"}}>
+              <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold",opacity:0.9}}>✦ Yesterday</div>
+              <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:"0 0 6px"}}>{recap}</p>
+              <div style={{fontSize:11,color:GOLD,opacity:0.7,fontStyle:"italic"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
+              {recapExpanded&&(
+                <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+TANL+"40",animation:"fadeIn 0.2s ease"}}>
+                  <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Daily Image + Article */}
+          <div style={{marginBottom:16,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
+            {/* Always visible — image placeholder + headline + teaser */}
+            <div style={{background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)",height:160,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)"}}/>
+              {!articleContent&&(
+                <button onClick={generateArticle} disabled={articleLoading}
+                  style={{background:"transparent",border:"1px solid rgba(255,255,255,0.5)",color:"white",padding:"10px 20px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                  {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
+                </button>
+              )}
+              {articleContent&&!articleContent.error&&(
+                <div style={{padding:"0 20px",textAlign:"center"}}>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.7)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:8}}>Daily Enrichment</div>
+                  <div style={{fontSize:15,fontWeight:"bold",color:"white",lineHeight:1.4}}>{articleContent.headline}</div>
+                </div>
+              )}
+              {articleContent?.error&&<div style={{color:"rgba(255,255,255,0.7)",fontStyle:"italic",fontSize:13}}>Could not load today's enrichment.</div>}
+            </div>
+
+            {articleContent&&!articleContent.error&&(
+              <>
+                <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"12px 16px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
+                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 6px",lineHeight:1.5}}>{articleContent.image_description?.slice(0,120)}…</p>
+                  <div style={{fontSize:11,color:"#2E6B8A",opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full enrichment"}</div>
+                </div>
+                {articleExpanded&&(
+                  <div style={{padding:"0 16px 16px",animation:"fadeIn 0.25s ease"}}>
+                    <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Image</div>
+                    <p style={{fontSize:13,lineHeight:1.75,color:TAN,fontStyle:"italic",marginBottom:16}}>{articleContent.image_description}</p>
+                    <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
+                    <p style={{fontSize:14,lineHeight:1.85,color:INK,margin:0,whiteSpace:"pre-line"}}>{articleContent.body}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* MOVEMENT 2 — ENGAGE */}
+
+          {/* Bible Verse + Morning Study */}
+          <div style={{marginBottom:20,background:"rgba(255,255,255,0.6)",border:"1px solid "+OX+"30",borderTop:"4px solid "+OX,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
+            {/* Verse — always visible, the day's anchor */}
+            <div style={{padding:"16px 16px 10px"}}>
+              <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold",opacity:0.9}}>✦ Today's Anchor</div>
+              <p style={{fontSize:17,lineHeight:1.8,color:INK,margin:"0 0 6px",fontStyle:"italic"}}>"{todayVerse?.v}"</p>
+              <p style={{color:GOLD,fontSize:13,margin:"0 0 10px"}}>{todayVerse?.r}</p>
+              {todayVerse?.app&&(
+                <div style={{padding:"10px 14px",background:OX+"08",borderLeft:"3px solid "+OX,borderRadius:2,marginBottom:10}}>
+                  <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>Spiritual · {todayVerse.app.split(".")[0]}.</div>
+                </div>
+              )}
+            </div>
+
+            {/* Study toggle */}
+            <button onClick={()=>{
+              setStudyExpanded(e=>!e);
+              if(!studyContent&&!studyLoading&&todayVerse)generateStudy(todayVerse.v,todayVerse.r);
+            }} style={{width:"100%",padding:"10px 16px",background:studyExpanded?OX+"10":"transparent",border:"none",borderTop:"1px solid "+OX+"25",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+              <span>{studyExpanded?"▲ Close study":"↓ Open morning study"}</span>
+              <span style={{fontSize:10,color:TANL,fontStyle:"italic"}}>tap to expand</span>
+            </button>
+
+            {studyExpanded&&(
+              <div style={{padding:"16px",borderTop:"1px solid "+OX+"20",animation:"fadeIn 0.25s ease"}}>
+                {studyLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",textAlign:"center",padding:"20px"}}>Preparing your study…</div>}
+                {studyContent&&!studyContent.error&&(
+                  <div>
+                    {[
+                      {label:"Context",key:"who"},
+                      {label:"The Jesus Thread",key:"jesus_thread"},
+                      {label:"Theological Point",key:"theological_point"},
+                      {label:"Book Structure",key:"book_structure"},
+                    ].map(({label,key})=>studyContent[key]&&(
+                      <div key={key} style={{marginBottom:14}}>
+                        <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ {label}</div>
+                        <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{studyContent[key]}</p>
+                      </div>
+                    ))}
+
+                    {/* Practical applications */}
+                    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+                      {studyContent.spiritual_application&&(
+                        <div style={{padding:"11px 14px",background:OX+"08",borderLeft:"3px solid "+OX,borderRadius:2}}>
+                          <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Spiritual</div>
+                          <p style={{fontSize:13,lineHeight:1.65,color:INK,margin:0}}>{studyContent.spiritual_application}</p>
+                        </div>
+                      )}
+                      {studyContent.emotional_application&&(
+                        <div style={{padding:"11px 14px",background:GOLD+"10",borderLeft:"3px solid "+GOLD,borderRadius:2}}>
+                          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Emotional</div>
+                          <p style={{fontSize:13,lineHeight:1.65,color:INK,margin:0}}>{studyContent.emotional_application}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Your prayer */}
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Prayer</div>
+                      <textarea
+                        value={bibleStudy.prayer||""}
+                        onChange={e=>setBibleStudy(s=>({...s,prayer:e.target.value}))}
+                        placeholder="Respond to what you just read — a prayer in your own words, as honest as it needs to be."
+                        rows={4}
+                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}
+                      />
+                    </div>
+
+                    {/* Your observation */}
+                    <div style={{marginBottom:14}}>
+                      <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Observation</div>
+                      <textarea
+                        value={bibleStudy.observation||""}
+                        onChange={e=>setBibleStudy(s=>({...s,observation:e.target.value}))}
+                        placeholder="What's the first thing that hit you? Where does this land in your life right now?"
+                        rows={3}
+                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}
+                      />
+                    </div>
+
+                    <button onClick={saveStudy}
+                      style={{width:"100%",padding:"10px",background:studySaved?GRN:"transparent",border:"1px solid "+(studySaved?GRN:OX),color:studySaved?"white":OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"all 0.3s"}}>
+                      {studySaved?"✓ Saved to Field Notes":"Save Study → Field Notes"}
+                    </button>
+                  </div>
+                )}
+                {studyContent?.error&&(
+                  <div style={{textAlign:"center",padding:"16px"}}>
+                    <p style={{color:TAN,fontStyle:"italic",fontSize:13,marginBottom:10}}>Could not generate study. Try again.</p>
+                    <button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)} style={{background:"transparent",border:"1px solid "+OX,color:OX,padding:"8px 16px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Retry</button>
+                  </div>
+                )}
+                {!studyContent&&!studyLoading&&(
+                  <button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)}
+                    style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    Generate Study
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* MOVEMENT 3 — ORIENT */}
           {/* Calendar connect / today events */}
           {!calToken?(
             <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2}}>
@@ -2391,7 +2667,6 @@ export default function App(){
 
   const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
   const todayVerse=ANCH[dayOfYear%ANCH.length];
-  const [anchorExpanded,setAnchorExpanded]=useState(false);
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   // Fix iOS bounce-scroll bleed — match body/html background to the dark header
@@ -2551,17 +2826,6 @@ export default function App(){
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0"}}>
-        <div onClick={()=>setAnchorExpanded(e=>!e)} style={{borderLeft:"3px solid "+OX,padding:"12px 18px",marginBottom:28,background:OXF,cursor:"pointer"}}>
-          <div style={{fontSize:10,fontWeight:"bold",color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ Today's Anchor</div>
-          <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{todayVerse.v}"</p>
-          <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{todayVerse.r}</p>
-          <div style={{fontSize:11,color:OX,opacity:0.7,marginTop:8,fontStyle:"italic"}}>{anchorExpanded?"▲ Close":"↓ Tap for practical application"}</div>
-          {anchorExpanded&&todayVerse.app&&(
-            <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+OX+"25",animation:"fadeIn 0.25s ease"}}>
-              <p style={{fontSize:13,lineHeight:1.7,margin:0,color:INK}}>{todayVerse.app}</p>
-            </div>
-          )}
-        </div>
 
         {view==="dashboard"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
@@ -2696,7 +2960,7 @@ export default function App(){
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
-        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView}/>}
+        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse}/>}
 
         {view==="history"&&(
           <FieldNotesTab
