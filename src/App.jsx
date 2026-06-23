@@ -154,7 +154,7 @@ const TABS_ROW2 = [
   {id:"scripture",label:"Word",g:"✦",type:"g"},
   {id:"library",label:"Library",g:"☰",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
-  {id:"history",label:"Log",g:"◷",type:"g"},
+  {id:"history",label:"Field Notes",g:"◷",type:"g"},
   {id:"archive",label:"Archive",g:"▣",type:"g"},
 ];
 const TABS=[...TABS_ROW1,...TABS_ROW2];
@@ -1639,6 +1639,217 @@ Here is my unload:
   );
 }
 
+function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,streaks}){
+  const [view,setView]=useState("today");
+  const [joiceInputs,setJoeInputs]=useState({});
+  const [copied,setCopied]=useState(false);
+  const today=new Date().toISOString().slice(0,10);
+  const tk=today;
+  const todayHabits=habits[tk]||{};
+
+  // Pattern surfacing — find recurring categories in library and stack
+  function getPatterns(){
+    const catCounts={};
+    library.forEach(p=>{catCounts[p.category]=(catCounts[p.category]||0)+1;});
+    const topCat=Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
+    const patterns=library.map(p=>p.pattern).filter(Boolean);
+    const patternCounts={};
+    patterns.forEach(p=>{patternCounts[p]=(patternCounts[p]||0)+1;});
+    const topPattern=Object.entries(patternCounts).sort((a,b)=>b[1]-a[1])[0];
+    return{topCat,topPattern};
+  }
+
+  // Group history by date
+  function getRecentDays(){
+    const days={};
+    history.forEach(item=>{
+      if(!days[item.date])days[item.date]=[];
+      days[item.date].push(item);
+    });
+    return Object.entries(days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,14);
+  }
+
+  // Notion export — two layer format
+  function buildNotionExport(){
+    const now=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+    const L=[];
+    L.push("FIELD NOTE — "+now);
+    L.push("========================================");
+    L.push("");
+    L.push("THE STACK");
+    L.push("----------------------------------------");
+    if(stack.length){
+      stack.forEach(w=>L.push("• "+w.label+" ("+w.time+")"));
+    }else{
+      L.push("No stack entries today.");
+    }
+    if(joiceInputs.stack){L.push("");L.push("In Joe's Words: "+joiceInputs.stack);}
+    L.push("");
+    L.push("COMPLETIONS");
+    L.push("----------------------------------------");
+    const todayHistory=history.filter(h=>h.date===today);
+    if(todayHistory.length){
+      todayHistory.forEach(h=>L.push("✓ "+h.task+" ["+h.category+"]"));
+    }else{
+      L.push("No completions logged today.");
+    }
+    if(joiceInputs.completions){L.push("");L.push("In Joe's Words: "+joiceInputs.completions);}
+    L.push("");
+    L.push("HABIT SNAPSHOT");
+    L.push("----------------------------------------");
+    const habitDone=Object.values(todayHabits).filter(Boolean).length;
+    L.push("Completed: "+habitDone+" habits today");
+    if(joiceInputs.habits){L.push("");L.push("In Joe's Words: "+joiceInputs.habits);}
+    L.push("");
+    L.push("PATTERN FLAG");
+    L.push("----------------------------------------");
+    const {topCat,topPattern}=getPatterns();
+    if(topCat)L.push("Most active area: "+topCat[0]+" ("+topCat[1]+" Library entries)");
+    if(topPattern)L.push("Recurring pattern: "+topPattern[0]+" ("+topPattern[1]+"x)");
+    if(joiceInputs.pattern){L.push("");L.push("In Joe's Words: "+joiceInputs.pattern);}
+    L.push("");
+    L.push("FIELD NOTE");
+    L.push("----------------------------------------");
+    if(joiceInputs.fieldnote){L.push(joiceInputs.fieldnote);}else{L.push("(No field note written today)");}
+    L.push("");
+    L.push("========================================");
+    L.push("End of Field Note — Paste into Kingdom Notebook > Archive");
+    return L.join("\n");
+  }
+
+  const {topCat,topPattern}=getPatterns();
+  const recentDays=getRecentDays();
+
+  return(
+    <div style={{animation:"fadeIn 0.4s ease"}}>
+      {/* Header with view toggle */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <SL>Field Notes</SL>
+        <div style={{display:"flex",gap:6}}>
+          {["today","recent","archive"].map(v=>(
+            <button key={v} onClick={()=>setView(v)}
+              style={{padding:"4px 10px",background:view===v?INK:"transparent",color:view===v?"white":TAN,border:"1px solid "+(view===v?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,textTransform:"capitalize"}}>
+              {v==="archive"?"Archive":v==="recent"?"Recent":"Today"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* TODAY VIEW */}
+      {view==="today"&&(
+        <div>
+          {/* The Stack */}
+          <StackSection stack={stack} setStack={setStack}/>
+
+          {/* In Joe's Words — Stack */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ In Joe's Words — The Stack</div>
+            <textarea value={joiceInputs.stack||""} onChange={e=>setJoeInputs(p=>({...p,stack:e.target.value}))}
+              placeholder="How did today's stack feel? What surprised you? What was harder than expected?"
+              rows={3} style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+          </div>
+
+          {/* Completions */}
+          <div style={{marginBottom:16}}>
+            <SL>Completions Today</SL>
+            {history.filter(h=>h.date===today).length===0
+              ?<p style={{fontStyle:"italic",color:TAN,fontSize:13}}>Complete a project task and it will appear here.</p>
+              :history.filter(h=>h.date===today).map(item=>(
+                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:6}}>
+                  <div style={{width:20,height:20,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:11}}>✓</span></div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,color:INK}}>{item.task}</div>
+                    <div style={{fontSize:11,color:TAN,marginTop:2}}>{item.category}</div>
+                  </div>
+                </div>
+              ))
+            }
+            <textarea value={joiceInputs.completions||""} onChange={e=>setJoeInputs(p=>({...p,completions:e.target.value}))}
+              placeholder="In Joe's Words — what's worth noting about today's completions?"
+              rows={2} style={{width:"100%",marginTop:8,padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+          </div>
+
+          {/* Pattern flag */}
+          {(topCat||topPattern)&&(
+            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+GOLD,borderRadius:2}}>
+              <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Pattern Surfacing</div>
+              {topCat&&<p style={{fontSize:13,color:INK,margin:"0 0 4px"}}>Most active area: <strong>{topCat[0]}</strong> ({topCat[1]} Library entries)</p>}
+              {topPattern&&<p style={{fontSize:13,color:INK,margin:0}}>Recurring pattern: <strong>{topPattern[0]}</strong> ({topPattern[1]}×)</p>}
+              <textarea value={joiceInputs.pattern||""} onChange={e=>setJoeInputs(p=>({...p,pattern:e.target.value}))}
+                placeholder="In Joe's Words — what do you make of this pattern?"
+                rows={2} style={{width:"100%",marginTop:10,padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+            </div>
+          )}
+
+          {/* Field Note — free voice entry */}
+          <div style={{marginBottom:20}}>
+            <SL>Today's Field Note</SL>
+            <textarea value={joiceInputs.fieldnote||""} onChange={e=>setJoeInputs(p=>({...p,fieldnote:e.target.value}))}
+              placeholder="One honest paragraph about today. What God is doing. What you're carrying. What you want to remember."
+              rows={5} style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.65)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}/>
+          </div>
+
+          {/* Copy to Notion */}
+          <button onClick={()=>navigator.clipboard?.writeText(buildNotionExport()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
+            style={{width:"100%",padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,transition:"background 0.3s",marginBottom:6}}>
+            {copied?"✓ Copied to Clipboard — Paste into Notion":"Copy Field Note → Paste into Notion"}
+          </button>
+          <p style={{fontSize:11,color:TAN,fontStyle:"italic",textAlign:"center",margin:0}}>Paste into Kingdom Notebook → Archive in Notion</p>
+        </div>
+      )}
+
+      {/* RECENT VIEW — last 14 days */}
+      {view==="recent"&&(
+        <div>
+          <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:16,lineHeight:1.65}}>Last 14 days — patterns emerge when you look back.</p>
+          {!recentDays.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Complete tasks and they'll appear here.</div>}
+          {recentDays.map(([date,items])=>(
+            <div key={date} style={{marginBottom:12}}>
+              <div style={{fontSize:11,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>
+                {new Date(date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
+              </div>
+              {items.map(item=>(
+                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:4}}>
+                  <div style={{fontSize:13,color:INK,flex:1}}>{item.task}</div>
+                  <div style={{fontSize:11,color:TAN,flexShrink:0}}>{item.category}</div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ARCHIVE VIEW */}
+      {view==="archive"&&(
+        <div>
+          <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:16,lineHeight:1.65}}>Everything logged — searchable record of your growth.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+            {[["Completions",history.length],["Principles",library.length],["Prayers",prayers.filter(p=>p.answered).length]].map(([label,val])=>(
+              <div key={label} style={{padding:"12px 8px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
+                <div style={{fontSize:20,fontWeight:"bold",color:INK}}>{val}</div>
+                <div style={{fontSize:10,color:TAN,textTransform:"uppercase",letterSpacing:"1px",marginTop:2}}>{label}</div>
+              </div>
+            ))}
+          </div>
+          {history.length===0
+            ?<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Your record builds as you complete tasks.</div>
+            :history.map(item=>(
+              <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:5}}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:10}}>✓</span></div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,color:INK}}>{item.task}</div>
+                  <div style={{fontSize:11,color:TAN,marginTop:1}}>{item.category} · {item.date}</div>
+                </div>
+                <RDot level={item.resistance}/>
+              </div>
+            ))
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ArchiveTab({cats,library,prayers,habits,streaks,history}){
   const [copied,setCopied]=useState(false);
   const tk=new Date().toISOString().slice(0,10);
@@ -2303,10 +2514,10 @@ export default function App(){
     <div style={{minHeight:"100vh",background:PAPER,backgroundImage:"radial-gradient(ellipse at 60% 20%, rgba(184,149,106,0.03) 0%, transparent 60%), "+BG,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
-      <div style={{background:INK,position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0"}}>
+      <div style={{background:INK,position:"sticky",top:0,zIndex:100,width:"100%",left:0,right:0}}>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0",background:INK}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-            <div onClick={()=>setView("dashboard")} style={{cursor:"pointer"}}>
+            <div onClick={()=>setView("planner")} style={{cursor:"pointer"}}>
               <Logo size={100}/>
             </div>
             <div style={{width:1,height:90,background:"rgba(255,255,255,0.18)"}}/>
@@ -2488,27 +2699,16 @@ export default function App(){
         {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView}/>}
 
         {view==="history"&&(
-          <div style={{animation:"fadeIn 0.4s ease"}}>
-
-            {/* THE STACK */}
-            <StackSection stack={stack} setStack={setStack}/>
-
-            <SL>Completion Log</SL>
-            <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.65}}>Proof that things get done.</p>
-            {!history.length
-              ?<div style={{textAlign:"center",padding:"48px",color:TAN,fontStyle:"italic"}}>Complete your first task and it will appear here.</div>
-              :history.map(item=>(
-                <div key={item.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:6}}>
-                  <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"white",fontSize:12}}>v</span></div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:14,color:INK}}>{item.task}</div>
-                    <div style={{fontSize:12,color:TAN,marginTop:2}}>{item.category} - {item.date}</div>
-                  </div>
-                  <RDot level={item.resistance}/>
-                </div>
-              ))
-            }
-          </div>
+          <FieldNotesTab
+            stack={stack}
+            setStack={setStack}
+            history={history}
+            cats={cats}
+            library={library}
+            prayers={prayers}
+            habits={habits}
+            streaks={streaks}
+          />
         )}
 
         {view==="scripture"&&(
@@ -2536,4 +2736,3 @@ export default function App(){
     </div>
   );
 }
-// v47
