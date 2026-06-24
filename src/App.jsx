@@ -169,7 +169,7 @@ const TABS_ROW1 = [
 ];
 const TABS_ROW2 = [
   {id:"scripture",label:"Word",g:"✦",type:"g"},
-  {id:"library",label:"Library",g:"☰",type:"g"},
+  {id:"library",label:"Identity",g:"☰",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
   {id:"history",label:"Field Notes",g:"◷",type:"g"},
   {id:"letstalk",label:"Let's Talk",g:"♡",type:"g"},
@@ -1854,7 +1854,7 @@ function LibraryInsights({library,setAc,ac}){
         style={{width:"100%",padding:"11px 16px",background:open?"rgba(156,122,58,0.12)":"rgba(255,255,255,0.5)",border:"1px solid "+(open?GOLD:TANL),borderRadius:2,cursor:"pointer",fontFamily:"Georgia,serif",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:14,color:GOLD}}>✦</span>
-          <span style={{fontSize:13,color:INK,fontWeight:"bold"}}>Library Insights</span>
+          <span style={{fontSize:13,color:INK,fontWeight:"bold"}}>Identity Insights</span>
           <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{library.length} principles</span>
         </div>
         <span style={{fontSize:11,color:GOLD}}>{open?"▲ close":"▼ open"}</span>
@@ -2070,7 +2070,8 @@ Here is my unload:
 
       {/* Deposit button + panel */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <SL>Principle Library</SL>
+        <SL>Identity</SL>
+        <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.75}}>This is the battle. Every principle here lives in the space between who you think you are and who God says you are. Your unloads surface it. The Way Forward addresses it. This is where you track it, name it, and experience freedom in Christ.</p>
         <button onClick={()=>{setShowDeposit(d=>!d);setParseError(false);}}
           style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,marginBottom:10}}>
           {showDeposit?"× Close":"+ Deposit"}
@@ -2102,7 +2103,7 @@ Here is my unload:
           {parseError&&<p style={{fontSize:13,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
           <button onClick={handleDeposit} disabled={!pt.trim()}
             style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,opacity:pt.trim()?1:0.5}}>
-            ✦ Add to Library
+            ✦ Add to Identity
           </button>
         </div>
       )}
@@ -2943,62 +2944,82 @@ function AISuggestButton({cats,planner,setPlanner}){
 }
 
 const LT_SECTIONS=[
-  {id:"home",label:"Home",icon:"⌂",color:"#2E6B8A",desc:"Shawn & the kids. Articulating life, growth, vision to the people closest to you."},
-  {id:"faith",label:"Faith Conversations",icon:"✦",color:OX,desc:"Friends, pastors, conference connections. Deep faith dialogue, your positions."},
-  {id:"just",label:"Just Talking",icon:"◎",color:GOLD,desc:"Casual social. Who you are, what you love. Faith may come up naturally."},
-  {id:"new",label:"New Believers",icon:"◈",color:GRN,desc:"Keeping it simple and warm, not overwhelming."},
-  {id:"gospel",label:"Sharing the Gospel",icon:"⊕",color:PUR,desc:"How you'd actually start it, what you'd say, common responses."},
-  {id:"people",label:"People I Love",icon:"♡",color:"#7A4F6A",desc:"Private relational profiles. Your internal map to love them better."},
+  {id:"home",label:"Home",icon:"⌂",color:"#2E6B8A",mode:"topic",desc:"Shawn & the kids. Articulating life, growth, and vision to the people closest to you."},
+  {id:"faith",label:"Faith Conversations",icon:"✦",color:OX,mode:"topic",desc:"Friends, pastors, conference connections. Deep faith dialogue, your positions."},
+  {id:"just",label:"Just Talking",icon:"◎",color:GOLD,mode:"topic",desc:"Casual social. Who you are, what you love. Faith may come up naturally."},
+  {id:"new",label:"New Believers",icon:"◈",color:GRN,mode:"topic",desc:"Keeping it simple and warm, not overwhelming."},
+  {id:"gospel",label:"Sharing the Gospel",icon:"⊕",color:PUR,mode:"topic",desc:"How you'd actually start it, what you'd say, common responses."},
+  {id:"people",label:"People I Know",icon:"♡",color:"#7A4F6A",mode:"map",desc:"A private structured profile for relationships. Captures how you interpret them, how they're wired, and where friction tends to come from. Built entirely for prayer and self-awareness — no judgment. Your internal map to love and intercede more specifically."},
 ];
 
-const LT_PROMPT=`Let's Talk Card Deposit Prompt — SGM Orientation
+const LT_TOPIC_PROMPT=`Develop a Topic — Let's Talk Card
 
-Use this prompt to develop a Let's Talk card with Claude, then paste the result back.
+Paste anything you heard, read, or thought about — a podcast clip, sermon quote, article, or idea. Claude extrapolates the key points, frames your position, and builds it into a conversation card ready to use in your voice.
 
 Format your card like this:
 TOPIC: [Name or topic]
-SECTION: [Home / Faith Conversations / Just Talking / New Believers / Sharing the Gospel / People I Love]
+SECTION: [Home / Faith Conversations / Just Talking / New Believers / Sharing the Gospel]
 YOUR POSITION: [What you actually believe or want to communicate]
 KEY POINTS: [2-3 things that need to land]
 HOW IT USUALLY GOES: [What typically happens in this kind of conversation]
 SCRIPTURE: [Optional — one verse that anchors it]
 IN JOE'S WORDS: [Anything extra in your own voice]
 
-Ask Claude: "Help me develop a Let's Talk card for [name/topic]. Here's my raw thinking: [your notes]"`;
+Ask Claude: "Help me develop a Let's Talk card for [name/topic]. Here's my raw thinking: [your notes or paste]"`;
+
+const LT_MAP_PROMPT=`Relationship Map — People I Know
+
+A private structured profile for relationships. Built entirely for prayer and self-awareness — not judgment. Your internal map to love and intercede more specifically.
+
+Format your profile like this:
+TOPIC: [Person's name]
+SECTION: People I Know
+HOW THEY'RE WIRED: [What you've observed about how they think, feel, and process life]
+WHERE FRICTION COMES FROM: [Patterns, triggers, or dynamics that create distance]
+HOW TO LOVE THEM WELL: [Specific ways to reach them, what they need most from you]
+SCRIPTURE: [Optional — a verse you're praying for them]
+IN JOE'S WORDS: [Your honest internal read]
+
+Ask Claude: "Help me build a relationship profile for [name]. Here's my honest read: [your notes]"
+
+These are your observations — not facts, not verdicts. Written to help you love better, pray more specifically, and show up with grace. Between you and God.`;
 
 function LetsTalkTab({letstalk,setLetstalk}){
   const [section,setSection]=useState("home");
   const [showAdd,setShowAdd]=useState(false);
   const [showPrompt,setShowPrompt]=useState(false);
   const [copied,setCopied]=useState(false);
-  const [newCard,setNewCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
   const [expandedCard,setExpandedCard]=useState(null);
   const [pasteMode,setPasteMode]=useState(false);
   const [pasteText,setPasteText]=useState("");
 
+  // Separate form state for each mode
+  const [topicCard,setTopicCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
+  const [mapCard,setMapCard]=useState({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
+
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
+  const isMap=sec.mode==="map";
   const cards=(letstalk||[]).filter(c=>c.section===section);
+  const activePrompt=isMap?LT_MAP_PROMPT:LT_TOPIC_PROMPT;
 
   function addCard(){
-    if(!newCard.topic.trim())return;
-    const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...newCard};
+    const base=isMap?mapCard:topicCard;
+    if(!base.topic.trim())return;
+    const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...base,_mode:sec.mode};
     setLetstalk(p=>[card,...(p||[])]);
-    setNewCard({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
+    if(isMap)setMapCard({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
+    else setTopicCard({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
     setShowAdd(false);
   }
 
   function parsePaste(text){
     const get=(label)=>{const m=text.match(new RegExp(label+":(.+?)(?=\\n[A-Z]|$)","si"));return m?m[1].trim():"";};
     return{
-      topic:get("TOPIC"),
-      section,
-      position:get("YOUR POSITION"),
-      keypoints:get("KEY POINTS"),
-      howgoes:get("HOW IT USUALLY GOES"),
-      scripture:get("SCRIPTURE"),
-      inwords:get("IN JOE'S WORDS"),
-      id:Date.now(),
-      date:new Date().toISOString().slice(0,10),
+      topic:get("TOPIC"),section,_mode:sec.mode,
+      position:get("YOUR POSITION"),keypoints:get("KEY POINTS"),howgoes:get("HOW IT USUALLY GOES"),
+      wiring:get("HOW THEY'RE WIRED"),friction:get("WHERE FRICTION COMES FROM"),bestway:get("HOW TO LOVE THEM WELL"),
+      scripture:get("SCRIPTURE"),inwords:get("IN JOE'S WORDS"),
+      id:Date.now(),date:new Date().toISOString().slice(0,10),
     };
   }
 
@@ -3009,14 +3030,37 @@ function LetsTalkTab({letstalk,setLetstalk}){
     setPasteText("");setPasteMode(false);
   }
 
-  function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));}
+  function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));setExpandedCard(null);}
 
   function copyPrompt(){
-    navigator.clipboard.writeText(LT_PROMPT).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+    navigator.clipboard.writeText(activePrompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
   }
 
   const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2};
   const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2};
+
+  const TOPIC_FIELDS=[
+    {key:"position",label:"Your Position",ph:"What you actually believe or want to communicate..."},
+    {key:"keypoints",label:"Key Points",ph:"2-3 things that need to land..."},
+    {key:"howgoes",label:"How It Usually Goes",ph:"What typically happens in this kind of conversation..."},
+    {key:"scripture",label:"Scripture (optional)",ph:"One verse that anchors it..."},
+    {key:"inwords",label:"In Joe's Words",ph:"Anything extra in your own voice..."},
+  ];
+
+  const MAP_FIELDS=[
+    {key:"wiring",label:"How They're Wired",ph:"How they think, feel, and process life..."},
+    {key:"friction",label:"Where Friction Comes From",ph:"Patterns or dynamics that create distance..."},
+    {key:"bestway",label:"How to Love Them Well",ph:"Specific ways to reach them, what they need most..."},
+    {key:"scripture",label:"Scripture (optional)",ph:"A verse you're praying for them..."},
+    {key:"inwords",label:"In Joe's Words",ph:"Your honest internal read..."},
+  ];
+
+  const activeFields=isMap?MAP_FIELDS:TOPIC_FIELDS;
+  const activeForm=isMap?mapCard:topicCard;
+  const setActiveForm=isMap?setMapCard:setTopicCard;
+
+  // Card display fields
+  const cardFields=cards[0]?._mode==="map"||isMap?MAP_FIELDS:TOPIC_FIELDS;
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
@@ -3026,7 +3070,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {/* Section pills */}
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
         {LT_SECTIONS.map(s=>(
-          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);}}
+          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);}}
             style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
             {s.icon} {s.label}
           </button>
@@ -3034,31 +3078,38 @@ function LetsTalkTab({letstalk,setLetstalk}){
       </div>
 
       {/* Section description */}
-      <div style={{padding:"10px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:2,marginBottom:16}}>
-        <div style={{fontSize:11,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,fontWeight:"bold"}}>{sec.icon} {sec.label}</div>
-        <p style={{fontSize:13,color:INK,margin:0,lineHeight:1.6,fontStyle:"italic"}}>{sec.desc}</p>
+      <div style={{padding:"12px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:2,marginBottom:16}}>
+        <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,fontWeight:"bold"}}>
+          {sec.icon} {isMap?"Relationship Map":"Develop a Topic"}
+        </div>
+        <p style={{fontSize:13,color:INK,margin:0,lineHeight:1.7,fontStyle:"italic"}}>{sec.desc}</p>
+        {isMap&&(
+          <p style={{fontSize:12,color:TAN,margin:"10px 0 0",lineHeight:1.65,borderTop:"1px solid "+sec.color+"25",paddingTop:10}}>
+            These are your observations — not facts, not verdicts. This is how you see it, not necessarily how it is. Written to help you love better, pray more specifically, and show up with grace. Between you and God.
+          </p>
+        )}
       </div>
 
-      {/* ? prompt button */}
+      {/* Action buttons */}
       <div style={{display:"flex",gap:8,marginBottom:16}}>
-        <button onClick={()=>setShowAdd(s=>!s)}
+        <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
           style={{flex:1,padding:"9px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
           {showAdd?"× Cancel":"+ Add Card"}
         </button>
-        <button onClick={()=>setShowPrompt(s=>!s)}
+        <button onClick={()=>{setShowPrompt(s=>!s);setShowAdd(false);setPasteMode(false);}}
           style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>?</button>
       </div>
 
-      {/* Deposit prompt overlay */}
+      {/* Prompt overlay */}
       {showPrompt&&(
         <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ How to Build a Card</div>
-          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{LT_PROMPT}</pre>
+          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ {isMap?"Relationship Map":"Develop a Topic"}</div>
+          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
           <div style={{display:"flex",gap:8}}>
             <button onClick={copyPrompt} style={{flex:1,padding:"8px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"background 0.3s"}}>
               {copied?"✓ Copied":"Copy Prompt"}
             </button>
-            <button onClick={()=>{setShowPrompt(false);setPasteMode(true);setShowAdd(false);}}
+            <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}}
               style={{flex:1,padding:"8px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
               Paste Card
             </button>
@@ -3068,79 +3119,84 @@ function LetsTalkTab({letstalk,setLetstalk}){
 
       {/* Paste mode */}
       {pasteMode&&(
-        <div style={{marginBottom:16,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>✦ Paste Formatted Card</div>
-          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder={"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."} rows={8} style={ta}/>
-          <div style={{display:"flex",gap:8,marginTop:8}}>
+        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.65)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>✦ Paste from Claude</div>
+          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={8}
+            placeholder={isMap
+              ?"TOPIC: ...\nHOW THEY'RE WIRED: ...\nWHERE FRICTION COMES FROM: ...\nHOW TO LOVE THEM WELL: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."
+              :"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."}
+            style={{...ta,marginBottom:10}}/>
+          <div style={{display:"flex",gap:8}}>
             <button onClick={depositPaste} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Deposit Card</button>
-            <button onClick={()=>setPasteMode(false)} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+            <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* Quick add form */}
+      {/* Add form */}
       {showAdd&&(
-        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,fontWeight:"bold"}}>✦ New Card — {sec.label}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Topic / Person</div>
-              <input value={newCard.topic} onChange={e=>setNewCard(n=>({...n,topic:e.target.value}))} placeholder="Who or what is this about?" style={inp2}/></div>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Your position</div>
-              <textarea value={newCard.position} onChange={e=>setNewCard(n=>({...n,position:e.target.value}))} placeholder="What you actually believe or want to communicate..." rows={2} style={ta}/></div>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Key points to land</div>
-              <textarea value={newCard.keypoints} onChange={e=>setNewCard(n=>({...n,keypoints:e.target.value}))} placeholder="2-3 things that need to land..." rows={2} style={ta}/></div>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>How it usually goes</div>
-              <textarea value={newCard.howgoes} onChange={e=>setNewCard(n=>({...n,howgoes:e.target.value}))} placeholder="What typically happens in this kind of conversation..." rows={2} style={ta}/></div>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>Scripture (optional)</div>
-              <input value={newCard.scripture} onChange={e=>setNewCard(n=>({...n,scripture:e.target.value}))} placeholder="One verse that anchors it..." style={inp2}/></div>
-            <div><div style={{fontSize:11,color:TAN,marginBottom:4}}>In Joe's Words</div>
-              <textarea value={newCard.inwords} onChange={e=>setNewCard(n=>({...n,inwords:e.target.value}))} placeholder="Anything extra in your own voice..." rows={2} style={ta}/></div>
+        <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:14,fontWeight:"bold"}}>✦ {isMap?"New Relationship Profile":"New Card — "+sec.label}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div>
+              <div style={{fontSize:11,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
+              <input value={activeForm.topic} onChange={e=>setActiveForm(f=>({...f,topic:e.target.value}))} placeholder={isMap?"Name...":"Topic or name..."} style={inp2}/>
+            </div>
+            {activeFields.map(f=>(
+              <div key={f.key}>
+                <div style={{fontSize:11,color:TAN,marginBottom:4}}>{f.label}</div>
+                <textarea value={activeForm[f.key]||""} onChange={e=>setActiveForm(ff=>({...ff,[f.key]:e.target.value}))} placeholder={f.ph} rows={2} style={ta}/>
+              </div>
+            ))}
             <div style={{display:"flex",gap:8}}>
-              <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save Card</button>
+              <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save</button>
               <button onClick={()=>setShowAdd(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Cards list */}
+      {/* Empty state */}
       {cards.length===0&&!showAdd&&!pasteMode&&(
         <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
-          <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste a card from Claude.</p>
+          <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste from Claude.</p>
         </div>
       )}
 
+      {/* Cards */}
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {cards.map(card=>(
-          <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
-            <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
-                {card.position&&<div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>{card.position.slice(0,80)}{card.position.length>80?"…":""}</div>}
-              </div>
-              <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
-            </div>
-            {expandedCard===card.id&&(
-              <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                {[
-                  {label:"Your Position",val:card.position},
-                  {label:"Key Points",val:card.keypoints},
-                  {label:"How It Usually Goes",val:card.howgoes},
-                  {label:"Scripture",val:card.scripture},
-                  {label:"In Joe's Words",val:card.inwords},
-                ].filter(f=>f.val).map(f=>(
-                  <div key={f.label} style={{marginTop:12}}>
-                    <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
-                    <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{f.val}</p>
-                  </div>
-                ))}
-                <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
-                  <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
+        {cards.map(card=>{
+          const cardMode=card._mode||sec.mode;
+          const fields=cardMode==="map"?MAP_FIELDS:TOPIC_FIELDS;
+          return(
+            <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+              <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
+                  {(card.position||card.wiring)&&(
+                    <div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>
+                      {(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"…":""}
+                    </div>
+                  )}
                 </div>
+                <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
               </div>
-            )}
-          </div>
-        ))}
+              {expandedCard===card.id&&(
+                <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+                  {fields.filter(f=>card[f.key]).map(f=>(
+                    <div key={f.key} style={{marginTop:12}}>
+                      <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
+                      <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
+                    </div>
+                  ))}
+                  <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
+                    <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
