@@ -1,3 +1,4 @@
+// SGM Orientation v67 — Going Deeper, Let's Talk clean build
 import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
