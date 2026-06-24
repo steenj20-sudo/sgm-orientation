@@ -3003,6 +3003,8 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const [deeperResult,setDeeperResult]=useState(null);
   const [deeperLoading,setDeeperLoading]=useState(false);
 
+  const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
+  const isMap=sec.mode==="map";
   const isDeeper=sec.mode==="deeper";
 
   async function processDeeper(){
@@ -3048,10 +3050,8 @@ Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
     setDeeperResult(null);
   }
 
-  const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
-  const isMap=sec.mode==="map";
-  const cards=(letstalk||[]).filter(c=>c.section===section);
   const activePrompt=isMap?LT_MAP_PROMPT:LT_TOPIC_PROMPT;
+  const cards=(letstalk||[]).filter(c=>c.section===section);
 
   function addCard(){
     const base=isMap?mapCard:topicCard;
