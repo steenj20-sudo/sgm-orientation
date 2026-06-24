@@ -1666,7 +1666,6 @@ function StackSection({stack,setStack}){
   const [editingId,setEditingId]=useState(null);
   const [editDuration,setEditDuration]=useState("");
   const today=new Date().toISOString().slice(0,10);
-
   const DURATIONS=["5 min","15 min","30 min","~1 hr","~2 hrs","~3 hrs","~4 hrs","half day","all day"];
 
   function addWin(){
@@ -1688,15 +1687,15 @@ function StackSection({stack,setStack}){
     if(editingId===id)setEditingId(null);
   }
 
+  function openEdit(win){
+    setEditingId(win.id);
+    setEditDuration(win.duration||"");
+  }
+
   function saveDuration(id){
     setStack(s=>s.map(w=>w.id===id?{...w,duration:editDuration.trim()}:w));
     setEditingId(null);
     setEditDuration("");
-  }
-
-  function openEdit(win){
-    setEditingId(win.id);
-    setEditDuration(win.duration||"");
   }
 
   return(
@@ -1706,7 +1705,6 @@ function StackSection({stack,setStack}){
         <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{stack.length} win{stack.length!==1?"s":""} today</span>
       </div>
 
-      {/* Add input */}
       <div style={{display:"flex",gap:8,marginBottom:14}}>
         <input
           value={input}
@@ -1721,55 +1719,68 @@ function StackSection({stack,setStack}){
         </button>
       </div>
 
-      {/* Win cards */}
       {stack.length===0&&(
         <div style={{textAlign:"center",padding:"24px",color:TAN,fontStyle:"italic",fontSize:13,border:"1px dashed "+TANL,borderRadius:2}}>
           What's on your mind today? Go ahead and start stacking — completed, partial, anything you touched counts.
         </div>
       )}
-      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {stack.map((win)=>{
           const col=STACK_COLORS[win.colorIdx%STACK_COLORS.length];
           const isEditing=editingId===win.id;
           return(
             <div key={win.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+col+"40",borderLeft:"4px solid "+col,borderRadius:2,overflow:"hidden"}}>
-              {/* Main row */}
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px"}}>
+
+              {/* Win row */}
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px"}}>
                 <div style={{width:8,height:8,borderRadius:"50%",background:col,flexShrink:0}}/>
                 <div style={{flex:1,fontSize:13,color:INK,lineHeight:1.5}}>{win.label}</div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                  {win.duration&&!isEditing&&(
-                    <span style={{fontSize:11,color:col,fontWeight:"bold",background:col+"15",padding:"2px 7px",borderRadius:10}}>{win.duration}</span>
-                  )}
                   <div style={{fontSize:11,color:TANL}}>{win.time}</div>
-                  <button onClick={()=>isEditing?setEditingId(null):openEdit(win)}
-                    style={{background:"none",border:"none",color:isEditing?col:TANL,cursor:"pointer",fontSize:13,padding:"0 2px",flexShrink:0,lineHeight:1}}>
-                    {isEditing?"✕":"✎"}
-                  </button>
                   <button onClick={()=>removeWin(win.id)}
-                    style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:14,padding:"0 2px",flexShrink:0,lineHeight:1}}>×</button>
+                    style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:16,padding:"2px 4px",flexShrink:0,lineHeight:1}}>×</button>
                 </div>
               </div>
-              {/* Inline duration editor */}
+
+              {/* Duration row — always visible */}
+              <div style={{padding:"0 14px 11px",display:"flex",alignItems:"center",gap:8}}>
+                {win.duration&&!isEditing
+                  ?<button onClick={()=>openEdit(win)}
+                      style={{fontSize:12,color:col,fontWeight:"bold",background:col+"18",padding:"4px 12px",borderRadius:12,border:"1px solid "+col+"40",cursor:"pointer",fontFamily:"Georgia,serif"}}>
+                      {win.duration} — tap to edit
+                    </button>
+                  :<button onClick={()=>openEdit(win)}
+                      style={{fontSize:12,color:TAN,background:"transparent",padding:"4px 12px",borderRadius:12,border:"1px dashed "+TANL,cursor:"pointer",fontFamily:"Georgia,serif"}}>
+                      + How long did this take?
+                    </button>
+                }
+              </div>
+
+              {/* Inline duration picker */}
               {isEditing&&(
-                <div style={{padding:"10px 14px",borderTop:"1px solid "+col+"25",background:col+"06",animation:"fadeIn 0.2s ease"}}>
-                  <div style={{fontSize:10,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>How long did this take?</div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
+                <div style={{padding:"12px 14px",borderTop:"1px solid "+col+"25",background:col+"06",animation:"fadeIn 0.2s ease"}}>
+                  <div style={{fontSize:10,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>How long did this take?</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
                     {DURATIONS.map(d=>(
                       <button key={d} onClick={()=>setEditDuration(d)}
-                        style={{padding:"4px 10px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:10,transition:"all 0.15s"}}>
+                        style={{padding:"6px 12px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:12,transition:"all 0.15s"}}>
                         {d}
                       </button>
                     ))}
                   </div>
                   <div style={{display:"flex",gap:8}}>
                     <input value={editDuration} onChange={e=>setEditDuration(e.target.value)}
-                      placeholder="Or type your own — e.g. 45 min"
+                      placeholder="Or type — e.g. 45 min"
                       onKeyDown={e=>e.key==="Enter"&&saveDuration(win.id)}
-                      style={{flex:1,padding:"8px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                      style={{flex:1,padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
                     <button onClick={()=>saveDuration(win.id)}
-                      style={{padding:"8px 14px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                      style={{padding:"9px 18px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
                       Save
+                    </button>
+                    <button onClick={()=>setEditingId(null)}
+                      style={{padding:"9px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
+                      ×
                     </button>
                   </div>
                 </div>
@@ -2792,23 +2803,6 @@ IN JOE'S WORDS: [Anything extra in your own voice]
 
 Ask Claude: "Help me develop a Let's Talk card for [name/topic]. Here's my raw thinking: [your notes]"`;
 
-const LT_PEOPLE_PROMPT=`People I Love — Relational Profile Prompt
-
-Use this to build a private relational profile with Claude, then paste the result back.
-
-Format your profile like this:
-TOPIC: [Person's name]
-SECTION: People I Love
-HOW THEY'RE WIRED: [What you've observed about how they think, feel, and process life]
-WHERE FRICTION COMES FROM: [Patterns, triggers, or dynamics that create distance or tension]
-HOW TO LOVE THEM WELL: [Specific ways to reach them, what they need most from you]
-SCRIPTURE: [Optional — a verse you're praying for them]
-IN JOE'S WORDS: [Anything else — your honest internal read]
-
-Ask Claude: "Help me build a relational profile for [name]. Here's my honest read on them: [your notes]"
-
-Note: This is private. Your internal map. Not shared with them.`;
-
 function LetsTalkTab({letstalk,setLetstalk}){
   const [section,setSection]=useState("home");
   const [showAdd,setShowAdd]=useState(false);
@@ -2816,30 +2810,17 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const [copied,setCopied]=useState(false);
   const [newCard,setNewCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
   const [expandedCard,setExpandedCard]=useState(null);
-  const [editingCard,setEditingCard]=useState(null); // card id being edited
-  const [editForm,setEditForm]=useState({});
   const [pasteMode,setPasteMode]=useState(false);
   const [pasteText,setPasteText]=useState("");
 
-  // People I Love — separate profile fields
-  const [newProfile,setNewProfile]=useState({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
-
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
-  const isPeople=section==="people";
   const cards=(letstalk||[]).filter(c=>c.section===section);
 
   function addCard(){
-    if(isPeople){
-      if(!newProfile.topic.trim())return;
-      const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...newProfile,_type:"profile"};
-      setLetstalk(p=>[card,...(p||[])]);
-      setNewProfile({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
-    }else{
-      if(!newCard.topic.trim())return;
-      const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...newCard};
-      setLetstalk(p=>[card,...(p||[])]);
-      setNewCard({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
-    }
+    if(!newCard.topic.trim())return;
+    const card={id:Date.now(),section,date:new Date().toISOString().slice(0,10),...newCard};
+    setLetstalk(p=>[card,...(p||[])]);
+    setNewCard({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
     setShowAdd(false);
   }
 
@@ -2853,10 +2834,6 @@ function LetsTalkTab({letstalk,setLetstalk}){
       howgoes:get("HOW IT USUALLY GOES"),
       scripture:get("SCRIPTURE"),
       inwords:get("IN JOE'S WORDS"),
-      wiring:get("HOW THEY'RE WIRED"),
-      friction:get("WHERE FRICTION COMES FROM"),
-      bestway:get("HOW TO LOVE THEM WELL"),
-      _type:isPeople?"profile":undefined,
       id:Date.now(),
       date:new Date().toISOString().slice(0,10),
     };
@@ -2869,45 +2846,14 @@ function LetsTalkTab({letstalk,setLetstalk}){
     setPasteText("");setPasteMode(false);
   }
 
-  function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));setExpandedCard(null);}
-
-  function startEdit(card){
-    setEditingCard(card.id);
-    setEditForm({...card});
-    setExpandedCard(null);
-  }
-
-  function saveEdit(){
-    setLetstalk(p=>(p||[]).map(c=>c.id===editingCard?{...editForm}:c));
-    setEditingCard(null);
-    setEditForm({});
-  }
+  function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));}
 
   function copyPrompt(){
-    const prompt=isPeople?LT_PEOPLE_PROMPT:LT_PROMPT;
-    navigator.clipboard.writeText(prompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+    navigator.clipboard.writeText(LT_PROMPT).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
   }
 
   const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2};
   const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2};
-
-  // Card fields by section type
-  const CONV_FIELDS=[
-    {key:"position",label:"Your Position"},
-    {key:"keypoints",label:"Key Points"},
-    {key:"howgoes",label:"How It Usually Goes"},
-    {key:"scripture",label:"Scripture"},
-    {key:"inwords",label:"In Joe's Words"},
-  ];
-  const PROFILE_FIELDS=[
-    {key:"wiring",label:"How They're Wired"},
-    {key:"friction",label:"Where Friction Comes From"},
-    {key:"bestway",label:"How to Love Them Well"},
-    {key:"scripture",label:"Scripture"},
-    {key:"inwords",label:"In Joe's Words"},
-  ];
-
-  const activeFields=isPeople?PROFILE_FIELDS:CONV_FIELDS;
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
@@ -2917,7 +2863,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {/* Section pills */}
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
         {LT_SECTIONS.map(s=>(
-          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setEditingCard(null);}}
+          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);}}
             style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
             {s.icon} {s.label}
           </button>
@@ -2944,7 +2890,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {showPrompt&&(
         <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
           <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ How to Build a Card</div>
-          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{isPeople?LT_PEOPLE_PROMPT:LT_PROMPT}</pre>
+          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{LT_PROMPT}</pre>
           <div style={{display:"flex",gap:8}}>
             <button onClick={copyPrompt} style={{flex:1,padding:"8px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"background 0.3s"}}>
               {copied?"✓ Copied":"Copy Prompt"}
@@ -2953,111 +2899,6 @@ function LetsTalkTab({letstalk,setLetstalk}){
               style={{flex:1,padding:"8px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
               Paste Card
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Paste mode */}
-      {pasteMode&&(
-        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.65)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <SL>Paste from Claude</SL>
-          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={8}
-            placeholder={"TOPIC: ...\n"+(isPeople?"HOW THEY'RE WIRED: ...\nWHERE FRICTION COMES FROM: ...\nHOW TO LOVE THEM WELL: ...":"YOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...")+"\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."}
-            style={{...ta,marginBottom:10}}/>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={depositPaste} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Deposit Card</button>
-            <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* Add card form */}
-      {showAdd&&(
-        <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <SL c={sec.color}>{isPeople?"New Relational Profile":"New Card"}</SL>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <div>
-              <div style={{fontSize:11,color:TAN,marginBottom:4}}>{isPeople?"Person's name":"Topic / Person"}</div>
-              <input value={isPeople?newProfile.topic:newCard.topic}
-                onChange={e=>isPeople?setNewProfile(n=>({...n,topic:e.target.value})):setNewCard(n=>({...n,topic:e.target.value}))}
-                placeholder={isPeople?"Name...":"Topic or name..."} style={inp2}/>
-            </div>
-            {(isPeople?PROFILE_FIELDS:CONV_FIELDS).map(f=>(
-              <div key={f.key}>
-                <div style={{fontSize:11,color:TAN,marginBottom:4}}>{f.label}</div>
-                <textarea value={isPeople?newProfile[f.key]||"":newCard[f.key]||""}
-                  onChange={e=>isPeople?setNewProfile(n=>({...n,[f.key]:e.target.value})):setNewCard(n=>({...n,[f.key]:e.target.value}))}
-                  placeholder={f.label+"..."} rows={2} style={ta}/>
-              </div>
-            ))}
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save</button>
-              <button onClick={()=>setShowAdd(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit form — inline */}
-      {editingCard&&(
-        <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+sec.color+"50",borderTop:"3px solid "+sec.color,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <SL c={sec.color}>Editing: {editForm.topic}</SL>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <div>
-              <div style={{fontSize:11,color:TAN,marginBottom:4}}>{isPeople?"Person's name":"Topic / Person"}</div>
-              <input value={editForm.topic||""} onChange={e=>setEditForm(f=>({...f,topic:e.target.value}))} style={inp2}/>
-            </div>
-            {activeFields.map(f=>(
-              <div key={f.key}>
-                <div style={{fontSize:11,color:TAN,marginBottom:4}}>{f.label}</div>
-                <textarea value={editForm[f.key]||""} onChange={e=>setEditForm(ef=>({...ef,[f.key]:e.target.value}))} rows={2} style={ta}/>
-              </div>
-            ))}
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={saveEdit} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save Changes</button>
-              <button onClick={()=>setEditingCard(null)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cards list */}
-      {cards.length===0&&!showAdd&&!pasteMode&&!editingCard&&(
-        <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
-          <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste a card from Claude.</p>
-        </div>
-      )}
-
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {cards.map(card=>(
-          <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
-            <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
-                {(card.position||card.wiring)&&<div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>{(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"…":""}</div>}
-              </div>
-              <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
-            </div>
-            {expandedCard===card.id&&(
-              <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                {activeFields.filter(f=>card[f.key]).map(f=>(
-                  <div key={f.key} style={{marginTop:12}}>
-                    <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
-                    <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
-                  </div>
-                ))}
-                <div style={{marginTop:14,display:"flex",gap:8}}>
-                  <button onClick={()=>startEdit(card)} style={{flex:1,padding:"7px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Edit</button>
-                  <button onClick={()=>deleteCard(card.id)} style={{padding:"7px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
           </div>
         </div>
       )}
@@ -3327,9 +3168,9 @@ export default function App(){
             ))}
           </div>
         </div>
-        {/* Gradient transition band — cyan to navy, matching app icon gradient */}
-        <div style={{height:6,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)",width:"calc(100% + 40px)",marginLeft:-20}}/>
-        <div style={{height:2,background:INK,width:"calc(100% + 40px)",marginLeft:-20}}/>
+        {/* Gradient transition band */}
+        <div style={{height:6,background:"linear-gradient(to right, #1A2E4A, #1BAEE8, #6DDCE8, #1BAEE8, #1A2E4A)"}}/>
+        <div style={{height:2,background:INK}}/>
       </div>
 
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0",background:PAPER,minHeight:"calc(100vh - 180px)"}}>
