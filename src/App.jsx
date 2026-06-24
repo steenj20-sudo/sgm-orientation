@@ -1,4 +1,4 @@
-// SGM Orientation v70 — going deeper, copy for claude, stack reset, font bump
+// SGM Orientation v71 — going deeper, copy for claude, stack reset, font bump
 import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
@@ -3058,7 +3058,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
   }
 
   function parsePaste(text){
-    const get=(label)=>{const m=text.match(new RegExp(label+":(.+?)(?=\n[A-Z]|$)","si"));return m?m[1].trim():"";};
+    const get=(label)=>{const m=text.match(new RegExp(label+":(.+?)(?=\\n[A-Z]|$)","si"));return m?m[1].trim():"";};
     return{topic:get("TOPIC"),section,_mode:sec.mode,position:get("YOUR POSITION"),keypoints:get("KEY POINTS"),howgoes:get("HOW IT USUALLY GOES"),wiring:get("HOW THEY'RE WIRED"),friction:get("WHERE FRICTION COMES FROM"),bestway:get("HOW TO LOVE THEM WELL"),scripture:get("SCRIPTURE"),inwords:get("IN JOE'S WORDS"),id:Date.now(),date:new Date().toISOString().slice(0,10)};
   }
 
