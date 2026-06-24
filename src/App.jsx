@@ -2949,7 +2949,7 @@ const LT_SECTIONS=[
   {id:"just",label:"Just Talking",icon:"◎",color:GOLD,mode:"topic",desc:"Casual social. Who you are, what you love. Faith may come up naturally."},
   {id:"new",label:"New Believers",icon:"◈",color:GRN,mode:"topic",desc:"Keeping it simple and warm, not overwhelming."},
   {id:"gospel",label:"Sharing the Gospel",icon:"⊕",color:PUR,mode:"topic",desc:"How you'd actually start it, what you'd say, common responses."},
-  {id:"deeper",label:"Going Deeper",icon:"⬇",color:"#2E5B8A",mode:"deeper",desc:"You heard something and you're not done with it yet. Paste what you captured — sermon, podcast, conversation, idea — and let's pull out what matters and what you actually think about it."},
+  {id:"deeper",label:"Going Deeper",icon:"⬇",color:"#2E5B8A",mode:"deeper",desc:"You heard something and you're not done with it yet. Paste what you captured and let's pull out what matters."},
   {id:"people",label:"People I Know",icon:"♡",color:"#7A4F6A",mode:"map",desc:"A private structured profile for relationships. Captures how you interpret them, how they're wired, and where friction tends to come from. Built entirely for prayer and self-awareness — no judgment. Your internal map to love and intercede more specifically."},
 ];
 
@@ -2998,6 +2998,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const [topicCard,setTopicCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
   const [mapCard,setMapCard]=useState({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
 
+  // Going Deeper state
   const [deeperInput,setDeeperInput]=useState("");
   const [deeperSource,setDeeperSource]=useState("");
   const [deeperResult,setDeeperResult]=useState(null);
@@ -3006,24 +3007,14 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
   const isMap=sec.mode==="map";
   const isDeeper=sec.mode==="deeper";
+  const cards=(letstalk||[]).filter(c=>c.section===section);
+  const activePrompt=isMap?LT_MAP_PROMPT:LT_TOPIC_PROMPT;
 
   async function processDeeper(){
     if(!deeperInput.trim())return;
     setDeeperLoading(true);
     setDeeperResult(null);
-    const prompt=`You are helping Joe Steen process something he heard or encountered. Joe is a stay-at-home dad, 20 years sober, founder of SGM (Steen Growth Ministries), faith formation platform. His anchor verse is Proverbs 3:5-6.
-
-Source: ${deeperSource||"not specified"}
-
-What Joe captured:
-${deeperInput}
-
-Do three things:
-1. WHAT'S HERE — Pull out the 2-3 most important ideas in plain language. What is this actually saying?
-2. WHAT JOE THINKS — Based on what he wrote, what does he seem to believe or be wrestling with? Be honest, not flattering.
-3. GOING DEEPER — One question he could sit with, and one scripture that speaks to the core of this.
-
-Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
+    const prompt=`You are helping Joe Steen process something he heard or encountered. Joe is a stay-at-home dad, 20 years sober, founder of SGM (Steen Growth Ministries). His anchor verse is Proverbs 3:5-6.\n\nSource: ${deeperSource||"not specified"}\n\nWhat Joe captured:\n${deeperInput}\n\nDo three things:\n1. WHAT'S HERE — Pull out the 2-3 most important ideas in plain language.\n2. WHAT JOE THINKS — Based on what he wrote, what does he seem to believe or be wrestling with? Be honest.\n3. GOING DEEPER — One question he could sit with, and one scripture that speaks to the core of this.\n\nTight, no filler. Write like an honest friend who knows Joe well.`;
     try{
       const result=await claudeAPI(prompt,800);
       setDeeperResult(result);
@@ -3035,23 +3026,10 @@ Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
 
   function saveDeeperCard(){
     if(!deeperResult)return;
-    const card={
-      id:Date.now(),
-      section:"deeper",
-      date:new Date().toISOString().slice(0,10),
-      _mode:"deeper",
-      topic:deeperSource||deeperInput.slice(0,60)+"…",
-      raw:deeperInput,
-      insight:deeperResult,
-    };
+    const card={id:Date.now(),section:"deeper",date:new Date().toISOString().slice(0,10),_mode:"deeper",topic:deeperSource||deeperInput.slice(0,60)+"…",raw:deeperInput,insight:deeperResult};
     setLetstalk(p=>[card,...(p||[])]);
-    setDeeperInput("");
-    setDeeperSource("");
-    setDeeperResult(null);
+    setDeeperInput("");setDeeperSource("");setDeeperResult(null);
   }
-
-  const activePrompt=isMap?LT_MAP_PROMPT:LT_TOPIC_PROMPT;
-  const cards=(letstalk||[]).filter(c=>c.section===section);
 
   function addCard(){
     const base=isMap?mapCard:topicCard;
@@ -3141,7 +3119,7 @@ Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
         )}
       </div>
 
-      {/* Going Deeper — inline AI processor */}
+      {/* Going Deeper UI */}
       {isDeeper&&(
         <div style={{animation:"fadeIn 0.3s ease"}}>
           <div style={{marginBottom:10}}>
@@ -3150,14 +3128,14 @@ Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
               placeholder="Podcast, sermon, conversation, book, video..."
               style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
           </div>
-          <div style={{marginBottom:10}}>
+          <div style={{marginBottom:12}}>
             <div style={{fontSize:11,color:TAN,marginBottom:4}}>What did you capture? Paste it all in.</div>
             <textarea value={deeperInput} onChange={e=>setDeeperInput(e.target.value)} rows={6}
               placeholder="Dump everything here — notes, quotes, what hit you, what you're still chewing on. Nothing is too raw."
               style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
           </div>
           <button onClick={processDeeper} disabled={!deeperInput.trim()||deeperLoading}
-            style={{width:"100%",padding:"11px",background:deeperInput.trim()&&!deeperLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:deeperInput.trim()&&!deeperLoading?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,marginBottom:12,transition:"background 0.2s"}}>
+            style={{width:"100%",padding:"11px",background:deeperInput.trim()&&!deeperLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:deeperInput.trim()&&!deeperLoading?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,marginBottom:12}}>
             {deeperLoading?"Going deeper...":"Go Deeper ⬇"}
           </button>
           {deeperLoading&&(
@@ -3211,118 +3189,114 @@ Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
           )}
         </div>
       )}
-
-      {/* Action buttons — other modes only */}
-      {!isDeeper&&(
-      <div style={{display:"flex",gap:8,marginBottom:16}}>
-        <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
-          style={{flex:1,padding:"9px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-          {showAdd?"× Cancel":"+ Add Card"}
-        </button>
-        <button onClick={()=>{setShowPrompt(s=>!s);setShowAdd(false);setPasteMode(false);}}
-          style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>?</button>
-      </div>
-      )}
-
       {!isDeeper&&(<>
-      {/* Prompt overlay */}
-      {showPrompt&&(
-        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ {isMap?"Relationship Map":"Develop a Topic"}</div>
-          <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={copyPrompt} style={{flex:1,padding:"8px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"background 0.3s"}}>
-              {copied?"✓ Copied":"Copy Prompt"}
-            </button>
-            <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}}
-              style={{flex:1,padding:"8px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
-              Paste Card
-            </button>
-          </div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
+            style={{flex:1,padding:"9px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+            {showAdd?"× Cancel":"+ Add Card"}
+          </button>
+          <button onClick={()=>{setShowPrompt(s=>!s);setShowAdd(false);setPasteMode(false);}}
+            style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>?</button>
         </div>
-      )}
 
-      {/* Paste mode */}
-      {pasteMode&&(
-        <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.65)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>✦ Paste from Claude</div>
-          <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={8}
-            placeholder={isMap
-              ?"TOPIC: ...\nHOW THEY'RE WIRED: ...\nWHERE FRICTION COMES FROM: ...\nHOW TO LOVE THEM WELL: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."
-              :"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."}
-            style={{...ta,marginBottom:10}}/>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={depositPaste} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Deposit Card</button>
-            <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* Add form */}
-      {showAdd&&(
-        <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:14,fontWeight:"bold"}}>✦ {isMap?"New Relationship Profile":"New Card — "+sec.label}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <div>
-              <div style={{fontSize:11,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
-              <input value={activeForm.topic} onChange={e=>setActiveForm(f=>({...f,topic:e.target.value}))} placeholder={isMap?"Name...":"Topic or name..."} style={inp2}/>
-            </div>
-            {activeFields.map(f=>(
-              <div key={f.key}>
-                <div style={{fontSize:11,color:TAN,marginBottom:4}}>{f.label}</div>
-                <textarea value={activeForm[f.key]||""} onChange={e=>setActiveForm(ff=>({...ff,[f.key]:e.target.value}))} placeholder={f.ph} rows={2} style={ta}/>
-              </div>
-            ))}
+        {/* Prompt overlay */}
+        {showPrompt&&(
+          <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>✦ {isMap?"Relationship Map":"Develop a Topic"}</div>
+            <pre style={{fontFamily:"Georgia,serif",fontSize:12,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save</button>
-              <button onClick={()=>setShowAdd(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+              <button onClick={copyPrompt} style={{flex:1,padding:"8px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"background 0.3s"}}>
+                {copied?"✓ Copied":"Copy Prompt"}
+              </button>
+              <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}}
+                style={{flex:1,padding:"8px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                Paste Card
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Empty state */}
-      {cards.length===0&&!showAdd&&!pasteMode&&(
-        <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
-          <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste from Claude.</p>
-        </div>
-      )}
-
-      {/* Cards */}
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {cards.map(card=>{
-          const cardMode=card._mode||sec.mode;
-          const fields=cardMode==="map"?MAP_FIELDS:TOPIC_FIELDS;
-          return(
-            <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
-              <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
-                  {(card.position||card.wiring)&&(
-                    <div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>
-                      {(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"…":""}
-                    </div>
-                  )}
-                </div>
-                <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
-              </div>
-              {expandedCard===card.id&&(
-                <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                  {fields.filter(f=>card[f.key]).map(f=>(
-                    <div key={f.key} style={{marginTop:12}}>
-                      <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
-                      <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
-                    </div>
-                  ))}
-                  <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
-                    <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
-                  </div>
-                </div>
-              )}
+        {/* Paste mode */}
+        {pasteMode&&(
+          <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.65)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>✦ Paste from Claude</div>
+            <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={8}
+              placeholder={isMap
+                ?"TOPIC: ...\nHOW THEY'RE WIRED: ...\nWHERE FRICTION COMES FROM: ...\nHOW TO LOVE THEM WELL: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."
+                :"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."}
+              style={{...ta,marginBottom:10}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={depositPaste} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Deposit Card</button>
+              <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        )}
+
+        {/* Add form */}
+        {showAdd&&(
+          <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:14,fontWeight:"bold"}}>✦ {isMap?"New Relationship Profile":"New Card — "+sec.label}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <div>
+                <div style={{fontSize:11,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
+                <input value={activeForm.topic} onChange={e=>setActiveForm(f=>({...f,topic:e.target.value}))} placeholder={isMap?"Name...":"Topic or name..."} style={inp2}/>
+              </div>
+              {activeFields.map(f=>(
+                <div key={f.key}>
+                  <div style={{fontSize:11,color:TAN,marginBottom:4}}>{f.label}</div>
+                  <textarea value={activeForm[f.key]||""} onChange={e=>setActiveForm(ff=>({...ff,[f.key]:e.target.value}))} placeholder={f.ph} rows={2} style={ta}/>
+                </div>
+              ))}
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={addCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save</button>
+                <button onClick={()=>setShowAdd(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {cards.length===0&&!showAdd&&!pasteMode&&(
+          <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
+            <p style={{color:TAN,fontStyle:"italic",fontSize:14,margin:0}}>No cards yet for {sec.label}. Add one above or paste from Claude.</p>
+          </div>
+        )}
+
+        {/* Cards */}
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {cards.map(card=>{
+            const cardMode=card._mode||sec.mode;
+            const fields=cardMode==="map"?MAP_FIELDS:TOPIC_FIELDS;
+            return(
+              <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+                <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
+                    {(card.position||card.wiring)&&(
+                      <div style={{fontSize:13,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>
+                        {(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"…":""}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{fontSize:11,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
+                </div>
+                {expandedCard===card.id&&(
+                  <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+                    {fields.filter(f=>card[f.key]).map(f=>(
+                      <div key={f.key} style={{marginTop:12}}>
+                        <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ {f.label}</div>
+                        <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
+                      </div>
+                    ))}
+                    <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
+                      <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </>)}
     </div>
   );
