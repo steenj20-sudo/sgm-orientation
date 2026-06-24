@@ -2949,6 +2949,7 @@ const LT_SECTIONS=[
   {id:"just",label:"Just Talking",icon:"◎",color:GOLD,mode:"topic",desc:"Casual social. Who you are, what you love. Faith may come up naturally."},
   {id:"new",label:"New Believers",icon:"◈",color:GRN,mode:"topic",desc:"Keeping it simple and warm, not overwhelming."},
   {id:"gospel",label:"Sharing the Gospel",icon:"⊕",color:PUR,mode:"topic",desc:"How you'd actually start it, what you'd say, common responses."},
+  {id:"deeper",label:"Going Deeper",icon:"⬇",color:"#2E5B8A",mode:"deeper",desc:"You heard something and you're not done with it yet. Paste what you captured — sermon, podcast, conversation, idea — and let's pull out what matters and what you actually think about it."},
   {id:"people",label:"People I Know",icon:"♡",color:"#7A4F6A",mode:"map",desc:"A private structured profile for relationships. Captures how you interpret them, how they're wired, and where friction tends to come from. Built entirely for prayer and self-awareness — no judgment. Your internal map to love and intercede more specifically."},
 ];
 
@@ -2996,6 +2997,56 @@ function LetsTalkTab({letstalk,setLetstalk}){
   // Separate form state for each mode
   const [topicCard,setTopicCard]=useState({topic:"",position:"",keypoints:"",howgoes:"",scripture:"",inwords:""});
   const [mapCard,setMapCard]=useState({topic:"",wiring:"",friction:"",bestway:"",scripture:"",inwords:""});
+
+  const [deeperInput,setDeeperInput]=useState("");
+  const [deeperSource,setDeeperSource]=useState("");
+  const [deeperResult,setDeeperResult]=useState(null);
+  const [deeperLoading,setDeeperLoading]=useState(false);
+
+  const isDeeper=sec.mode==="deeper";
+
+  async function processDeeper(){
+    if(!deeperInput.trim())return;
+    setDeeperLoading(true);
+    setDeeperResult(null);
+    const prompt=`You are helping Joe Steen process something he heard or encountered. Joe is a stay-at-home dad, 20 years sober, founder of SGM (Steen Growth Ministries), faith formation platform. His anchor verse is Proverbs 3:5-6.
+
+Source: ${deeperSource||"not specified"}
+
+What Joe captured:
+${deeperInput}
+
+Do three things:
+1. WHAT'S HERE — Pull out the 2-3 most important ideas in plain language. What is this actually saying?
+2. WHAT JOE THINKS — Based on what he wrote, what does he seem to believe or be wrestling with? Be honest, not flattering.
+3. GOING DEEPER — One question he could sit with, and one scripture that speaks to the core of this.
+
+Keep it tight. No filler. Write like an honest friend who knows Joe well.`;
+    try{
+      const result=await claudeAPI(prompt,800);
+      setDeeperResult(result);
+    }catch(e){
+      setDeeperResult("Couldn't reach Claude right now. Try again.");
+    }
+    setDeeperLoading(false);
+  }
+
+  function saveDeeperCard(){
+    if(!deeperResult)return;
+    const card={
+      id:Date.now(),
+      section:"deeper",
+      date:new Date().toISOString().slice(0,10),
+      _mode:"deeper",
+      topic:deeperSource||deeperInput.slice(0,60)+"…",
+      raw:deeperInput,
+      insight:deeperResult,
+    };
+    setLetstalk(p=>[card,...(p||[])]);
+    setDeeperInput("");
+    setDeeperSource("");
+    setDeeperResult(null);
+  }
 
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
   const isMap=sec.mode==="map";
@@ -3080,7 +3131,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {/* Section description */}
       <div style={{padding:"12px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:2,marginBottom:16}}>
         <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,fontWeight:"bold"}}>
-          {sec.icon} {isMap?"Relationship Map":"Develop a Topic"}
+          {sec.icon} {isDeeper?"Going Deeper":isMap?"Relationship Map":"Develop a Topic"}
         </div>
         <p style={{fontSize:13,color:INK,margin:0,lineHeight:1.7,fontStyle:"italic"}}>{sec.desc}</p>
         {isMap&&(
@@ -3090,7 +3141,79 @@ function LetsTalkTab({letstalk,setLetstalk}){
         )}
       </div>
 
-      {/* Action buttons */}
+      {/* Going Deeper — inline AI processor */}
+      {isDeeper&&(
+        <div style={{animation:"fadeIn 0.3s ease"}}>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:11,color:TAN,marginBottom:4}}>Where did this come from?</div>
+            <input value={deeperSource} onChange={e=>setDeeperSource(e.target.value)}
+              placeholder="Podcast, sermon, conversation, book, video..."
+              style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:11,color:TAN,marginBottom:4}}>What did you capture? Paste it all in.</div>
+            <textarea value={deeperInput} onChange={e=>setDeeperInput(e.target.value)} rows={6}
+              placeholder="Dump everything here — notes, quotes, what hit you, what you're still chewing on. Nothing is too raw."
+              style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+          </div>
+          <button onClick={processDeeper} disabled={!deeperInput.trim()||deeperLoading}
+            style={{width:"100%",padding:"11px",background:deeperInput.trim()&&!deeperLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:deeperInput.trim()&&!deeperLoading?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,marginBottom:12,transition:"background 0.2s"}}>
+            {deeperLoading?"Going deeper...":"Go Deeper ⬇"}
+          </button>
+          {deeperLoading&&(
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0"}}>
+              <div style={{width:16,height:16,border:"2px solid "+sec.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+              <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Processing what you captured...</span>
+            </div>
+          )}
+          {deeperResult&&!deeperLoading&&(
+            <div style={{padding:"16px",background:"rgba(255,255,255,0.75)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,marginBottom:16,animation:"fadeIn 0.3s ease"}}>
+              <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,opacity:0.85}}>✦ Going Deeper</div>
+              <p style={{fontSize:14,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{deeperResult}</p>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={saveDeeperCard} style={{flex:1,padding:"9px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Save This</button>
+                <button onClick={()=>{setDeeperResult(null);setDeeperInput("");setDeeperSource("");}} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Clear</button>
+              </div>
+            </div>
+          )}
+          {cards.length>0&&(
+            <div style={{marginTop:8}}>
+              <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ Saved</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {cards.map(card=>(
+                  <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+                    <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"12px 14px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,color:INK,fontWeight:"bold",marginBottom:2}}>{card.topic}</div>
+                        <div style={{fontSize:11,color:TAN}}>{card.date}</div>
+                      </div>
+                      <span style={{fontSize:11,color:sec.color,marginLeft:10}}>{expandedCard===card.id?"▲":"▼"}</span>
+                    </div>
+                    {expandedCard===card.id&&(
+                      <div style={{padding:"0 14px 14px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+                        {card.raw&&<div style={{marginTop:12}}>
+                          <div style={{fontSize:10,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.7}}>What You Captured</div>
+                          <p style={{fontSize:13,color:TAN,lineHeight:1.7,fontStyle:"italic",margin:0}}>{card.raw}</p>
+                        </div>}
+                        {card.insight&&<div style={{marginTop:14}}>
+                          <div style={{fontSize:10,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Going Deeper</div>
+                          <p style={{fontSize:13,color:INK,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}}>{card.insight}</p>
+                        </div>}
+                        <div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}>
+                          <button onClick={()=>deleteCard(card.id)} style={{padding:"5px 12px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Delete</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Action buttons — other modes only */}
+      {!isDeeper&&(
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
           style={{flex:1,padding:"9px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
@@ -3099,7 +3222,9 @@ function LetsTalkTab({letstalk,setLetstalk}){
         <button onClick={()=>{setShowPrompt(s=>!s);setShowAdd(false);setPasteMode(false);}}
           style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>?</button>
       </div>
+      )}
 
+      {!isDeeper&&(<>
       {/* Prompt overlay */}
       {showPrompt&&(
         <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
@@ -3198,6 +3323,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
           );
         })}
       </div>
+      </>)}
     </div>
   );
 }
