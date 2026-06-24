@@ -1803,6 +1803,156 @@ function StackSection({stack,setStack}){
   );
 }
 
+function LibraryInsights({library,setAc,ac}){
+  const [open,setOpen]=useState(false);
+  const [attentionMode,setAttentionMode]=useState(null); // "prayer" | "scripture"
+  const [aiResult,setAiResult]=useState("");
+  const [aiLoading,setAiLoading]=useState(false);
+
+  if(!library.length)return null;
+
+  // --- Data mining ---
+  const counts=LCATS.reduce((a,c)=>{a[c.id]=library.filter(p=>p.category===c.id).length;return a;},{});
+  const maxCount=Math.max(...Object.values(counts),1);
+
+  // Pattern frequency
+  const patternMap={};
+  library.forEach(e=>{
+    if(e.pattern){
+      const p=e.pattern.trim().toLowerCase();
+      patternMap[p]=(patternMap[p]||0)+1;
+    }
+  });
+  const topPatterns=Object.entries(patternMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  // Thinnest category — the one with fewest entries (but at least some data exists)
+  const thinnest=LCATS.slice().sort((a,b)=>(counts[a.id]||0)-(counts[b.id]||0))[0];
+  const thinnestCount=counts[thinnest.id]||0;
+
+  // Most recent tag
+  const recentTags=library.slice(0,5).map(e=>e.tag).filter(Boolean);
+  const topTag=recentTags[0]||null;
+
+  async function runAI(mode){
+    setAttentionMode(mode);
+    setAiLoading(true);
+    setAiResult("");
+    const principles=library.filter(e=>e.category===thinnest.id).map(e=>e.principle).join("\n");
+    const allPatterns=topPatterns.map(([p,n])=>`${p} (${n}x)`).join(", ");
+    const prompt=mode==="prayer"
+      ?`You are a pastoral coach for Joe Steen, founder of SGM. Joe's Library shows his thinnest category is "${thinnest.label}" with only ${thinnestCount} entries. His most recurring patterns across all categories are: ${allPatterns}. His principles in ${thinnest.label} so far: ${principles||"none yet"}.\n\nWrite Joe a short, honest, personal prayer — 4-6 sentences — that addresses what he's not yet naming in the ${thinnest.label} category. Use "I" from Joe's perspective. No filler, no self-help language. Speak to the real thing.`
+      :`You are a pastoral coach for Joe Steen, founder of SGM. Joe's recurring patterns in his Library are: ${allPatterns}. His thinnest category is "${thinnest.label}".\n\nGive Joe 2-3 scripture passages (book chapter:verse + the verse text) that speak directly to his most repeated patterns. For each one, one sentence in Joe's voice on why it's relevant to him specifically. No filler. Real and honest.`;
+    try{
+      const result=await claudeAPI(prompt,600);
+      setAiResult(result);
+    }catch(e){
+      setAiResult("Couldn't reach Claude right now. Try again in a moment.");
+    }
+    setAiLoading(false);
+  }
+
+  function closeAI(){setAttentionMode(null);setAiResult("");setAiLoading(false);}
+
+  return(
+    <div style={{marginBottom:20}}>
+      {/* Toggle button */}
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{width:"100%",padding:"11px 16px",background:open?"rgba(156,122,58,0.12)":"rgba(255,255,255,0.5)",border:"1px solid "+(open?GOLD:TANL),borderRadius:2,cursor:"pointer",fontFamily:"Georgia,serif",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:14,color:GOLD}}>✦</span>
+          <span style={{fontSize:13,color:INK,fontWeight:"bold"}}>Library Insights</span>
+          <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{library.length} principles</span>
+        </div>
+        <span style={{fontSize:11,color:GOLD}}>{open?"▲ close":"▼ open"}</span>
+      </button>
+
+      {open&&(
+        <div style={{border:"1px solid "+GOLD+"40",borderTop:"none",borderRadius:"0 0 2px 2px",background:"rgba(255,255,255,0.55)",padding:"18px 16px",animation:"fadeIn 0.25s ease"}}>
+
+          {/* Category bars */}
+          <div style={{fontSize:10,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.9}}>✦ By Category — tap to filter</div>
+          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:22}}>
+            {LCATS.map(cat=>{
+              const count=counts[cat.id]||0;
+              const pct=Math.max((count/maxCount)*100,count>0?6:0);
+              const isActive=ac===cat.id;
+              return(
+                <button key={cat.id} onClick={()=>setAc(isActive?"all":cat.id)}
+                  style={{background:"none",border:"none",padding:0,cursor:"pointer",textAlign:"left",width:"100%"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                    <span style={{fontSize:12,color:cat.color,width:16,textAlign:"center"}}>{cat.icon}</span>
+                    <span style={{fontSize:12,color:isActive?cat.color:INK,fontFamily:"Georgia,serif",fontWeight:isActive?"bold":"normal",flex:1}}>{cat.label}</span>
+                    <span style={{fontSize:11,color:cat.color,fontWeight:"bold"}}>{count}</span>
+                  </div>
+                  <div style={{height:8,background:"rgba(26,46,74,0.07)",borderRadius:4,overflow:"hidden",marginLeft:26}}>
+                    <div style={{height:"100%",width:pct+"%",background:cat.color,borderRadius:4,transition:"width 0.5s ease",opacity:isActive?1:0.75,boxShadow:isActive?"0 0 6px "+cat.color+"60":"none"}}/>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Top patterns */}
+          {topPatterns.length>0&&(
+            <div style={{marginBottom:22}}>
+              <div style={{fontSize:10,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.9}}>✦ Recurring Patterns</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                {topPatterns.map(([pattern,count],i)=>{
+                  const size=i===0?15:i===1?14:13;
+                  const opacity=i===0?1:i===1?0.85:0.7;
+                  const col=LCATS[i%LCATS.length].color;
+                  return(
+                    <div key={pattern} style={{padding:"5px 12px",background:col+"14",border:"1px solid "+col+"40",borderRadius:12,display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:size,color:col,fontFamily:"Georgia,serif",opacity,fontStyle:"italic"}}>{pattern}</span>
+                      <span style={{fontSize:10,color:col,opacity:0.7,fontWeight:"bold"}}>{count}×</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Needs attention */}
+          <div style={{background:thinnest.color+"0D",border:"1px solid "+thinnest.color+"35",borderLeft:"3px solid "+thinnest.color,borderRadius:2,padding:"12px 14px",marginBottom:attentionMode?12:0}}>
+            <div style={{fontSize:10,color:thinnest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Needs Attention</div>
+            <p style={{fontSize:13,color:INK,margin:"0 0 10px",lineHeight:1.65}}>
+              <span style={{fontWeight:"bold",color:thinnest.color}}>{thinnest.icon} {thinnest.label}</span> is your thinnest area — only {thinnestCount} {thinnestCount===1?"principle":"principles"} deposited. Anything worth naming from the last few days?
+            </p>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>attentionMode==="prayer"?closeAI():runAI("prayer")}
+                style={{flex:1,padding:"8px 10px",background:attentionMode==="prayer"?thinnest.color:"transparent",color:attentionMode==="prayer"?"white":thinnest.color,border:"1px solid "+thinnest.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
+                {attentionMode==="prayer"&&aiLoading?"Writing...":"Pray into it"}
+              </button>
+              <button onClick={()=>attentionMode==="scripture"?closeAI():runAI("scripture")}
+                style={{flex:1,padding:"8px 10px",background:attentionMode==="scripture"?thinnest.color:"transparent",color:attentionMode==="scripture"?"white":thinnest.color,border:"1px solid "+thinnest.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
+                {attentionMode==="scripture"&&aiLoading?"Finding...":"Scripture for it"}
+              </button>
+            </div>
+          </div>
+
+          {/* AI result panel */}
+          {attentionMode&&(
+            <div style={{marginTop:0,padding:"14px 16px",background:"rgba(255,255,255,0.75)",border:"1px solid "+thinnest.color+"40",borderTop:"none",borderRadius:"0 0 2px 2px",animation:"fadeIn 0.3s ease"}}>
+              {aiLoading
+                ?<div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0"}}>
+                    <div style={{width:16,height:16,border:"2px solid "+thinnest.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                    <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{attentionMode==="prayer"?"Writing your prayer...":"Finding scripture..."}</span>
+                  </div>
+                :<div>
+                    <div style={{fontSize:10,color:thinnest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ {attentionMode==="prayer"?"A Prayer for You":"Scripture for Your Patterns"}</div>
+                    <p style={{fontSize:14,lineHeight:1.85,color:INK,margin:"0 0 12px",whiteSpace:"pre-wrap"}}>{aiResult}</p>
+                    <button onClick={closeAI} style={{background:"none",border:"1px solid "+TANL,color:TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Close</button>
+                  </div>
+              }
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LibraryTab({library,setLibrary}){
   const [ac,setAc]=useState("all");
   const [showDeposit,setShowDeposit]=useState(false);
@@ -1905,6 +2055,9 @@ Here is my unload:
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
+      {/* Insights panel */}
+      <LibraryInsights library={library} setAc={setAc} ac={ac}/>
+
       {/* Deposit button + panel */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <SL>Principle Library</SL>
