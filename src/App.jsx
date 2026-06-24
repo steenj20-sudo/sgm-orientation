@@ -1,4 +1,4 @@
-// SGM Orientation v71 — going deeper, copy for claude, stack reset, font bump
+// SGM Orientation v73 — going deeper, copy for claude, stack reset, font bump
 import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
