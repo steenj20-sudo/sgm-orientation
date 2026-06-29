@@ -1,4 +1,4 @@
-// SGM Orientation v74 — image of the day landscape only, richer caption, letstalk fixes
+// SGM Orientation v75 — image of the day landscape only, richer caption, letstalk fixes
 import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
@@ -877,46 +877,57 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       const themes=["early church fathers","apostle Paul","the Gospels","church history","biblical archaeology","Christian theology","the Desert Fathers","reformation history","biblical geography","the Holy Land"];
       const theme=themes[new Date().getDate()%themes.length];
 
-      // Fetch a real image from the Met Museum (free, no key needed)
+      // Fetch painting FIRST so Claude can write about the actual image
       let imageUrl=null;
       let imageCredit="";
+      let paintingTitle="";
+      let paintingArtist="";
+      let paintingDate="";
+      let paintingDesc="";
       try{
-        // Use specific known search terms that reliably return biblical paintings
         const metTerms=["Christ","Madonna","saint Paul","Moses","angel","crucifixion","resurrection","biblical","Jerusalem","apostle"];
         const searchTerm=metTerms[new Date().getDate()%metTerms.length];
         const searchRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&isPublicDomain=true&medium=Paintings&hasImages=true`);
         const searchData=await searchRes.json();
         if(searchData.objectIDs&&searchData.objectIDs.length>0){
-          // Try up to 10 objects to find one with a landscape image
           const ids=searchData.objectIDs.slice(0,50);
           for(let i=0;i<10;i++){
             const idx=(new Date().getDate()+i)%ids.length;
             const objRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${ids[idx]}`);
             const objData=await objRes.json();
             if(objData.primaryImage&&objData.primaryImage.length>0){
-              // Check dimensions — skip portrait orientation
               if(objData.primaryImageSmall){
                 const img=new Image();
                 await new Promise(res=>{img.onload=res;img.onerror=res;img.src=objData.primaryImageSmall;});
-                if(img.naturalHeight>img.naturalWidth)continue; // skip portrait
+                if(img.naturalHeight>img.naturalWidth)continue;
               }
               imageUrl=objData.primaryImage;
-              imageCredit=[objData.title,objData.artistDisplayName,objData.objectDate,objData.repository].filter(Boolean).join(" · ");
+              paintingTitle=objData.title||"";
+              paintingArtist=objData.artistDisplayName||"";
+              paintingDate=objData.objectDate||"";
+              paintingDesc=objData.objectDescription||objData.medium||"";
+              imageCredit=[paintingTitle,paintingArtist,paintingDate,objData.repository].filter(Boolean).join(" · ");
               break;
             }
           }
         }
       }catch(imgErr){console.log("Met API:",imgErr.message);}
 
+      // Now write about the ACTUAL painting that was fetched
+      const paintingContext=imageUrl
+        ?`The painting shown today is: "${paintingTitle}"${paintingArtist?" by "+paintingArtist:""}${paintingDate?", "+paintingDate:""}. ${paintingDesc}`
+        :`No specific painting available — write about the theme generally.`;
+
       const prompt=`You are writing a short enriching article for Joe Steen's morning devotional app. Joe is a visual, creative thinker who loves faith, family, SGM ministry, and learning.
 
+Today's painting: ${paintingContext}
 Today's theme: ${theme}
 
-Write a short article in this exact JSON format:
+Write a short article about this SPECIFIC painting and its connection to faith. In this exact JSON format:
 {
-  "headline": "A compelling headline — specific, not generic",
-  "image_description": "2-3 sentences. Describe what the viewer is seeing in the painting — the scene, the figures, the mood, the light — then connect it to why it matters spiritually or historically. Make it feel like a museum guide who actually loves what they're talking about.",
-  "body": "3-4 paragraphs. Enriching journalism — informs, enriches, invites creative pondering. Warm, intelligent voice. Something a curious faith-filled person would genuinely want to read at 6am."
+  "headline": "A compelling headline about this specific painting — specific, not generic",
+  "image_description": "2-3 sentences describing exactly what the viewer sees in THIS painting — the scene, the figures, the light, the emotion — then why it matters spiritually. Write as if you're standing in front of it.",
+  "body": "3-4 paragraphs about this painting's historical and spiritual significance. Warm, intelligent, enriching. Something a curious faith-filled person would want to read at 6am."
 }
 
 Return ONLY valid JSON, no markdown, no extra text.`;
@@ -1174,7 +1185,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             <div style={{position:"relative",overflow:"hidden",minHeight:180,background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)"}}>
               {articleContent&&!articleContent.error&&articleContent.imageUrl?(
                 <img src={articleContent.imageUrl} alt={articleContent.headline}
-                  style={{width:"100%",height:240,objectFit:"cover",display:"block",filter:"brightness(1.15) contrast(1.05) saturate(1.1)"}}/>
+                  style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block",background:"#1A1A18"}}/>
               ):(
                 <div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
