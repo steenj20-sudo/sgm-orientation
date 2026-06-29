@@ -339,7 +339,7 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
           )}
         </div>
       </div>
-      <div style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 60px"}}>
+      <div style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 100px"}}>
         {task.roadblock&&SCVS[task.roadblock]&&(
           <div style={{background:OXF,borderLeft:"3px solid "+OX,padding:"14px 18px",marginBottom:28}}>
             <SL>Roadblock: {task.roadblock}</SL>
