@@ -949,7 +949,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const result={...parsed,imageUrl,imageCredit};
       setArticleContent(result);
-      localStorage.setItem("sgm3-article-v2",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
+      localStorage.setItem("sgm3-article-v3",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
     }catch(e){
       console.error("Article error:",e);
       setArticleContent({error:true,msg:e.message||"Could not load enrichment."});
@@ -965,7 +965,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       if(sc.date===today&&sc.content)setStudyContent(sc.content);
     }catch(e){}
     try{
-      const ac=JSON.parse(localStorage.getItem("sgm3-article-v2")||"{}");
+      const ac=JSON.parse(localStorage.getItem("sgm3-article-v3")||"{}");
       if(ac.date===today&&ac.content)setArticleContent(ac.content);
     }catch(e){}
   },[]);
@@ -3105,7 +3105,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
-      <div style={{fontSize:22,color:INK,fontFamily:BODY,marginBottom:4}}>Let's Talk</div>
+      <div style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:28,fontWeight:700,color:INK,marginBottom:4,letterSpacing:"-0.5px"}}>Let's Talk</div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Conversation prep for the people in your life.</p>
 
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
