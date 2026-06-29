@@ -3463,7 +3463,7 @@ export default function App(){
       <div style={{background:INK,position:"sticky",top:0,zIndex:100,width:"100%",left:0,right:0,overflow:"hidden"}}>
         <div style={{maxWidth:700,margin:"0 auto",padding:"14px 20px 0",background:INK}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-            <div onClick={()=>setView("planner")} style={{cursor:"pointer"}}>
+            <div onClick={()=>{setView("planner");window.scrollTo({top:0,behavior:"instant"});}} style={{cursor:"pointer"}}>
               <Logo size={100}/>
             </div>
             <div style={{width:1,height:90,background:"rgba(255,255,255,0.18)"}}/>
@@ -3479,7 +3479,7 @@ export default function App(){
                 {row.map(tab=>{
                   const isAct=view===tab.id;
                   return(
-                    <button key={tab.id} onClick={()=>setView(tab.id)} style={{background:isAct?"rgba(109,220,232,0.14)":"none",border:isAct?"1px solid #6DDCE8":"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    <button key={tab.id} onClick={()=>{setView(tab.id);window.scrollTo({top:0,behavior:"instant"});}} style={{background:isAct?"rgba(109,220,232,0.14)":"none",border:isAct?"1px solid #6DDCE8":"1px solid transparent",borderRadius:3,padding:"7px 2px 8px",cursor:"pointer",flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                       <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:24}}>
                         {tab.type==="cross"?<CrossSVG color={isAct?"#6DDCE8":TANL} size={19}/>:<span style={{fontSize:tab.g==="✦"?26:21,color:isAct?"#6DDCE8":TANL,lineHeight:1}}>{tab.g}</span>}
                       </span>
