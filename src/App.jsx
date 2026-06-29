@@ -1,4 +1,4 @@
-// SGM Orientation v76 — RTB design treatment: white cards, Inter body, varied layout
+// SGM Orientation v77 — global RTB design treatment applied across all tabs
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -191,12 +191,12 @@ const TABS_ROW2 = [
 const TABS=[...TABS_ROW1,...TABS_ROW2];
 
 function SL({children,c=OX}){
-  return <div style={{fontSize:11,fontWeight:600,color:c,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.9,fontFamily:"'Inter',system-ui,sans-serif"}}>✦ {children}</div>;
+  return <div style={{fontSize:13,fontWeight:600,color:c,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.9,fontFamily:"'Inter',system-ui,sans-serif"}}>✦ {children}</div>;
 }
 
 function RDot({level}){
   const m={low:GRN,medium:AMB,high:OX};
-  return <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:"50%",background:m[level]||TAN,color:"white",fontSize:10,fontWeight:"bold",flexShrink:0}}>{(level||"l")[0].toUpperCase()}</span>;
+  return <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:"50%",background:m[level]||TAN,color:"white",fontSize:12,fontWeight:"bold",flexShrink:0}}>{(level||"l")[0].toUpperCase()}</span>;
 }
 
 function Ring({size,pct,color,color2,sw=6,main=false,children}){
@@ -283,19 +283,19 @@ function DailyMsg({cats,habits,prayers,streaks}){
   }
   const ac=isMorn?OX:PUR;
   return(
-    <div style={{marginBottom:24,background:ac+"08",border:"1px solid "+ac+"30",borderLeft:"3px solid "+ac,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
+    <div style={{marginBottom:24,background:ac+"08",border:"1px solid "+ac+"30",borderLeft:"3px solid "+ac,borderRadius:8,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
       <div style={{padding:"14px 16px 12px"}}>
         <SL c={ac}>{isMorn?"Good Morning, Joe":"End of Day, Joe"}</SL>
         {!msg&&!loading
-          ?<button onClick={gen} style={{padding:"8px 16px",background:ac,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Get My Word</button>
+          ?<button onClick={gen} style={{padding:"8px 16px",background:ac,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Get My Word</button>
           :loading
-          ?<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:14,height:14,borderRadius:"50%",border:"2px solid "+ac,borderTopColor:"transparent",animation:"spin 0.8s linear infinite",flexShrink:0}}/><span style={{fontSize:14,fontStyle:"italic",color:TAN}}>Preparing your word…</span></div>
+          ?<div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:14,height:14,borderRadius:"50%",border:"2px solid "+ac,borderTopColor:"transparent",animation:"spin 0.8s linear infinite",flexShrink:0}}/><span style={{fontSize:15,fontStyle:"italic",color:TAN}}>Preparing your word…</span></div>
           :<p style={{fontSize:15,lineHeight:1.8,color:INK,margin:0}}>{msg}</p>
         }
       </div>
       <div style={{display:"flex",borderTop:"1px solid "+ac+"20"}}>
-        <button onClick={()=>setDismissed(true)} style={{flex:1,padding:"9px",background:"transparent",border:"none",color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>Dismiss</button>
-        <button onClick={gen} style={{flex:1,padding:"9px",background:"transparent",border:"none",borderLeft:"1px solid "+ac+"20",color:ac,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>↺ Refresh</button>
+        <button onClick={()=>setDismissed(true)} style={{flex:1,padding:"9px",background:"transparent",border:"none",color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:12}}>Dismiss</button>
+        <button onClick={gen} style={{flex:1,padding:"9px",background:"transparent",border:"none",borderLeft:"1px solid "+ac+"20",color:ac,cursor:"pointer",fontFamily:BODY,fontSize:12}}>↺ Refresh</button>
       </div>
     </div>
   );
@@ -318,14 +318,14 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
     },[]);
   }
   return(
-    <div style={{position:"fixed",inset:0,background:PAPER,backgroundImage:BG,zIndex:200,overflowY:"auto",fontFamily:"Georgia,serif",color:INK}}>
+    <div style={{position:"fixed",inset:0,background:PAPER,backgroundImage:BG,zIndex:200,overflowY:"auto",fontFamily:BODY,color:INK}}>
       <div style={{background:INK,padding:"16px 20px",position:"sticky",top:0,zIndex:100}}>
         <div style={{maxWidth:700,margin:"0 auto"}}>
-          <button onClick={onBack} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,fontFamily:"Georgia,serif",marginBottom:12,padding:0}}>← Back</button>
+          <button onClick={onBack} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,fontFamily:BODY,marginBottom:12,padding:0}}>← Back</button>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <Ring size={44} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:11,color:cat.color}}>{cat.icon}</span></Ring>
+            <Ring size={44} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:13,color:cat.color}}>{cat.icon}</span></Ring>
             <div>
-              <div style={{color:TAN,fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{cat.label}</div>
+              <div style={{color:TAN,fontSize:12,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{cat.label}</div>
               <div style={{fontSize:16,fontWeight:"bold",color:"white",lineHeight:1.2}}>{task.label}</div>
             </div>
           </div>
@@ -344,33 +344,33 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
           <div style={{background:OXF,borderLeft:"3px solid "+OX,padding:"14px 18px",marginBottom:28}}>
             <SL>Roadblock: {task.roadblock}</SL>
             <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{SCVS[task.roadblock].v}"</p>
-            <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{SCVS[task.roadblock].r}</p>
+            <p style={{color:GOLD,fontSize:15,marginTop:6,marginBottom:0}}>{SCVS[task.roadblock].r}</p>
           </div>
         )}
         {pasteMode?(
           <div>
             <SL>Break this down with Claude</SL>
-            <div style={{background:"rgba(255,255,255,0.5)",color:INK,padding:"14px 16px",fontSize:14,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:2,border:"1px solid "+FINK}}>
+            <div style={{background:"white",color:INK,padding:"14px 16px",fontSize:15,fontStyle:"italic",lineHeight:1.65,marginBottom:18,borderRadius:8,border:"1px solid "+FINK}}>
               "Break down this project: <strong style={{color:"white"}}>{task.label}</strong>"
             </div>
             <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder={"Paste Claude's breakdown here...\nFormat: 1. Step [resistance] {roadblock}"} rows={7}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.65)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
             <div style={{display:"flex",gap:8,marginTop:12}}>
               <button onClick={()=>{const steps=parseSteps(pasteText);if(steps.length){onUpdate({...task,steps});setPasteMode(false);}}}
-                style={{flex:1,padding:"11px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2}}>Build My Project</button>
-              {task.steps&&task.steps.length>0&&<button onClick={()=>setPasteMode(false)} style={{padding:"11px 18px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>}
+                style={{flex:1,padding:"11px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Build My Project</button>
+              {task.steps&&task.steps.length>0&&<button onClick={()=>setPasteMode(false)} style={{padding:"11px 18px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>}
             </div>
           </div>
         ):(
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <SL>Project Steps</SL>
-              <button onClick={()=>setPasteMode(true)} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>↺ Rebuild</button>
+              <button onClick={()=>setPasteMode(true)} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 10px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>↺ Rebuild</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {task.steps.map((step,idx)=>(
                 <div key={step.id} onClick={()=>{const up=task.steps.map(s=>s.id===step.id?{...s,done:!s.done}:s);onUpdate({...task,steps:up,done:up.every(s=>s.done)});}}
-                  style={{display:"flex",alignItems:"flex-start",gap:12,padding:"14px 16px",cursor:"pointer",background:step.done?cat.color+"10":"rgba(255,255,255,0.6)",borderLeft:"3px solid "+(step.done?cat.color:TANL),border:"1px solid "+(step.done?cat.color+"40":FINK),borderRadius:2,transition:"all 0.2s"}}>
+                  style={{display:"flex",alignItems:"flex-start",gap:12,padding:"14px 16px",cursor:"pointer",background:step.done?cat.color+"10":"white",borderLeft:"3px solid "+(step.done?cat.color:TANL),border:"1px solid "+(step.done?cat.color+"40":FINK),borderRadius:8,transition:"all 0.2s"}}>
                   <div style={{width:28,height:28,borderRadius:"50%",flexShrink:0,border:"2px solid "+(step.done?cat.color:TANL),background:step.done?cat.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",color:step.done?"white":TAN,fontSize:step.done?12:13}}>
                     {step.done?"✓":idx+1}
                   </div>
@@ -378,10 +378,10 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
                     <div style={{fontSize:15,color:step.done?TAN:INK,textDecoration:step.done?"line-through":"none",lineHeight:1.5}}>{step.label}</div>
                     <div style={{display:"flex",gap:6,marginTop:6,alignItems:"center"}}>
                       <RDot level={step.resistance}/>
-                      {step.roadblock&&<span style={{fontSize:11,color:OX,fontStyle:"italic"}}>⚑ {step.roadblock}</span>}
+                      {step.roadblock&&<span style={{fontSize:13,color:OX,fontStyle:"italic"}}>⚑ {step.roadblock}</span>}
                     </div>
                     {step.roadblock&&SCVS[step.roadblock]&&!step.done&&(
-                      <div style={{marginTop:8,padding:"8px 12px",background:OXF,borderLeft:"2px solid rgba(122,31,31,0.3)",fontSize:13,fontStyle:"italic",lineHeight:1.65}}>
+                      <div style={{marginTop:8,padding:"8px 12px",background:OXF,borderLeft:"2px solid rgba(122,31,31,0.3)",fontSize:15,fontStyle:"italic",lineHeight:1.65}}>
                         "{SCVS[step.roadblock].v}" <span style={{color:GOLD,display:"block",marginTop:2,fontStyle:"normal",fontSize:12}}>{SCVS[step.roadblock].r}</span>
                       </div>
                     )}
@@ -445,37 +445,37 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
         <SL>Daily Habits</SL>
         <button onClick={()=>setEditMode(e=>!e)}
-          style={{background:editMode?OX:"transparent",border:"1px solid "+(editMode?OX:TANL),color:editMode?"white":TAN,padding:"4px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,marginBottom:10}}>
+          style={{background:editMode?OX:"transparent",border:"1px solid "+(editMode?OX:TANL),color:editMode?"white":TAN,padding:"4px 12px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,marginBottom:10}}>
           {editMode?"Done":"Edit"}
         </button>
       </div>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>These reset every day. Check them off, watch the streaks build.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>These reset every day. Check them off, watch the streaks build.</p>
       <div style={{marginBottom:24}}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-          <span style={{fontSize:13,color:INK}}>{done} of {allHabits.length} done today</span>
-          <span style={{fontSize:13,color:GOLD,fontWeight:"bold"}}>{pct}%</span>
+          <span style={{fontSize:15,color:INK}}>{done} of {allHabits.length} done today</span>
+          <span style={{fontSize:15,color:GOLD,fontWeight:"bold"}}>{pct}%</span>
         </div>
-        <div style={{height:4,background:TANL,borderRadius:2,opacity:0.4}}>
-          <div style={{height:"100%",background:OX,borderRadius:2,width:pct+"%",transition:"width 0.4s"}}/>
+        <div style={{height:4,background:TANL,borderRadius:8,opacity:0.4}}>
+          <div style={{height:"100%",background:OX,borderRadius:8,width:pct+"%",transition:"width 0.4s"}}/>
         </div>
       </div>
       {HCATS.map(hc=>(
         <div key={hc.id} style={{marginBottom:24}}>
-          <div style={{fontSize:10,color:hc.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {hc.label}</div>
+          <div style={{fontSize:12,color:hc.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ {hc.label}</div>
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
             {allHabits.filter(h=>h.cat===hc.id).map(hab=>{
               const dn=!!td[hab.id];
               const str=streaks[hab.id]?.count||0;
               return(
-                <div key={hab.id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:dn?hc.color+"10":"rgba(255,255,255,0.55)",border:"1px solid "+(dn?hc.color+"40":FINK),borderLeft:"3px solid "+(dn?hc.color:TANL),borderRadius:2,transition:"all 0.2s"}}>
+                <div key={hab.id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:dn?hc.color+"10":"white",border:"1px solid "+(dn?hc.color+"40":FINK),borderLeft:"3px solid "+(dn?hc.color:TANL),borderRadius:8,transition:"all 0.2s"}}>
                   <div onClick={()=>!editMode&&toggle(hab.id)} style={{width:22,height:22,borderRadius:"50%",flexShrink:0,border:"2px solid "+(dn?hc.color:TANL),background:dn?hc.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:editMode?"default":"pointer"}}>
                     {dn&&<span style={{color:"white",fontSize:12}}>✓</span>}
                   </div>
-                  <span onClick={()=>!editMode&&toggle(hab.id)} style={{fontSize:14,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4,cursor:editMode?"default":"pointer"}}>{hab.label}</span>
-                  {!editMode&&str>1&&<span style={{fontSize:12,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
+                  <span onClick={()=>!editMode&&toggle(hab.id)} style={{fontSize:15,color:dn?TAN:INK,textDecoration:dn?"line-through":"none",flex:1,lineHeight:1.4,cursor:editMode?"default":"pointer"}}>{hab.label}</span>
+                  {!editMode&&str>1&&<span style={{fontSize:13,color:hc.color,fontWeight:"bold",flexShrink:0}}>{str} 🔥</span>}
                   {editMode&&(
                     <button onClick={()=>deleteHabit(hab.id,!!hab.id.startsWith("ch"))}
-                      style={{background:"transparent",border:"1px solid "+OX,color:OX,width:26,height:26,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0,lineHeight:1}}>×</button>
+                      style={{background:"transparent",border:"1px solid "+OX,color:OX,width:26,height:26,borderRadius:"50%",cursor:"pointer",fontFamily:BODY,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0,lineHeight:1}}>×</button>
                   )}
                 </div>
               );
@@ -483,22 +483,22 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
           </div>
         </div>
       ))}
-      <button onClick={()=>setAddingHabit(!addingHabit)} style={{width:"100%",marginTop:4,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+      <button onClick={()=>setAddingHabit(!addingHabit)} style={{width:"100%",marginTop:4,padding:"10px",background:addingHabit?GRN:"transparent",border:"1px solid "+(addingHabit?GRN:TANL),color:addingHabit?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
         {addingHabit?"× Close":"+ Add Habit"}
       </button>
       {addingHabit&&(
-        <div style={{marginTop:12,padding:"16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+TANL,borderRadius:2}}>
+        <div style={{marginTop:12,padding:"16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8}}>
           <SL>New Habit</SL>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <input autoFocus value={newHabit.label} onChange={e=>setNewHabit(n=>({...n,label:e.target.value}))} placeholder="Habit name..." onKeyDown={e=>e.key==="Enter"&&addHabit()}
-              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2}}/>
+              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8}}/>
             <select value={newHabit.cat} onChange={e=>setNewHabit(n=>({...n,cat:e.target.value}))}
-              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2}}>
+              style={{padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8}}>
               {HCATS.map(hc=><option key={hc.id} value={hc.id}>{hc.label}</option>)}
             </select>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={addHabit} style={{flex:1,padding:"9px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add Habit</button>
-              <button onClick={()=>setAddingHabit(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
+              <button onClick={addHabit} style={{flex:1,padding:"9px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Add Habit</button>
+              <button onClick={()=>setAddingHabit(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
             </div>
           </div>
         </div>
@@ -516,19 +516,19 @@ function PrayerTab({prayers,setPrayers}){
   const active=prayers.filter(p=>!p.answered);
   const answered=prayers.filter(p=>p.answered);
   const grouped=RTAGS.reduce((acc,tag)=>{const items=active.filter(p=>p.relationship===tag.id);if(items.length)acc.push({tag,items});return acc;},[]);
-  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,width:"100%"};
+  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,width:"100%"};
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>Prayer</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>Carry them well. Record what God does.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Carry them well. Record what God does.</p>
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {[["active","Active ("+active.length+")"],["answered","Answered ("+answered.length+")"]].map(([v,label])=>(
-          <button key={v} onClick={()=>setPv(v)} style={{flex:1,padding:"8px",background:pv===v?OX:"transparent",border:"1px solid "+(pv===v?OX:TANL),color:pv===v?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>{label}</button>
+          <button key={v} onClick={()=>setPv(v)} style={{flex:1,padding:"8px",background:pv===v?OX:"transparent",border:"1px solid "+(pv===v?OX:TANL),color:pv===v?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>{label}</button>
         ))}
       </div>
-      {pv==="active"&&<button onClick={()=>setAdding(!adding)} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>{adding?"× Close":"✦ Add Prayer"}</button>}
+      {pv==="active"&&<button onClick={()=>setAdding(!adding)} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>{adding?"× Close":"✦ Add Prayer"}</button>}
       {adding&&(
-        <div style={{marginBottom:24,padding:"18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+TANL,borderRadius:2}}>
+        <div style={{marginBottom:24,padding:"18px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8}}>
           <SL>New Prayer</SL>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Person's name..." style={inp}/>
@@ -539,8 +539,8 @@ function PrayerTab({prayers,setPrayers}){
             <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Notes — what God is doing (optional)..." rows={2} style={{...inp,resize:"vertical",lineHeight:1.6}}/>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>{if(!form.name.trim()||!form.request.trim())return;setPrayers(p=>[{id:"p"+Date.now(),...form,dateAdded:today,answered:false,answeredDate:null},...p]);setForm({name:"",relationship:"church",request:"",notes:""});setAdding(false);}}
-                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add to Prayer List</button>
-              <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
+                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Add to Prayer List</button>
+              <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
             </div>
           </div>
         </div>
@@ -550,28 +550,28 @@ function PrayerTab({prayers,setPrayers}){
           {!active.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>No active prayers yet.</div>}
           {grouped.map(({tag,items})=>(
             <div key={tag.id} style={{marginBottom:24}}>
-              <div style={{fontSize:10,color:tag.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>{tag.icon} {tag.label}</div>
+              <div style={{fontSize:12,color:tag.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>{tag.icon} {tag.label}</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {items.map(pr=>{
                   const ie=expId===pr.id;
                   return(
-                    <div key={pr.id} style={{background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tag.color,borderRadius:2}}>
+                    <div key={pr.id} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+tag.color,borderRadius:8}}>
                       <div onClick={()=>setExpId(ie?null:pr.id)} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"12px 14px",cursor:"pointer"}}>
                         <div style={{flex:1}}>
                           <div style={{fontSize:15,fontWeight:"bold",color:INK,marginBottom:4}}>{pr.name}</div>
-                          <div style={{fontSize:14,color:INK,lineHeight:1.6,opacity:0.85}}>{pr.request}</div>
-                          <div style={{fontSize:11,color:TAN,marginTop:6}}>Added {pr.dateAdded}</div>
+                          <div style={{fontSize:15,color:INK,lineHeight:1.6,opacity:0.85}}>{pr.request}</div>
+                          <div style={{fontSize:13,color:TAN,marginTop:6}}>Added {pr.dateAdded}</div>
                         </div>
                         <span style={{color:TANL,fontSize:16,flexShrink:0,marginTop:2}}>{ie?"−":"+"}</span>
                       </div>
                       {ie&&(
                         <div style={{padding:"12px 14px 14px",borderTop:"1px solid "+FINK}}>
-                          {pr.notes&&<div style={{fontSize:14,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
+                          {pr.notes&&<div style={{fontSize:15,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
                           <div style={{display:"flex",gap:8}}>
                             <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:true,answeredDate:today}:x))}
-                              style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>✓ Mark Answered</button>
+                              style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>✓ Mark Answered</button>
                             <button onClick={()=>setPrayers(p=>p.filter(x=>x.id!==pr.id))}
-                              style={{padding:"8px 12px",background:"transparent",color:OX,border:"1px solid "+OX+"40",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Remove</button>
+                              style={{padding:"8px 12px",background:"transparent",color:OX,border:"1px solid "+OX+"40",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Remove</button>
                           </div>
                         </div>
                       )}
@@ -590,21 +590,21 @@ function PrayerTab({prayers,setPrayers}){
             const tag=RTAGS.find(t=>t.id===pr.relationship);
             const ie=expId===pr.id;
             return(
-              <div key={pr.id} style={{padding:"12px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:2,marginBottom:8}}>
+              <div key={pr.id} style={{padding:"12px 14px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+GRN,borderRadius:8,marginBottom:8}}>
                 <div onClick={()=>setExpId(ie?null:pr.id)} style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
                   <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,background:"transparent",border:"2px solid "+GRN,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:GRN,fontSize:12}}>✓</span></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:15,fontWeight:"bold",color:INK}}>{pr.name}</div>
-                    <div style={{fontSize:13,color:INK,lineHeight:1.6,opacity:0.8,marginTop:2}}>{pr.request}</div>
-                    <div style={{fontSize:11,color:TAN,marginTop:4}}>{tag&&<span style={{color:tag.color}}>{tag.icon} {tag.label} · </span>}Answered {pr.answeredDate}</div>
+                    <div style={{fontSize:15,color:INK,lineHeight:1.6,opacity:0.8,marginTop:2}}>{pr.request}</div>
+                    <div style={{fontSize:13,color:TAN,marginTop:4}}>{tag&&<span style={{color:tag.color}}>{tag.icon} {tag.label} · </span>}Answered {pr.answeredDate}</div>
                   </div>
                   <span style={{color:TANL,fontSize:16,flexShrink:0}}>{ie?"−":"+"}</span>
                 </div>
                 {ie&&(
                   <div style={{marginTop:10}}>
-                    {pr.notes&&<div style={{padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:14,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:8}}>{pr.notes}</div>}
+                    {pr.notes&&<div style={{padding:"8px 12px",background:GRN+"08",borderLeft:"2px solid "+GRN+"40",fontSize:15,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:8}}>{pr.notes}</div>}
                     <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:false,answeredDate:null}:x))}
-                      style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                      style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                       ↩ Move back to active prayer
                     </button>
                   </div>
@@ -643,15 +643,15 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
   }
 
   return(
-    <div style={{position:"relative",marginBottom:6,borderRadius:2,overflow:"hidden"}}>
+    <div style={{position:"relative",marginBottom:6,borderRadius:8,overflow:"hidden"}}>
       {/* Action buttons revealed behind the card */}
       <div style={{position:"absolute",top:0,right:0,bottom:0,width:ACTION_W,display:"flex"}}>
         <button onClick={()=>{onEdit();setDragX(0);}}
-          style={{flex:1,background:"#2E6B8A",border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>
+          style={{flex:1,background:"#2E6B8A",border:"none",color:"white",cursor:"pointer",fontFamily:BODY,fontSize:12}}>
           Edit
         </button>
         <button onClick={()=>{if(confirmDelete){onDelete();setDragX(0);setConfirmDelete(false);}else{setConfirmDelete(true);}}}
-          style={{flex:1,background:OX,border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12}}>
+          style={{flex:1,background:OX,border:"none",color:"white",cursor:"pointer",fontFamily:BODY,fontSize:12}}>
           {confirmDelete?"Confirm?":"Delete"}
         </button>
       </div>
@@ -664,15 +664,15 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
         onClick={()=>{if(dragX!==0){setDragX(0);setConfirmDelete(false);}}}
         style={{
           display:"flex",gap:10,padding:"10px 12px",
-          background:PAPER,border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,
+          background:PAPER,border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:8,
           transform:`translateX(${dragX}px)`,
           transition:dragging?"none":"transform 0.2s ease",
           touchAction:"pan-y",
           position:"relative",zIndex:1,
         }}>
-        <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
-        <div style={{fontSize:14,color:INK,flex:1}}>{event.summary||"(No title)"}</div>
-        <button onClick={(ev)=>{ev.stopPropagation();onEdit();}} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,flexShrink:0,padding:"0 2px"}}>✎</button>
+        <div style={{fontSize:13,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+        <div style={{fontSize:15,color:INK,flex:1}}>{event.summary||"(No title)"}</div>
+        <button onClick={(ev)=>{ev.stopPropagation();onEdit();}} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,flexShrink:0,padding:"0 2px"}}>✎</button>
       </div>
     </div>
   );
@@ -1161,7 +1161,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       {/* Toggle */}
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {["day","week"].map(m=>(
-          <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",background:mode===m?"transparent":"transparent",border:mode===m?"1px solid "+OX:"1px solid "+TANL,color:mode===m?OX:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,letterSpacing:"1px",textTransform:"uppercase",borderRadius:2,transition:"all 0.2s"}}>
+          <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",background:mode===m?"transparent":"transparent",border:mode===m?"1px solid "+OX:"1px solid "+TANL,color:mode===m?OX:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,letterSpacing:"1px",textTransform:"uppercase",borderRadius:8,transition:"all 0.2s"}}>
             {m==="day"?"Today":"This Week"}
           </button>
         ))}
@@ -1175,15 +1175,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           {/* Yesterday's Recap — editorial, no card box */}
           {(recapContent||recapLoading)&&(
             <div style={{marginBottom:20,paddingBottom:16,borderBottom:"1px solid "+FINK,animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,letterSpacing:"2px",textTransform:"uppercase",color:TAN,marginBottom:8}}>✦ Yesterday</div>
-              {recapLoading&&<div style={{fontSize:14,color:TAN,fontStyle:"italic",fontFamily:BODY}}>Reflecting on yesterday…</div>}
+              <div style={{fontSize:13,fontFamily:BODY,fontWeight:600,letterSpacing:"2px",textTransform:"uppercase",color:TAN,marginBottom:8}}>✦ Yesterday</div>
+              {recapLoading&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",fontFamily:BODY}}>Reflecting on yesterday…</div>}
               {recapContent&&(
                 <>
                   <p style={{fontSize:15,lineHeight:1.8,color:INK,margin:"0 0 8px",fontFamily:SERIF,fontStyle:"italic"}}>{recapContent}</p>
-                  <div onClick={()=>setRecapExpanded(e=>!e)} style={{fontSize:12,color:GOLD,fontFamily:BODY,opacity:0.8,cursor:"pointer"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
+                  <div onClick={()=>setRecapExpanded(e=>!e)} style={{fontSize:13,color:GOLD,fontFamily:BODY,opacity:0.8,cursor:"pointer"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
                   {recapExpanded&&(
                     <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                      <p style={{fontSize:14,lineHeight:1.8,color:"#3a4a5a",margin:0,fontFamily:BODY}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
+                      <p style={{fontSize:15,lineHeight:1.8,color:"#3a4a5a",margin:0,fontFamily:BODY}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
                     </div>
                   )}
                 </>
@@ -1204,15 +1204,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                   <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
                   {!articleContent&&(
                     <button onClick={generateArticle} disabled={articleLoading}
-                      style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:BODY,fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
+                      style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:BODY,fontSize:15,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
                       {articleLoading?"Generating…":"✦ Load Image of the Day"}
                     </button>
                   )}
                   {articleContent?.error&&(
                     <div style={{display:"flex",flexDirection:"column",alignItems:"center",zIndex:10,position:"relative"}}>
-                      <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
+                      <div style={{color:"rgba(255,255,255,0.85)",fontSize:15,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
                       <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
-                        style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:2}}>
+                        style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                         Try Again
                       </button>
                     </div>
@@ -1225,17 +1225,17 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             {articleContent&&!articleContent.error&&(
               <>
                 <div style={{padding:"14px 16px 10px"}}>
-                  <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ Image of the Day</div>
+                  <div style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ Image of the Day</div>
                   <div style={{fontSize:16,fontWeight:"bold",color:INK,lineHeight:1.35,marginBottom:6,fontFamily:SERIF}}>{articleContent.headline}</div>
-                  {articleContent.imageCredit&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",fontFamily:BODY}}>{articleContent.imageCredit}</div>}
+                  {articleContent.imageCredit&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",fontFamily:BODY}}>{articleContent.imageCredit}</div>}
                 </div>
                 <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"8px 16px 14px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
-                  <p style={{fontSize:14,color:"#3a4a5a",fontFamily:BODY,margin:"0 0 6px",lineHeight:1.7}}>{articleContent.image_description}</p>
-                  <div style={{fontSize:12,color:"#2E6B8A",fontFamily:BODY,opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full article"}</div>
+                  <p style={{fontSize:15,color:"#3a4a5a",fontFamily:BODY,margin:"0 0 6px",lineHeight:1.7}}>{articleContent.image_description}</p>
+                  <div style={{fontSize:13,color:"#2E6B8A",fontFamily:BODY,opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full article"}</div>
                 </div>
                 {articleExpanded&&(
                   <div style={{padding:"0 16px 16px",animation:"fadeIn 0.25s ease"}}>
-                    <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
+                    <div style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
                     <p style={{fontSize:15,lineHeight:1.85,color:"#2a3a4a",fontFamily:BODY,margin:0,whiteSpace:"pre-line"}}>{articleContent.body}</p>
                   </div>
                 )}
@@ -1248,12 +1248,12 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           {/* Bible Verse — lighter blue card, distinct from navy nav */}
           <div style={{marginBottom:20,background:"#2E5B8A",borderRadius:10,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
             <div style={{padding:"18px 16px 12px"}}>
-              <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:"rgba(109,220,232,0.8)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:10}}>✦ Today's Anchor</div>
+              <div style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:"rgba(109,220,232,0.8)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:10}}>✦ Today's Anchor</div>
               <p style={{fontSize:18,lineHeight:1.8,color:"white",margin:"0 0 8px",fontFamily:SERIF,fontStyle:"italic"}}>"{todayVerse?.v}"</p>
-              <p style={{color:"rgba(184,149,106,0.9)",fontSize:13,margin:"0 0 10px",fontFamily:BODY}}>{todayVerse?.r}</p>
+              <p style={{color:"rgba(184,149,106,0.9)",fontSize:15,margin:"0 0 10px",fontFamily:BODY}}>{todayVerse?.r}</p>
               {todayVerse?.app&&(
-                <div style={{padding:"10px 14px",background:"rgba(255,255,255,0.08)",borderLeft:"3px solid rgba(109,220,232,0.5)",borderRadius:2,marginBottom:10}}>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",fontFamily:BODY,lineHeight:1.65}}>{todayVerse.app.split(".")[0]}.</div>
+                <div style={{padding:"10px 14px",background:"rgba(255,255,255,0.08)",borderLeft:"3px solid rgba(109,220,232,0.5)",borderRadius:8,marginBottom:10}}>
+                  <div style={{fontSize:15,color:"rgba(255,255,255,0.75)",fontFamily:BODY,lineHeight:1.65}}>{todayVerse.app.split(".")[0]}.</div>
                 </div>
               )}
             </div>
@@ -1262,14 +1262,14 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             <button onClick={()=>{
               setStudyExpanded(e=>!e);
               if(!studyContent&&!studyLoading&&todayVerse)generateStudy(todayVerse.v,todayVerse.r);
-            }} style={{width:"100%",padding:"10px 16px",background:studyExpanded?"rgba(255,255,255,0.1)":"transparent",border:"none",borderTop:"1px solid rgba(255,255,255,0.12)",color:"rgba(109,220,232,0.8)",cursor:"pointer",fontFamily:BODY,fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+            }} style={{width:"100%",padding:"10px 16px",background:studyExpanded?"rgba(255,255,255,0.1)":"transparent",border:"none",borderTop:"1px solid rgba(255,255,255,0.12)",color:"rgba(109,220,232,0.8)",cursor:"pointer",fontFamily:BODY,fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
               <span>{studyExpanded?"▲ Close study":"↓ Open morning study"}</span>
-              <span style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontStyle:"italic"}}>tap to expand</span>
+              <span style={{fontSize:12,color:"rgba(255,255,255,0.4)",fontStyle:"italic"}}>tap to expand</span>
             </button>
 
             {studyExpanded&&(
               <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,0.1)",animation:"fadeIn 0.25s ease"}}>
-                {studyLoading&&<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",fontStyle:"italic",textAlign:"center",padding:"20px",fontFamily:BODY}}>Preparing your study…</div>}
+                {studyLoading&&<div style={{fontSize:15,color:"rgba(255,255,255,0.6)",fontStyle:"italic",textAlign:"center",padding:"20px",fontFamily:BODY}}>Preparing your study…</div>}
                 {studyContent&&!studyContent.error&&(
                   <div>
                     {[
@@ -1279,66 +1279,66 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                       {label:"Book Structure",key:"book_structure"},
                     ].map(({label,key})=>studyContent[key]&&(
                       <div key={key} style={{marginBottom:14}}>
-                        <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ {label}</div>
-                        <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0}}>{studyContent[key]}</p>
+                        <div style={{fontSize:12,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ {label}</div>
+                        <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0}}>{studyContent[key]}</p>
                       </div>
                     ))}
 
                     {/* Practical applications */}
                     <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
                       {studyContent.spiritual_application&&(
-                        <div style={{padding:"11px 14px",background:OX+"08",borderLeft:"3px solid "+OX,borderRadius:2}}>
-                          <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Spiritual</div>
-                          <p style={{fontSize:13,lineHeight:1.65,color:INK,margin:0}}>{studyContent.spiritual_application}</p>
+                        <div style={{padding:"11px 14px",background:OX+"08",borderLeft:"3px solid "+OX,borderRadius:8}}>
+                          <div style={{fontSize:12,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Spiritual</div>
+                          <p style={{fontSize:15,lineHeight:1.65,color:INK,margin:0}}>{studyContent.spiritual_application}</p>
                         </div>
                       )}
                       {studyContent.emotional_application&&(
-                        <div style={{padding:"11px 14px",background:GOLD+"10",borderLeft:"3px solid "+GOLD,borderRadius:2}}>
-                          <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Emotional</div>
-                          <p style={{fontSize:13,lineHeight:1.65,color:INK,margin:0}}>{studyContent.emotional_application}</p>
+                        <div style={{padding:"11px 14px",background:GOLD+"10",borderLeft:"3px solid "+GOLD,borderRadius:8}}>
+                          <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Emotional</div>
+                          <p style={{fontSize:15,lineHeight:1.65,color:INK,margin:0}}>{studyContent.emotional_application}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Your prayer */}
                     <div style={{marginBottom:12}}>
-                      <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Prayer</div>
+                      <div style={{fontSize:12,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Prayer</div>
                       <textarea
                         value={bibleStudy.prayer||""}
                         onChange={e=>setBibleStudy(s=>({...s,prayer:e.target.value}))}
                         placeholder="Respond to what you just read — a prayer in your own words, as honest as it needs to be."
                         rows={4}
-                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}
+                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:8}}
                       />
                     </div>
 
                     {/* Your observation */}
                     <div style={{marginBottom:14}}>
-                      <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Observation</div>
+                      <div style={{fontSize:12,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Your Observation</div>
                       <textarea
                         value={bibleStudy.observation||""}
                         onChange={e=>setBibleStudy(s=>({...s,observation:e.target.value}))}
                         placeholder="What's the first thing that hit you? Where does this land in your life right now?"
                         rows={3}
-                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}
+                        style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:8}}
                       />
                     </div>
 
                     <button onClick={saveStudy}
-                      style={{width:"100%",padding:"10px",background:studySaved?GRN:"transparent",border:"1px solid "+(studySaved?GRN:OX),color:studySaved?"white":OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"all 0.3s"}}>
+                      style={{width:"100%",padding:"10px",background:studySaved?GRN:"transparent",border:"1px solid "+(studySaved?GRN:OX),color:studySaved?"white":OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.3s"}}>
                       {studySaved?"✓ Saved to Field Notes":"Save Study → Field Notes"}
                     </button>
                   </div>
                 )}
                 {studyContent?.error&&(
                   <div style={{textAlign:"center",padding:"16px"}}>
-                    <p style={{color:TAN,fontStyle:"italic",fontSize:13,marginBottom:10}}>Could not generate study. Try again.</p>
-                    <button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)} style={{background:"transparent",border:"1px solid "+OX,color:OX,padding:"8px 16px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Retry</button>
+                    <p style={{color:TAN,fontStyle:"italic",fontSize:15,marginBottom:10}}>Could not generate study. Try again.</p>
+                    <button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)} style={{background:"transparent",border:"1px solid "+OX,color:OX,padding:"8px 16px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>Retry</button>
                   </div>
                 )}
                 {!studyContent&&!studyLoading&&(
                   <button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)}
-                    style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
                     Generate Study
                   </button>
                 )}
@@ -1349,17 +1349,17 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           {/* MOVEMENT 3 — ORIENT */}
           {/* Calendar connect / today events */}
           {!calToken?(
-            <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2}}>
-              <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Calendar</div>
-              <button onClick={connectCalendar} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #2E6B8A",color:"#2E6B8A",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+            <div style={{marginBottom:20,padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8}}>
+              <div style={{fontSize:12,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8}}>✦ Calendar</div>
+              <button onClick={connectCalendar} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid #2E6B8A",color:"#2E6B8A",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
                 Connect Google Calendar
               </button>
-              {calError&&<div style={{fontSize:12,color:OX,marginTop:8,fontStyle:"italic"}}>{calError}</div>}
+              {calError&&<div style={{fontSize:13,color:OX,marginTop:8,fontStyle:"italic"}}>{calError}</div>}
             </div>
           ):(
             <div style={{marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:10,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase"}}>✦ Today's Schedule</div>
+                <div style={{fontSize:12,color:"#2E6B8A",letterSpacing:"2.5px",textTransform:"uppercase"}}>✦ Today's Schedule</div>
                 <button onClick={()=>{
                     if(showNewEvent){
                       setShowNewEvent(false);setEditingEventId(null);setCreateError(null);
@@ -1369,69 +1369,69 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                       setEditingEventId(null);setShowNewEvent(true);setCreateError(null);
                     }
                   }}
-                  style={{background:showNewEvent?"#2E6B8A":"transparent",border:"1px solid #2E6B8A",color:showNewEvent?"white":"#2E6B8A",padding:"4px 10px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                  style={{background:showNewEvent?"#2E6B8A":"transparent",border:"1px solid #2E6B8A",color:showNewEvent?"white":"#2E6B8A",padding:"4px 10px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                   {showNewEvent?"× Close":"+ New Event"}
                 </button>
               </div>
 
               {showNewEvent&&(
-                <div style={{marginBottom:16,padding:"14px",background:"rgba(255,255,255,0.6)",border:"1px solid #2E6B8A40",borderRadius:2,animation:"fadeIn 0.25s ease"}}>
+                <div style={{marginBottom:16,padding:"14px",background:"white",border:"1px solid #2E6B8A40",borderRadius:8,animation:"fadeIn 0.25s ease"}}>
                   <input value={newEvent.title} onChange={e=>setNewEvent(n=>({...n,title:e.target.value}))} placeholder="Event title..."
-                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
 
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:8}}>
                     <div>
-                      <div style={{fontSize:11,color:TAN,marginBottom:4}}>Start date</div>
+                      <div style={{fontSize:13,color:TAN,marginBottom:4}}>Start date</div>
                       <input type="date" value={newEvent.date} onChange={e=>{
                         const v=e.target.value;
                         setNewEvent(n=>({...n,date:v,endDate:(n.endDate&&n.endDate>=v)?n.endDate:v}));
                       }}
-                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,boxSizing:"border-box"}}/>
                     </div>
                     <div>
-                      <div style={{fontSize:11,color:TAN,marginBottom:4}}>End date <span style={{opacity:0.7,fontStyle:"italic"}}>(only change for multi-day, like a trip)</span></div>
+                      <div style={{fontSize:13,color:TAN,marginBottom:4}}>End date <span style={{opacity:0.7,fontStyle:"italic"}}>(only change for multi-day, like a trip)</span></div>
                       <input type="date" value={newEvent.endDate} min={newEvent.date} onChange={e=>setNewEvent(n=>({...n,endDate:e.target.value}))}
-                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                        style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,boxSizing:"border-box"}}/>
                     </div>
                   </div>
 
                   <label style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,cursor:"pointer"}}>
                     <input type="checkbox" checked={newEvent.allDay} onChange={e=>setNewEvent(n=>({...n,allDay:e.target.checked}))}/>
-                    <span style={{fontSize:12,color:TAN,fontStyle:"italic"}}>All day</span>
+                    <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>All day</span>
                   </label>
 
                   {!newEvent.allDay&&(
                     <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:8}}>
                       <div>
-                        <div style={{fontSize:10,color:TAN,marginBottom:4}}>Start</div>
+                        <div style={{fontSize:12,color:TAN,marginBottom:4}}>Start</div>
                         <input type="time" value={newEvent.startTime} onChange={e=>setNewEvent(n=>({...n,startTime:e.target.value}))}
-                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,boxSizing:"border-box"}}/>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:TAN,marginBottom:4}}>End</div>
+                        <div style={{fontSize:12,color:TAN,marginBottom:4}}>End</div>
                         <input type="time" value={newEvent.endTime} onChange={e=>setNewEvent(n=>({...n,endTime:e.target.value}))}
-                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,boxSizing:"border-box"}}/>
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,boxSizing:"border-box"}}/>
                       </div>
                     </div>
                   )}
 
                   <input value={newEvent.location} onChange={e=>setNewEvent(n=>({...n,location:e.target.value}))} placeholder="Location (optional)..."
-                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
 
                   <textarea value={newEvent.notes} onChange={e=>setNewEvent(n=>({...n,notes:e.target.value}))} placeholder="Notes (optional)..." rows={3}
-                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.6,marginBottom:10}}/>
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"vertical",lineHeight:1.6,marginBottom:10}}/>
 
-                  {createError&&<div style={{fontSize:12,color:OX,fontStyle:"italic",marginBottom:10}}>{createError}</div>}
+                  {createError&&<div style={{fontSize:13,color:OX,fontStyle:"italic",marginBottom:10}}>{createError}</div>}
 
                   <button onClick={handleSaveEvent} disabled={creatingEvent}
-                    style={{width:"100%",padding:"10px",background:creatingEvent?"transparent":"#2E6B8A",border:"1px solid #2E6B8A",color:creatingEvent?"#2E6B8A":"white",cursor:creatingEvent?"default":"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    style={{width:"100%",padding:"10px",background:creatingEvent?"transparent":"#2E6B8A",border:"1px solid #2E6B8A",color:creatingEvent?"#2E6B8A":"white",cursor:creatingEvent?"default":"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
                     {creatingEvent?(editingEventId?"Saving changes…":"Adding to calendar…"):(editingEventId?"Save Changes":"Add to Calendar")}
                   </button>
                 </div>
               )}
 
-              {calLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Loading…</div>}
-              {!calLoading&&todayEvents.length===0&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments today</div>}
+              {calLoading&&<div style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Loading…</div>}
+              {!calLoading&&todayEvents.length===0&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:8}}>No appointments today</div>}
               {todayEvents.map((e,i)=>{
                 const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                 return(
@@ -1440,7 +1440,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                     onDelete={()=>handleDeleteEvent(e.id)}/>
                 );
               })}
-              <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>Disconnect</button>
+              <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>Disconnect</button>
             </div>
           )}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,marginBottom:20}}>
@@ -1449,15 +1449,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               {label:"Habits",value:habitDone+"/"+totalHabits,color:"#4AB8C8"},
               {label:"Prayers",value:activeP+" active",color:OX},
             ].map(s=>(
-              <div key={s.label} style={{padding:"12px 8px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
+              <div key={s.label} style={{padding:"12px 8px",background:"white",border:"1px solid "+FINK,borderRadius:8,textAlign:"center"}}>
                 <div style={{fontSize:18,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
-                <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+                <div style={{fontSize:12,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
               </div>
             ))}
             {/* Stack pulse card */}
-            <div onClick={()=>setView("history")} style={{padding:"10px 6px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center",cursor:"pointer"}}>
+            <div onClick={()=>setView("history")} style={{padding:"10px 6px",background:"white",border:"1px solid "+FINK,borderRadius:8,textAlign:"center",cursor:"pointer"}}>
               <div style={{fontSize:18,fontWeight:"bold",color:GOLD,lineHeight:1}}>{stack.length}</div>
-              <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>The Stack</div>
+              <div style={{fontSize:12,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>The Stack</div>
               {stack.length>0&&(
                 <div style={{display:"flex",justifyContent:"center",gap:3,marginTop:6,flexWrap:"wrap"}}>
                   {stack.slice(-5).map((w,i)=>(
@@ -1476,7 +1476,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               onChange={e=>updDay({...dp,morningThought:e.target.value})}
               placeholder="What's on your mind this morning? One honest sentence is enough."
               rows={3}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -1488,16 +1488,16 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               onChange={e=>updDay({...dp,focus:e.target.value})}
               placeholder="What is the one thing that would make today a win?"
               rows={2}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}
             />
           </div>
 
           {/* Shelf items due today */}
           {shelfWeek>0&&(
-            <div style={{marginBottom:20,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
-              <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div>
-              <div style={{fontSize:14,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div>
-              <div style={{fontSize:12,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div>
+            <div style={{marginBottom:20,padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8}}>
+              <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div>
+              <div style={{fontSize:15,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div>
+              <div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div>
             </div>
           )}
 
@@ -1509,7 +1509,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               onChange={e=>updDay({...dp,evening:e.target.value})}
               placeholder="What happened today that's worth remembering?"
               rows={3}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}
             />
           </div>
         </div>
@@ -1529,8 +1529,8 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                 const hasMorning=!!(dp2.morningThought||dp2.focus);
                 const evs=calToken?eventsForDate(d):[];
                 return(
-                  <div key={i} onClick={()=>setSelectedDay(dk)} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isSelected?INK:isToday?OX:FINK),borderRadius:2,cursor:"pointer"}}>
-                    <div style={{fontSize:10,color:isSelected?INK:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                  <div key={i} onClick={()=>setSelectedDay(dk)} style={{flex:"0 0 44px",display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.35)",border:"1px solid "+(isSelected?INK:isToday?OX:FINK),borderRadius:8,cursor:"pointer"}}>
+                    <div style={{fontSize:12,color:isSelected?INK:isToday?OX:TAN,letterSpacing:"1px",textTransform:"uppercase"}}>{d.toLocaleDateString("en-US",{weekday:"short"})}</div>
                     <div style={{fontSize:16,fontWeight:"bold",color:isSelected?INK:isToday?OX:INK,marginTop:2}}>{d.getDate()}</div>
                     <div style={{width:6,height:6,borderRadius:"50%",background:evs.length?"#2E6B8A":hasMorning?"#4AB8C8":"transparent",border:"1px solid "+TANL,marginTop:4}}/>
                   </div>
@@ -1543,23 +1543,23 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               const selEvs=calToken?eventsForDate(selDate):[];
               const selPlan=planner[selectedDay]||{};
               return(
-                <div style={{marginTop:10,padding:"12px 14px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderRadius:2}}>
-                  <div style={{fontSize:11,color:INK,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>
+                <div style={{marginTop:10,padding:"12px 14px",background:"white",border:"1px solid "+FINK,borderRadius:8}}>
+                  <div style={{fontSize:13,color:INK,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>
                     {selDate.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
                   </div>
                   {selEvs.length===0&&!selPlan.morningThought&&!selPlan.focus&&(
-                    <div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Nothing recorded for this day</div>
+                    <div style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Nothing recorded for this day</div>
                   )}
                   {selEvs.map((e,j)=>{
                     const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                     return(
                       <div key={j} style={{display:"flex",gap:8,padding:"6px 0",borderBottom:"1px solid "+FINK}}>
-                        <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:55}}>{time}</div>
-                        <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
+                        <div style={{fontSize:13,color:"#2E6B8A",flexShrink:0,minWidth:55}}>{time}</div>
+                        <div style={{fontSize:15,color:INK}}>{e.summary||"(No title)"}</div>
                       </div>
                     );
                   })}
-                  {selPlan.morningThought&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:6}}>"{selPlan.morningThought}"</div>}
+                  {selPlan.morningThought&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",marginTop:6}}>"{selPlan.morningThought}"</div>}
                 </div>
               );
             })()}
@@ -1573,7 +1573,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               onChange={e=>updWeek({...wp,intention:e.target.value})}
               placeholder="What does this week need to accomplish? One clear sentence."
               rows={2}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -1587,9 +1587,9 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                 {label:"Shelf This Week",value:shelfWeek+" items",color:"#2E6B8A"},
                 {label:"Tasks Done",value:cats.flatMap(c=>c.tasks).filter(t=>t.done).length+" total",color:"#4AB8C8"},
               ].map(s=>(
-                <div key={s.label} style={{padding:"14px 12px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2}}>
+                <div key={s.label} style={{padding:"14px 12px",background:"white",border:"1px solid "+FINK,borderRadius:8}}>
                   <div style={{fontSize:22,fontWeight:"bold",color:s.color,lineHeight:1}}>{s.value}</div>
-                  <div style={{fontSize:10,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
+                  <div style={{fontSize:12,color:TAN,letterSpacing:"1px",textTransform:"uppercase",marginTop:4}}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -1603,7 +1603,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               onChange={e=>updWeek({...wp,thoughts:e.target.value})}
               placeholder="Notes, observations, things God is showing you this week…"
               rows={4}
-              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"none",lineHeight:1.65}}
+              style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}
             />
           </div>
 
@@ -1616,15 +1616,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                 if(!evs.length)return null;
                 return(
                   <div key={i} style={{marginBottom:10}}>
-                    <div style={{fontSize:11,color:"#2E6B8A",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:4}}>
+                    <div style={{fontSize:13,color:"#2E6B8A",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:4}}>
                       {d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
                     </div>
                     {evs.map((e,j)=>{
                       const time=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"All day";
                       return(
-                        <div key={j} style={{display:"flex",gap:10,padding:"8px 12px",background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:2,marginBottom:4}}>
-                          <div style={{fontSize:12,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
-                          <div style={{fontSize:13,color:INK}}>{e.summary||"(No title)"}</div>
+                        <div key={j} style={{display:"flex",gap:10,padding:"8px 12px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid #2E6B8A",borderRadius:8,marginBottom:4}}>
+                          <div style={{fontSize:13,color:"#2E6B8A",flexShrink:0,minWidth:60}}>{time}</div>
+                          <div style={{fontSize:15,color:INK}}>{e.summary||"(No title)"}</div>
                         </div>
                       );
                     })}
@@ -1632,7 +1632,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                 );
               })}
               {weekDays.every(d=>eventsForDate(d).length===0)&&(
-                <div style={{fontSize:13,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:2}}>No appointments this week</div>
+                <div style={{fontSize:15,color:TAN,fontStyle:"italic",padding:"10px 12px",border:"1px dashed "+TANL,borderRadius:8}}>No appointments this week</div>
               )}
             </div>
           )}
@@ -1647,9 +1647,9 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               for(let d=1;d<=days;d++)cells.push(d);
               const dayLabels=["Su","Mo","Tu","We","Th","Fr","Sa"];
               return(
-                <div style={{background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,padding:"12px"}}>
+                <div style={{background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,padding:"12px"}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:6}}>
-                    {dayLabels.map(l=><div key={l} style={{textAlign:"center",fontSize:10,color:TAN,letterSpacing:"1px",padding:"3px 0"}}>{l}</div>)}
+                    {dayLabels.map(l=><div key={l} style={{textAlign:"center",fontSize:12,color:TAN,letterSpacing:"1px",padding:"3px 0"}}>{l}</div>)}
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
                     {cells.map((d,i)=>{
@@ -1660,8 +1660,8 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                       const isSelected=dk===selectedDay;
                       const evs=calToken?eventsForDate(date):[];
                       return(
-                        <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:2,background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
-                          <div style={{fontSize:12,color:isSelected?INK:isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
+                        <div key={i} onClick={()=>setSelectedDay(dk)} style={{textAlign:"center",padding:"6px 2px",borderRadius:8,background:isSelected?"rgba(255,255,255,0.85)":isToday?"rgba(122,31,31,0.08)":"transparent",border:isSelected?"1px solid "+INK:isToday?"1px solid "+OX:"1px solid transparent",position:"relative",cursor:"pointer"}}>
+                          <div style={{fontSize:13,color:isSelected?INK:isToday?OX:INK,fontWeight:isToday||isSelected?"bold":"normal"}}>{d}</div>
                           {evs.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"#2E6B8A",margin:"2px auto 0"}}/>}
                         </div>
                       );
@@ -1677,10 +1677,10 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             const pw=planner[k]||{};
             if(!pw.intention&&!pw.thoughts)return null;
             return(
-              <div key={k} style={{marginBottom:10,padding:"14px 16px",background:"rgba(255,255,255,0.35)",border:"1px solid "+FINK,borderRadius:2,opacity:0.7}}>
-                <div style={{fontSize:10,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
-                {pw.intention&&<p style={{fontSize:14,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
-                {pw.thoughts&&typeof pw.thoughts==="string"&&<p style={{fontSize:13,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
+              <div key={k} style={{marginBottom:10,padding:"14px 16px",background:"rgba(255,255,255,0.35)",border:"1px solid "+FINK,borderRadius:8,opacity:0.7}}>
+                <div style={{fontSize:12,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6}}>{k.replace("week-","Week of ")}</div>
+                {pw.intention&&<p style={{fontSize:15,fontStyle:"italic",color:INK,margin:"0 0 6px"}}>{pw.intention}</p>}
+                {pw.thoughts&&typeof pw.thoughts==="string"&&<p style={{fontSize:15,color:TAN,margin:0,lineHeight:1.5}}>{pw.thoughts.slice(0,120)}{pw.thoughts.length>120?"…":""}</p>}
               </div>
             );
           })}
@@ -1732,7 +1732,7 @@ function StackSection({stack,setStack}){
     <div style={{marginBottom:28}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
         <SL>The Stack</SL>
-        <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{stack.length} win{stack.length!==1?"s":""} today</span>
+        <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{stack.length} win{stack.length!==1?"s":""} today</span>
       </div>
 
       <div style={{display:"flex",gap:8,marginBottom:14}}>
@@ -1741,16 +1741,16 @@ function StackSection({stack,setStack}){
           onChange={e=>setInput(e.target.value)}
           onKeyDown={e=>e.key==="Enter"&&addWin()}
           placeholder="Start stacking — completed, partial, anything you moved."
-          style={{flex:1,padding:"10px 14px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.75)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}
+          style={{flex:1,padding:"10px 14px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8}}
         />
         <button onClick={addWin}
-          style={{padding:"10px 16px",background:GOLD,border:"none",color:"white",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
+          style={{padding:"10px 16px",background:GOLD,border:"none",color:"white",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,flexShrink:0}}>
           Stack it
         </button>
       </div>
 
       {stack.length===0&&(
-        <div style={{textAlign:"center",padding:"24px",color:TAN,fontStyle:"italic",fontSize:13,border:"1px dashed "+TANL,borderRadius:2}}>
+        <div style={{textAlign:"center",padding:"24px",color:TAN,fontStyle:"italic",fontSize:15,border:"1px dashed "+TANL,borderRadius:8}}>
           What's on your mind today? Go ahead and start stacking — completed, partial, anything you touched counts.
         </div>
       )}
@@ -1767,7 +1767,7 @@ function StackSection({stack,setStack}){
                 <div style={{width:8,height:8,borderRadius:"50%",background:col,flexShrink:0}}/>
                 <div style={{flex:1,fontSize:15,color:INK,lineHeight:1.5,fontFamily:BODY}}>{win.label}</div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                  <div style={{fontSize:12,color:TAN,fontFamily:BODY}}>{win.time}</div>
+                  <div style={{fontSize:13,color:TAN,fontFamily:BODY}}>{win.time}</div>
                   <button onClick={()=>removeWin(win.id)}
                     style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:16,padding:"2px 4px",flexShrink:0,lineHeight:1}}>×</button>
                 </div>
@@ -1777,11 +1777,11 @@ function StackSection({stack,setStack}){
               <div style={{padding:"0 14px 11px",display:"flex",alignItems:"center",gap:8}}>
                 {win.duration&&!isEditing
                   ?<button onClick={()=>openEdit(win)}
-                      style={{fontSize:12,color:col,fontWeight:"bold",background:col+"18",padding:"4px 12px",borderRadius:12,border:"1px solid "+col+"40",cursor:"pointer",fontFamily:BODY}}>
+                      style={{fontSize:13,color:col,fontWeight:"bold",background:col+"18",padding:"4px 12px",borderRadius:12,border:"1px solid "+col+"40",cursor:"pointer",fontFamily:BODY}}>
                       {win.duration} — tap to edit
                     </button>
                   :<button onClick={()=>openEdit(win)}
-                      style={{fontSize:12,color:TAN,background:"transparent",padding:"4px 12px",borderRadius:12,border:"1px dashed "+TANL,cursor:"pointer",fontFamily:BODY}}>
+                      style={{fontSize:13,color:TAN,background:"transparent",padding:"4px 12px",borderRadius:12,border:"1px dashed "+TANL,cursor:"pointer",fontFamily:BODY}}>
                       + How long did this take?
                     </button>
                 }
@@ -1790,11 +1790,11 @@ function StackSection({stack,setStack}){
               {/* Inline duration picker */}
               {isEditing&&(
                 <div style={{padding:"12px 14px",borderTop:"1px solid "+col+"25",background:col+"06",animation:"fadeIn 0.2s ease"}}>
-                  <div style={{fontSize:11,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85,fontFamily:BODY,fontWeight:600}}>How long did this take?</div>
+                  <div style={{fontSize:13,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85,fontFamily:BODY,fontWeight:600}}>How long did this take?</div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
                     {DURATIONS.map(d=>(
                       <button key={d} onClick={()=>setEditDuration(d)}
-                        style={{padding:"6px 12px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:12,transition:"all 0.15s"}}>
+                        style={{padding:"6px 12px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:12,transition:"all 0.15s"}}>
                         {d}
                       </button>
                     ))}
@@ -1803,13 +1803,13 @@ function StackSection({stack,setStack}){
                     <input value={editDuration} onChange={e=>setEditDuration(e.target.value)}
                       placeholder="Or type — e.g. 45 min"
                       onKeyDown={e=>e.key==="Enter"&&saveDuration(win.id)}
-                      style={{flex:1,padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:13,color:INK,outline:"none",borderRadius:6}}/>
+                      style={{flex:1,padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:6}}/>
                     <button onClick={()=>saveDuration(win.id)}
-                      style={{padding:"9px 18px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6,flexShrink:0}}>
+                      style={{padding:"9px 18px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:6,flexShrink:0}}>
                       Save
                     </button>
                     <button onClick={()=>setEditingId(null)}
-                      style={{padding:"9px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6,flexShrink:0}}>
+                      style={{padding:"9px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:6,flexShrink:0}}>
                       ×
                     </button>
                   </div>
@@ -1881,25 +1881,25 @@ function LibraryInsights({library,setAc,ac}){
   return(
     <div style={{marginBottom:20}}>
       <button onClick={()=>setOpen(o=>!o)}
-        style={{width:"100%",padding:"11px 16px",background:open?"rgba(156,122,58,0.12)":"rgba(255,255,255,0.5)",border:"1px solid "+(open?GOLD:TANL),borderRadius:2,cursor:"pointer",fontFamily:"Georgia,serif",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
+        style={{width:"100%",padding:"11px 16px",background:open?"rgba(156,122,58,0.12)":"rgba(255,255,255,0.5)",border:"1px solid "+(open?GOLD:TANL),borderRadius:8,cursor:"pointer",fontFamily:BODY,display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:14,color:GOLD}}>✦</span>
-          <span style={{fontSize:13,color:INK,fontWeight:"bold"}}>Identity Insights</span>
-          <span style={{fontSize:11,color:TAN,fontStyle:"italic"}}>{library.length} principles</span>
+          <span style={{fontSize:15,color:GOLD}}>✦</span>
+          <span style={{fontSize:15,color:INK,fontWeight:"bold"}}>Identity Insights</span>
+          <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{library.length} principles</span>
         </div>
-        <span style={{fontSize:11,color:GOLD}}>{open?"▲ close":"▼ open"}</span>
+        <span style={{fontSize:13,color:GOLD}}>{open?"▲ close":"▼ open"}</span>
       </button>
 
       {open&&(
-        <div style={{border:"1px solid "+GOLD+"40",borderTop:"none",borderRadius:"0 0 2px 2px",background:"rgba(255,255,255,0.55)",padding:"18px 16px",animation:"fadeIn 0.25s ease"}}>
+        <div style={{border:"1px solid "+GOLD+"40",borderTop:"none",borderRadius:"0 0 2px 2px",background:"white",padding:"18px 16px",animation:"fadeIn 0.25s ease"}}>
 
           {/* Framing line */}
-          <p style={{fontSize:13,color:TAN,fontStyle:"italic",lineHeight:1.7,margin:"0 0 18px",borderLeft:"3px solid "+GOLD,paddingLeft:12}}>
+          <p style={{fontSize:15,color:TAN,fontStyle:"italic",lineHeight:1.7,margin:"0 0 18px",borderLeft:"3px solid "+GOLD,paddingLeft:12}}>
             More principles in a category means more friction there — not more wisdom. This is a map of where the battle is heaviest.
           </p>
 
           {/* Category bars */}
-          <div style={{fontSize:10,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.9}}>✦ Active Battlegrounds — tap to filter</div>
+          <div style={{fontSize:12,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.9}}>✦ Active Battlegrounds — tap to filter</div>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:22}}>
             {LCATS.slice().sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0)).map((cat,i)=>{
               const count=counts[cat.id]||0;
@@ -1910,10 +1910,10 @@ function LibraryInsights({library,setAc,ac}){
                 <button key={cat.id} onClick={()=>setAc(isActive?"all":cat.id)}
                   style={{background:"none",border:"none",padding:0,cursor:"pointer",textAlign:"left",width:"100%"}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:5}}>
-                    <span style={{fontSize:12,color:cat.color,width:16,textAlign:"center"}}>{cat.icon}</span>
-                    <span style={{fontSize:12,color:isActive?cat.color:INK,fontFamily:"Georgia,serif",fontWeight:isActive?"bold":"normal",flex:1}}>{cat.label}</span>
-                    {isHeaviest&&<span style={{fontSize:10,color:cat.color,background:cat.color+"18",padding:"2px 8px",borderRadius:10,border:"1px solid "+cat.color+"40",fontFamily:"Georgia,serif"}}>most active</span>}
-                    <span style={{fontSize:11,color:count>0?cat.color:TANL,fontWeight:"bold"}}>{count}</span>
+                    <span style={{fontSize:13,color:cat.color,width:16,textAlign:"center"}}>{cat.icon}</span>
+                    <span style={{fontSize:13,color:isActive?cat.color:INK,fontFamily:BODY,fontWeight:isActive?"bold":"normal",flex:1}}>{cat.label}</span>
+                    {isHeaviest&&<span style={{fontSize:12,color:cat.color,background:cat.color+"18",padding:"2px 8px",borderRadius:10,border:"1px solid "+cat.color+"40",fontFamily:BODY}}>most active</span>}
+                    <span style={{fontSize:13,color:count>0?cat.color:TANL,fontWeight:"bold"}}>{count}</span>
                   </div>
                   <div style={{height:9,background:"rgba(26,46,74,0.07)",borderRadius:4,overflow:"hidden",marginLeft:26}}>
                     <div style={{
@@ -1934,15 +1934,15 @@ function LibraryInsights({library,setAc,ac}){
           {/* Recurring patterns */}
           {topPatterns.length>0&&(
             <div style={{marginBottom:22}}>
-              <div style={{fontSize:10,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.9}}>✦ Weapons Being Used Against You</div>
+              <div style={{fontSize:12,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.9}}>✦ Weapons Being Used Against You</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
                 {topPatterns.map(([pattern,count],i)=>{
                   const col=LCATS[i%LCATS.length].color;
                   const size=i===0?15:i<3?13:12;
                   return(
                     <div key={pattern} style={{padding:"5px 12px",background:col+"14",border:"1px solid "+col+"40",borderRadius:12,display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:size,color:col,fontFamily:"Georgia,serif",fontStyle:"italic"}}>{pattern}</span>
-                      <span style={{fontSize:10,color:col,opacity:0.75,fontWeight:"bold"}}>{count}×</span>
+                      <span style={{fontSize:size,color:col,fontFamily:BODY,fontStyle:"italic"}}>{pattern}</span>
+                      <span style={{fontSize:12,color:col,opacity:0.75,fontWeight:"bold"}}>{count}×</span>
                     </div>
                   );
                 })}
@@ -1952,18 +1952,18 @@ function LibraryInsights({library,setAc,ac}){
 
           {/* Active battleground — prayer + scripture */}
           {heaviestCount>0&&(
-            <div style={{background:heaviest.color+"0D",border:"1px solid "+heaviest.color+"35",borderLeft:"3px solid "+heaviest.color,borderRadius:2,padding:"12px 14px",marginBottom:aiMode?0:0}}>
-              <div style={{fontSize:10,color:heaviest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Heaviest Fight Right Now</div>
-              <p style={{fontSize:13,color:INK,margin:"0 0 12px",lineHeight:1.7}}>
+            <div style={{background:heaviest.color+"0D",border:"1px solid "+heaviest.color+"35",borderLeft:"3px solid "+heaviest.color,borderRadius:8,padding:"12px 14px",marginBottom:aiMode?0:0}}>
+              <div style={{fontSize:12,color:heaviest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Heaviest Fight Right Now</div>
+              <p style={{fontSize:15,color:INK,margin:"0 0 12px",lineHeight:1.7}}>
                 <span style={{fontWeight:"bold",color:heaviest.color}}>{heaviest.icon} {heaviest.label}</span> keeps coming up — {heaviestCount} principles and counting. The Holy Spirit keeps meeting you here because the enemy keeps pressing here.
               </p>
               <div style={{display:"flex",gap:8}}>
                 <button onClick={()=>aiMode==="prayer"?closeAI():runAI("prayer")}
-                  style={{flex:1,padding:"9px 10px",background:aiMode==="prayer"?heaviest.color:"transparent",color:aiMode==="prayer"?"white":heaviest.color,border:"1px solid "+heaviest.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
+                  style={{flex:1,padding:"9px 10px",background:aiMode==="prayer"?heaviest.color:"transparent",color:aiMode==="prayer"?"white":heaviest.color,border:"1px solid "+heaviest.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,transition:"all 0.2s"}}>
                   {aiMode==="prayer"&&aiLoading?"Writing...":"Pray into this fight"}
                 </button>
                 <button onClick={()=>aiMode==="scripture"?closeAI():runAI("scripture")}
-                  style={{flex:1,padding:"9px 10px",background:aiMode==="scripture"?heaviest.color:"transparent",color:aiMode==="scripture"?"white":heaviest.color,border:"1px solid "+heaviest.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,transition:"all 0.2s"}}>
+                  style={{flex:1,padding:"9px 10px",background:aiMode==="scripture"?heaviest.color:"transparent",color:aiMode==="scripture"?"white":heaviest.color,border:"1px solid "+heaviest.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,transition:"all 0.2s"}}>
                   {aiMode==="scripture"&&aiLoading?"Finding...":"Scripture for this fight"}
                 </button>
               </div>
@@ -1972,16 +1972,16 @@ function LibraryInsights({library,setAc,ac}){
 
           {/* AI result */}
           {aiMode&&(
-            <div style={{padding:"14px 16px",background:"rgba(255,255,255,0.8)",border:"1px solid "+heaviest.color+"40",borderTop:"none",animation:"fadeIn 0.3s ease"}}>
+            <div style={{padding:"14px 16px",background:"white",border:"1px solid "+heaviest.color+"40",borderTop:"none",animation:"fadeIn 0.3s ease"}}>
               {aiLoading
                 ?<div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0"}}>
                     <div style={{width:16,height:16,border:"2px solid "+heaviest.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-                    <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{aiMode==="prayer"?"Writing your prayer...":"Finding your weapons..."}</span>
+                    <span style={{fontSize:15,color:TAN,fontStyle:"italic"}}>{aiMode==="prayer"?"Writing your prayer...":"Finding your weapons..."}</span>
                   </div>
                 :<div>
-                    <div style={{fontSize:10,color:heaviest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ {aiMode==="prayer"?"A Prayer for This Fight":"Scripture for Your Patterns"}</div>
-                    <p style={{fontSize:14,lineHeight:1.9,color:INK,margin:"0 0 14px",whiteSpace:"pre-wrap"}}>{aiResult}</p>
-                    <button onClick={closeAI} style={{background:"none",border:"1px solid "+TANL,color:TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>Close</button>
+                    <div style={{fontSize:12,color:heaviest.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ {aiMode==="prayer"?"A Prayer for This Fight":"Scripture for Your Patterns"}</div>
+                    <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 14px",whiteSpace:"pre-wrap"}}>{aiResult}</p>
+                    <button onClick={closeAI} style={{background:"none",border:"1px solid "+TANL,color:TAN,padding:"6px 14px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>Close</button>
                   </div>
               }
             </div>
@@ -2101,38 +2101,38 @@ Here is my unload:
       {/* Deposit button + panel */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <SL>Identity</SL>
-        <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.75}}>This is the battle. Every principle here lives in the space between who you think you are and who God says you are. Your unloads surface it. The Way Forward addresses it. This is where you track it, name it, and experience freedom in Christ.</p>
+        <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.75}}>This is the battle. Every principle here lives in the space between who you think you are and who God says you are. Your unloads surface it. The Way Forward addresses it. This is where you track it, name it, and experience freedom in Christ.</p>
         <button onClick={()=>{setShowDeposit(d=>!d);setParseError(false);}}
-          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,marginBottom:10}}>
+          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:10}}>
           {showDeposit?"× Close":"+ Deposit"}
         </button>
       </div>
 
       {showDeposit&&(
-        <div style={{marginBottom:24,padding:"16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.3s ease"}}>
+        <div style={{marginBottom:24,padding:"16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.3s ease"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
             <SL>Paste from Claude</SL>
             <button onClick={()=>setShowPrompt(p=>!p)}
-              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
+              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:BODY,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
           </div>
           {showPrompt&&(
-            <div style={{marginBottom:14,padding:"12px 14px",background:"rgba(26,46,74,0.04)",border:"1px solid "+FINK,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-              <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
-              <pre style={{fontSize:12,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
+            <div style={{marginBottom:14,padding:"12px 14px",background:"rgba(26,46,74,0.04)",border:"1px solid "+FINK,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
+              <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
+              <pre style={{fontSize:13,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:BODY,opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
               <button onClick={copyPrompt}
-                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                 {promptCopied?"✓ Copied":"Copy Prompt"}
               </button>
             </div>
           )}
-          <p style={{fontSize:13,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
+          <p style={{fontSize:15,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
           <textarea value={pt} onChange={e=>{setPt(e.target.value);setParseError(false);}}
             placeholder={"PRINCIPLE: The vine has two axes working at once...\nCATEGORY: identity\nDATE: May 23, 2026\nCONTEXT: This came from a 4:30am session where...\nPATTERN: Over-reliance on personal framework\nSCRIPTURE: I am the vine; you are the branches.\nREF: John 15:5\n---\nPRINCIPLE: next principle here..."}
             rows={10}
-            style={{width:"100%",padding:"12px",border:"1px solid "+(parseError?OX:TANL),background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.7,borderRadius:2,marginBottom:10}}/>
-          {parseError&&<p style={{fontSize:13,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
+            style={{width:"100%",padding:"12px",border:"1px solid "+(parseError?OX:TANL),background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.7,borderRadius:8,marginBottom:10}}/>
+          {parseError&&<p style={{fontSize:15,color:OX,fontStyle:"italic",marginBottom:10}}>Nothing found — make sure the format matches, with PRINCIPLE: at the start of each block and --- between them.</p>}
           <button onClick={handleDeposit} disabled={!pt.trim()}
-            style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,opacity:pt.trim()?1:0.5}}>
+            style={{width:"100%",padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:pt.trim()?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8,opacity:pt.trim()?1:0.5}}>
             ✦ Add to Identity
           </button>
         </div>
@@ -2141,12 +2141,12 @@ Here is my unload:
       {/* Category filter strip */}
       <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:20,paddingBottom:2}}>
         <button onClick={()=>setAc("all")}
-          style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
+          style={{padding:"5px 12px",background:ac==="all"?INK:"transparent",color:ac==="all"?"white":TAN,border:"1px solid "+(ac==="all"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,whiteSpace:"nowrap",flexShrink:0}}>
           All ({library.length})
         </button>
         {LCATS.map(cat=>(
           <button key={cat.id} onClick={()=>setAc(cat.id)}
-            style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2,whiteSpace:"nowrap",flexShrink:0}}>
+            style={{padding:"5px 12px",background:ac===cat.id?cat.color:"transparent",color:ac===cat.id?"white":TAN,border:"1px solid "+(ac===cat.id?cat.color:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,whiteSpace:"nowrap",flexShrink:0}}>
             {cat.icon} {cat.label} ({counts[cat.id]||0})
           </button>
         ))}
@@ -2156,42 +2156,42 @@ Here is my unload:
       {latest&&ac==="all"&&(
         <div style={{marginBottom:20}}>
           <div style={{borderLeft:"3px solid "+OX,padding:"10px 16px",marginBottom:14,background:"rgba(122,31,31,0.07)"}}>
-            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Latest Deposit</div>
-            <p style={{fontStyle:"italic",fontSize:13,lineHeight:1.6,margin:0,color:INK,opacity:0.75}}>What the Holy Spirit deposited most recently.</p>
+            <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>Latest Deposit</div>
+            <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.6,margin:0,color:INK,opacity:0.75}}>What the Holy Spirit deposited most recently.</p>
           </div>
-          <div style={{background:"rgba(255,255,255,0.65)",border:"1px solid "+latestCat.color+"40",borderTop:"4px solid "+latestCat.color,borderRadius:2,overflow:"hidden"}}>
+          <div style={{background:"white",border:"1px solid "+latestCat.color+"40",borderTop:"4px solid "+latestCat.color,borderRadius:8,overflow:"hidden"}}>
             <div style={{padding:"13px 16px 0",display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:13,color:latestCat.color}}>{latestCat.icon}</span>
-              <span style={{fontSize:10,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{latestCat.label}</span>
-              <span style={{marginLeft:"auto",fontSize:11,color:TANL}}>{latest.date}</span>
+              <span style={{fontSize:15,color:latestCat.color}}>{latestCat.icon}</span>
+              <span style={{fontSize:12,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{latestCat.label}</span>
+              <span style={{marginLeft:"auto",fontSize:13,color:TANL}}>{latest.date}</span>
             </div>
             <div style={{padding:"11px 16px 10px"}}>
               <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>&ldquo;{latest.principle}&rdquo;</p>
             </div>
             <button onClick={()=>setExpanded(expanded===latest.id?null:latest.id)}
-              style={{width:"100%",padding:"9px 16px",background:expanded===latest.id?latestCat.color+"10":"transparent",border:"none",borderTop:"1px solid "+latestCat.color+"25",color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+              style={{width:"100%",padding:"9px 16px",background:expanded===latest.id?latestCat.color+"10":"transparent",border:"none",borderTop:"1px solid "+latestCat.color+"25",color:latestCat.color,cursor:"pointer",fontFamily:BODY,fontSize:15,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
               <span>{expanded===latest.id?"▲ Close":"↓ Full context + scripture"}</span>
-              <span style={{fontSize:11,color:TANL,fontStyle:"italic"}}>tap to expand</span>
+              <span style={{fontSize:13,color:TANL,fontStyle:"italic"}}>tap to expand</span>
             </button>
             {expanded===latest.id&&(
               <div style={{padding:"16px",borderTop:"1px solid "+latestCat.color+"20",animation:"fadeIn 0.25s ease"}}>
-                {latest.context&&<><div style={{fontSize:10,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
-                <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
-                {latest.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
-                {latest.tag&&<div style={{display:"inline-block",fontSize:11,color:latestCat.color,border:"1px solid "+latestCat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:14}}>#{latest.tag}</div>}
+                {latest.context&&<><div style={{fontSize:12,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                <p style={{fontSize:15,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
+                {latest.pattern&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
+                {latest.tag&&<div style={{display:"inline-block",fontSize:13,color:latestCat.color,border:"1px solid "+latestCat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:14}}>#{latest.tag}</div>}
                 {latest.scripture&&(
                   <div style={{borderLeft:"3px solid "+latestCat.color,padding:"10px 14px",background:latestCat.color+"08",marginBottom:14}}>
-                    <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
-                    <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
+                    <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{latest.scripture}&rdquo;</p>
+                    <p style={{color:GOLD,fontSize:13,margin:"6px 0 0"}}>{latest.scriptureRef}</p>
                   </div>
                 )}
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={()=>share(latest)}
-                    style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+latestCat.color,color:latestCat.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
                     {copied===latest.id?"✓ Copied to clipboard":"↗ Share this principle"}
                   </button>
                   <button onClick={()=>{if(window.confirm("Delete this principle? This can't be undone."))deleteEntry(latest.id);}}
-                    style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                    style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
                     Delete
                   </button>
                 </div>
@@ -2202,8 +2202,8 @@ Here is my unload:
       )}
 
       {/* List */}
-      {ac!=="all"&&<div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
-      {ac==="all"&&library.length>1&&<div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
+      {ac!=="all"&&<div style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
+      {ac==="all"&&library.length>1&&<div style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {listEntries.map(item=>{
           const cat=LCATS.find(c=>c.id===item.category)||LCATS[0];
@@ -2212,31 +2212,31 @@ Here is my unload:
             <div key={item.id} style={{background:"white",border:"1px solid rgba(184,149,106,0.2)",borderLeft:"4px solid "+cat.color,borderRadius:10,overflow:"hidden",transition:"border-color 0.2s"}}>
               <div onClick={()=>setExpanded(isExp?null:item.id)} style={{padding:"14px 16px",cursor:"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                  <span style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.icon} {cat.label}</span>
-                  <span style={{marginLeft:"auto",fontSize:11,color:TAN,fontFamily:BODY,flexShrink:0}}>{item.date}</span>
+                  <span style={{fontSize:13,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.icon} {cat.label}</span>
+                  <span style={{marginLeft:"auto",fontSize:13,color:TAN,fontFamily:BODY,flexShrink:0}}>{item.date}</span>
                 </div>
                 <p style={{fontSize:15,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic",fontFamily:SERIF}}>&ldquo;{item.principle}&rdquo;</p>
-                <div style={{fontSize:12,color:isExp?cat.color:TAN,fontFamily:BODY,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
+                <div style={{fontSize:13,color:isExp?cat.color:TAN,fontFamily:BODY,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
               </div>
               {isExp&&(
                 <div style={{padding:"0 16px 16px",borderTop:"1px solid "+cat.color+"20",animation:"fadeIn 0.25s ease"}}>
-                  {item.context&&<><div style={{paddingTop:14,fontSize:11,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                  {item.context&&<><div style={{paddingTop:14,fontSize:13,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
                   <p style={{fontSize:15,lineHeight:1.8,color:"#2a3a4a",fontFamily:BODY,margin:"0 0 12px"}}>{item.context}</p></>}
-                  {item.pattern&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",fontFamily:BODY,marginBottom:12}}>Pattern: {item.pattern}</div>}
-                  {item.tag&&<div style={{display:"inline-block",fontSize:12,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12,fontFamily:BODY}}>#{item.tag}</div>}
+                  {item.pattern&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",fontFamily:BODY,marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.tag&&<div style={{display:"inline-block",fontSize:13,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12,fontFamily:BODY}}>#{item.tag}</div>}
                   {item.scripture&&(
                     <div style={{borderLeft:"3px solid "+cat.color,padding:"12px 14px",background:cat.color+"08",marginBottom:12,borderRadius:"0 6px 6px 0"}}>
                       <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.7,margin:0,color:INK,fontFamily:SERIF}}>&ldquo;{item.scripture}&rdquo;</p>
-                      <p style={{color:GOLD,fontSize:12,margin:"6px 0 0",fontFamily:BODY}}>{item.scriptureRef}</p>
+                      <p style={{color:GOLD,fontSize:13,margin:"6px 0 0",fontFamily:BODY}}>{item.scriptureRef}</p>
                     </div>
                   )}
                   <div style={{display:"flex",gap:8}}>
                     <button onClick={()=>share(item)}
-                      style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>
+                      style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:6}}>
                       {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
                     </button>
                     <button onClick={()=>{if(window.confirm("Delete this principle? This can't be undone."))deleteEntry(item.id);}}
-                      style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>
+                      style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:6}}>
                       Delete
                     </button>
                   </div>
@@ -2340,7 +2340,7 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
         <div style={{display:"flex",gap:6}}>
           {["today","recent","archive"].map(v=>(
             <button key={v} onClick={()=>setView(v)}
-              style={{padding:"4px 10px",background:view===v?INK:"transparent",color:view===v?"white":TAN,border:"1px solid "+(view===v?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,textTransform:"capitalize"}}>
+              style={{padding:"4px 10px",background:view===v?INK:"transparent",color:view===v?"white":TAN,border:"1px solid "+(view===v?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,textTransform:"capitalize"}}>
               {v==="archive"?"Archive":v==="recent"?"Recent":"Today"}
             </button>
           ))}
@@ -2355,10 +2355,10 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
 
           {/* In Joe's Words — Stack */}
           <div style={{marginBottom:20}}>
-            <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ In Joe's Words — The Stack</div>
+            <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ In Joe's Words — The Stack</div>
             <textarea value={joiceInputs.stack||""} onChange={e=>setJoeInputs(p=>({...p,stack:e.target.value}))}
               placeholder="How did today's stack feel? What surprised you? What was harder than expected?"
-              rows={3} style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+              rows={3} style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
           </div>
 
           {/* Completions */}
@@ -2367,29 +2367,29 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
             {history.filter(h=>h.date===today).length===0
               ?<p style={{fontStyle:"italic",color:TAN,fontSize:13}}>Complete a project task and it will appear here.</p>
               :history.filter(h=>h.date===today).map(item=>(
-                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:6}}>
+                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:6}}>
                   <div style={{width:20,height:20,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:11}}>✓</span></div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:14,color:INK}}>{item.task}</div>
-                    <div style={{fontSize:11,color:TAN,marginTop:2}}>{item.category}</div>
+                    <div style={{fontSize:15,color:INK}}>{item.task}</div>
+                    <div style={{fontSize:13,color:TAN,marginTop:2}}>{item.category}</div>
                   </div>
                 </div>
               ))
             }
             <textarea value={joiceInputs.completions||""} onChange={e=>setJoeInputs(p=>({...p,completions:e.target.value}))}
               placeholder="In Joe's Words — what's worth noting about today's completions?"
-              rows={2} style={{width:"100%",marginTop:8,padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+              rows={2} style={{width:"100%",marginTop:8,padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
           </div>
 
           {/* Pattern flag */}
           {(topCat||topPattern)&&(
-            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+GOLD,borderRadius:2}}>
-              <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Pattern Surfacing</div>
-              {topCat&&<p style={{fontSize:13,color:INK,margin:"0 0 4px"}}>Most active area: <strong>{topCat[0]}</strong> ({topCat[1]} Library entries)</p>}
-              {topPattern&&<p style={{fontSize:13,color:INK,margin:0}}>Recurring pattern: <strong>{topPattern[0]}</strong> ({topPattern[1]}×)</p>}
+            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+GOLD,borderRadius:8}}>
+              <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Pattern Surfacing</div>
+              {topCat&&<p style={{fontSize:15,color:INK,margin:"0 0 4px"}}>Most active area: <strong>{topCat[0]}</strong> ({topCat[1]} Library entries)</p>}
+              {topPattern&&<p style={{fontSize:15,color:INK,margin:0}}>Recurring pattern: <strong>{topPattern[0]}</strong> ({topPattern[1]}×)</p>}
               <textarea value={joiceInputs.pattern||""} onChange={e=>setJoeInputs(p=>({...p,pattern:e.target.value}))}
                 placeholder="In Joe's Words — what do you make of this pattern?"
-                rows={2} style={{width:"100%",marginTop:10,padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.6)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2}}/>
+                rows={2} style={{width:"100%",marginTop:10,padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
             </div>
           )}
 
@@ -2398,32 +2398,32 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
             <SL>Today's Field Note</SL>
             <textarea value={joiceInputs.fieldnote||""} onChange={e=>setJoeInputs(p=>({...p,fieldnote:e.target.value}))}
               placeholder="One honest paragraph about today. What God is doing. What you're carrying. What you want to remember."
-              rows={5} style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"rgba(255,255,255,0.65)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:2}}/>
+              rows={5} style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:8}}/>
           </div>
 
           {/* Copy to Notion */}
           <button onClick={()=>navigator.clipboard?.writeText(buildNotionExport()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
-            style={{width:"100%",padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,transition:"background 0.3s",marginBottom:6}}>
+            style={{width:"100%",padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s",marginBottom:6}}>
             {copied?"✓ Copied to Clipboard — Paste into Notion":"Copy Field Note → Paste into Notion"}
           </button>
-          <p style={{fontSize:11,color:TAN,fontStyle:"italic",textAlign:"center",margin:0}}>Paste into Kingdom Notebook → Archive in Notion</p>
+          <p style={{fontSize:13,color:TAN,fontStyle:"italic",textAlign:"center",margin:0}}>Paste into Kingdom Notebook → Archive in Notion</p>
         </div>
       )}
 
       {/* RECENT VIEW — last 14 days */}
       {view==="recent"&&(
         <div>
-          <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:16,lineHeight:1.65}}>Last 14 days — patterns emerge when you look back.</p>
+          <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Last 14 days — patterns emerge when you look back.</p>
           {!recentDays.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Complete tasks and they'll appear here.</div>}
           {recentDays.map(([date,items])=>(
             <div key={date} style={{marginBottom:12}}>
-              <div style={{fontSize:11,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>
+              <div style={{fontSize:13,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>
                 {new Date(date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
               </div>
               {items.map(item=>(
-                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:4}}>
-                  <div style={{fontSize:13,color:INK,flex:1}}>{item.task}</div>
-                  <div style={{fontSize:11,color:TAN,flexShrink:0}}>{item.category}</div>
+                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:4}}>
+                  <div style={{fontSize:15,color:INK,flex:1}}>{item.task}</div>
+                  <div style={{fontSize:13,color:TAN,flexShrink:0}}>{item.category}</div>
                 </div>
               ))}
             </div>
@@ -2434,23 +2434,23 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
       {/* ARCHIVE VIEW */}
       {view==="archive"&&(
         <div>
-          <p style={{fontStyle:"italic",color:TAN,fontSize:13,marginBottom:16,lineHeight:1.65}}>Everything logged — searchable record of your growth.</p>
+          <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Everything logged — searchable record of your growth.</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
             {[["Completions",history.length],["Principles",library.length],["Prayers",prayers.filter(p=>p.answered).length]].map(([label,val])=>(
-              <div key={label} style={{padding:"12px 8px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
+              <div key={label} style={{padding:"12px 8px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,textAlign:"center"}}>
                 <div style={{fontSize:20,fontWeight:"bold",color:INK}}>{val}</div>
-                <div style={{fontSize:10,color:TAN,textTransform:"uppercase",letterSpacing:"1px",marginTop:2}}>{label}</div>
+                <div style={{fontSize:12,color:TAN,textTransform:"uppercase",letterSpacing:"1px",marginTop:2}}>{label}</div>
               </div>
             ))}
           </div>
           {history.length===0
             ?<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Your record builds as you complete tasks.</div>
             :history.map(item=>(
-              <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:2,marginBottom:5}}>
+              <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:5}}>
                 <div style={{width:18,height:18,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:10}}>✓</span></div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:13,color:INK}}>{item.task}</div>
-                  <div style={{fontSize:11,color:TAN,marginTop:1}}>{item.category} · {item.date}</div>
+                  <div style={{fontSize:15,color:INK}}>{item.task}</div>
+                  <div style={{fontSize:13,color:TAN,marginTop:1}}>{item.category} · {item.date}</div>
                 </div>
                 <RDot level={item.resistance}/>
               </div>
@@ -2518,22 +2518,22 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history}){
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>Archive</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
         {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Categories",cats.length],["Completions",history.length]].map(([label,val])=>(
-          <div key={label} style={{padding:"12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderRadius:2,textAlign:"center"}}>
+          <div key={label} style={{padding:"12px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:"bold",color:INK,letterSpacing:"-0.5px"}}>{val}</div>
-            <div style={{fontSize:11,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
+            <div style={{fontSize:13,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
           </div>
         ))}
       </div>
       <button onClick={()=>navigator.clipboard.writeText(gen()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
-        style={{width:"100%",marginBottom:20,padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2,transition:"background 0.3s"}}>
+        style={{width:"100%",marginBottom:20,padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s"}}>
         {copied?"check Copied to Clipboard":"Copy Full Archive"}
       </button>
       <SL>Preview</SL>
-      <div style={{background:"rgba(255,255,255,0.4)",border:"1px solid "+FINK,borderRadius:2,padding:"14px 16px",maxHeight:320,overflowY:"auto"}}>
-        <pre style={{fontSize:12,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif"}}>{gen()}</pre>
+      <div style={{background:"rgba(255,255,255,0.4)",border:"1px solid "+FINK,borderRadius:8,padding:"14px 16px",maxHeight:320,overflowY:"auto"}}>
+        <pre style={{fontSize:13,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:BODY}}>{gen()}</pre>
       </div>
     </div>
   );
@@ -2573,38 +2573,38 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
       <SL>The Shelf</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
 
       {/* Quick capture */}
-      <div style={{marginBottom:24,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,padding:"14px 14px 12px"}}>
-        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ Quick Capture</div>
+      <div style={{marginBottom:24,background:"white",border:"1px solid "+FINK,borderRadius:8,padding:"14px 14px 12px"}}>
+        <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ Quick Capture</div>
         <input
           value={input}
           onChange={e=>setInput(e.target.value)}
           onKeyDown={e=>e.key==="Enter"&&quickAdd()}
           placeholder="What needs to get done..."
-          style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:15,color:INK,outline:"none",borderRadius:2,marginBottom:10}}
+          style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:10}}
         />
         <div style={{display:"flex",gap:6,marginBottom:10}}>
           {SHELF_TIMEFRAMES.map(tf=>(
             <button key={tf.id} onClick={()=>setTimeframe(tf.id)}
-              style={{flex:1,padding:"7px 4px",background:timeframe===tf.id?tf.color:"transparent",border:"1px solid "+(timeframe===tf.id?tf.color:TANL),color:timeframe===tf.id?"white":TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,transition:"all 0.2s"}}>
+              style={{flex:1,padding:"7px 4px",background:timeframe===tf.id?tf.color:"transparent",border:"1px solid "+(timeframe===tf.id?tf.color:TANL),color:timeframe===tf.id?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,transition:"all 0.2s"}}>
               {tf.label}
             </button>
           ))}
         </div>
-        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:"transparent",color:INK,border:"1px solid "+INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+        <button onClick={quickAdd} style={{width:"100%",padding:"9px",background:"transparent",color:INK,border:"1px solid "+INK,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
           + Add to Shelf
         </button>
       </div>
 
       {/* Filter */}
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-        <button onClick={()=>setFilter("all")} style={{padding:"5px 12px",background:filter==="all"?INK:"transparent",color:filter==="all"?"white":TAN,border:"1px solid "+(filter==="all"?INK:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+        <button onClick={()=>setFilter("all")} style={{padding:"5px 12px",background:filter==="all"?INK:"transparent",color:filter==="all"?"white":TAN,border:"1px solid "+(filter==="all"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
           All ({shelf.length})
         </button>
         {SHELF_TIMEFRAMES.map(tf=>(
-          <button key={tf.id} onClick={()=>setFilter(tf.id)} style={{padding:"5px 12px",background:filter===tf.id?tf.color:"transparent",color:filter===tf.id?"white":TAN,border:"1px solid "+(filter===tf.id?tf.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+          <button key={tf.id} onClick={()=>setFilter(tf.id)} style={{padding:"5px 12px",background:filter===tf.id?tf.color:"transparent",color:filter===tf.id?"white":TAN,border:"1px solid "+(filter===tf.id?tf.color:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
             {tf.label} ({shelf.filter(s=>s.timeframe===tf.id).length})
           </button>
         ))}
@@ -2623,37 +2623,37 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
           if(!items.length)return null;
           return(
             <div key={tf.id} style={{marginBottom:8}}>
-              {filter==="all"&&<div style={{fontSize:10,color:tf.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ {tf.label}</div>}
+              {filter==="all"&&<div style={{fontSize:12,color:tf.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ {tf.label}</div>}
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 {items.map(item=>(
-                  <div key={item.id} style={{padding:"11px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2}}>
+                  <div key={item.id} style={{padding:"11px 14px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:8}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:14,color:INK,lineHeight:1.4}}>{item.label}</div>
-                        <div style={{fontSize:11,color:TAN,marginTop:3}}>{item.dateAdded}</div>
+                        <div style={{fontSize:15,color:INK,lineHeight:1.4}}>{item.label}</div>
+                        <div style={{fontSize:13,color:TAN,marginTop:3}}>{item.dateAdded}</div>
                       </div>
                       <div style={{display:"flex",gap:6,flexShrink:0}}>
                         <select value={item.timeframe} onChange={e=>changeTimeframe(item.id,e.target.value)}
-                          style={{padding:"3px 6px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.7)",fontFamily:"Georgia,serif",fontSize:11,color:TAN,outline:"none",borderRadius:2,cursor:"pointer"}}>
+                          style={{padding:"3px 6px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:13,color:TAN,outline:"none",borderRadius:8,cursor:"pointer"}}>
                           {SHELF_TIMEFRAMES.map(tf=><option key={tf.id} value={tf.id}>{tf.label}</option>)}
                         </select>
                         <button onClick={()=>setPromotingId(promotingId===item.id?null:item.id)}
-                          style={{padding:"4px 8px",background:promotingId===item.id?OX:"transparent",color:promotingId===item.id?"white":OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2,whiteSpace:"nowrap"}}>
+                          style={{padding:"4px 8px",background:promotingId===item.id?OX:"transparent",color:promotingId===item.id?"white":OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,whiteSpace:"nowrap"}}>
                           → Project
                         </button>
                         <button onClick={()=>remove(item.id)}
-                          style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                          style={{padding:"4px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                           ×
                         </button>
                       </div>
                     </div>
                     {promotingId===item.id&&(
                       <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK}}>
-                        <div style={{fontSize:11,color:TAN,fontStyle:"italic",marginBottom:8}}>Move to which category?</div>
+                        <div style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:8}}>Move to which category?</div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                           {cats.map(cat=>(
                             <button key={cat.id} onClick={()=>promoteToCat(item,cat.id)}
-                              style={{padding:"5px 10px",background:"transparent",color:cat.color,border:"1px solid "+cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                              style={{padding:"5px 10px",background:"transparent",color:cat.color,border:"1px solid "+cat.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                               {cat.icon} {cat.label}
                             </button>
                           ))}
@@ -2699,21 +2699,21 @@ function ManualScriptureAdd(){
   return(
     <div style={{marginBottom:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
+        <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
         <button onClick={()=>setOpen(o=>!o)}
-          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
           {open?"× Close":"+ Add Scripture"}
         </button>
       </div>
       {open&&(
-        <div style={{padding:"14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL,borderRadius:2,marginBottom:14,animation:"fadeIn 0.2s ease"}}>
+        <div style={{padding:"14px",background:"white",border:"1px solid "+TANL,borderRadius:8,marginBottom:14,animation:"fadeIn 0.2s ease"}}>
           <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Label (e.g. Fear, Identity, Rest)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
           <textarea value={form.verse} onChange={e=>setForm(f=>({...f,verse:e.target.value}))} placeholder="Verse text..." rows={3}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
           <input value={form.ref} onChange={e=>setForm(f=>({...f,ref:e.target.value}))} placeholder="Reference (e.g. John 15:5)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2,marginBottom:8}}/>
-          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
+          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
             Save Scripture
           </button>
         </div>
@@ -2721,23 +2721,23 @@ function ManualScriptureAdd(){
       {verses.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
           {verses.map(v=>(
-            <div key={v.id} style={{padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2}}>
-              {v.label&&<div style={{fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
+            <div key={v.id} style={{padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8}}>
+              {v.label&&<div style={{fontSize:12,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
               <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{v.verse}"</p>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
-                <p style={{color:GOLD,fontSize:13,margin:0}}>{v.ref}</p>
+                <p style={{color:GOLD,fontSize:15,margin:0}}>{v.ref}</p>
                 <div style={{display:"flex",gap:6}}>
-                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>
+                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                     {copied===v.id?"✓":"Copy"}
                   </button>
-                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:11,borderRadius:2}}>×</button>
+                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>×</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-      {!verses.length&&!open&&<p style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
+      {!verses.length&&!open&&<p style={{fontSize:15,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
       <div style={{height:1,background:FINK,marginBottom:20}}/>
     </div>
   );
@@ -2761,7 +2761,7 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
   function handlePrint(){window.print();}
 
   return(
-    <div style={{position:"fixed",inset:0,background:PAPER,zIndex:300,overflowY:"auto",fontFamily:"Georgia,serif",color:INK}}>
+    <div style={{position:"fixed",inset:0,background:PAPER,zIndex:300,overflowY:"auto",fontFamily:BODY,color:INK}}>
       <style>{`
         @media print {
           body * { visibility: hidden !important; }
@@ -2774,18 +2774,18 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
       {/* Close / Print bar */}
       <div id="snap-close-bar" style={{background:INK,padding:"12px 20px",position:"sticky",top:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:14,fontFamily:"Georgia,serif",padding:0}}>← Back to Map</button>
-        <div style={{fontSize:10,color:TAN,letterSpacing:"2.5px",textTransform:"uppercase"}}>Life Snapshot</div>
-        <button onClick={handlePrint} style={{background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,padding:"6px 14px",borderRadius:2}}>⬇ Export PDF</button>
+        <button onClick={onClose} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,fontFamily:BODY,padding:0}}>← Back to Map</button>
+        <div style={{fontSize:12,color:TAN,letterSpacing:"2.5px",textTransform:"uppercase"}}>Life Snapshot</div>
+        <button onClick={handlePrint} style={{background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:BODY,fontSize:15,padding:"6px 14px",borderRadius:8}}>⬇ Export PDF</button>
       </div>
 
       <div id="life-snapshot" style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 60px"}}>
         {/* Header */}
         <div style={{borderBottom:"2px solid "+INK,paddingBottom:16,marginBottom:24,display:"flex",alignItems:"flex-end",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontSize:10,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:4}}>Steen Growth Ministries</div>
+            <div style={{fontSize:12,color:OX,letterSpacing:"3px",textTransform:"uppercase",marginBottom:4}}>Steen Growth Ministries</div>
             <div style={{fontSize:26,fontWeight:"bold",color:INK,letterSpacing:"-0.5px",lineHeight:1.1}}>Life Snapshot</div>
-            <div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:4}}>{today}</div>
+            <div style={{fontSize:15,color:TAN,fontStyle:"italic",marginTop:4}}>{today}</div>
           </div>
           <Logo size={60}/>
         </div>
@@ -2798,16 +2798,16 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
             {label:"Prayer",val:activePrayers.length,sub:"active",color:OX},
             {label:"Shelf",val:shelfTotal,sub:shelfThisWeek+" this week",color:GOLD},
           ].map(m=>(
-            <div key={m.label} style={{padding:"12px 10px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderTop:"3px solid "+m.color,borderRadius:2,textAlign:"center"}}>
+            <div key={m.label} style={{padding:"12px 10px",background:"white",border:"1px solid "+FINK,borderTop:"3px solid "+m.color,borderRadius:8,textAlign:"center"}}>
               <div style={{fontSize:22,fontWeight:"bold",color:m.color,lineHeight:1}}>{m.val}</div>
-              <div style={{fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",color:INK,marginTop:4,opacity:0.7}}>{m.label}</div>
-              <div style={{fontSize:11,color:TAN,marginTop:2,fontStyle:"italic"}}>{m.sub}</div>
+              <div style={{fontSize:12,letterSpacing:"1.5px",textTransform:"uppercase",color:INK,marginTop:4,opacity:0.7}}>{m.label}</div>
+              <div style={{fontSize:13,color:TAN,marginTop:2,fontStyle:"italic"}}>{m.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Life Categories */}
-        <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Life Map</div>
+        <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Life Map</div>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:32}}>
           {cats.map(cat=>{
             const done=cat.tasks.filter(t=>t.done).length;
@@ -2815,18 +2815,18 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
             const pct=total?Math.round(done/total*100):0;
             const open=cat.tasks.filter(t=>!t.done);
             return(
-              <div key={cat.id} style={{padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"4px solid "+cat.color,borderRadius:2}}>
+              <div key={cat.id} style={{padding:"14px 16px",background:"white",border:"1px solid "+FINK,borderLeft:"4px solid "+cat.color,borderRadius:8}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:open.length?10:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontSize:15,color:cat.color}}>{cat.icon}</span>
                     <span style={{fontSize:15,fontWeight:"bold",color:INK}}>{cat.label}</span>
-                    <span style={{fontSize:12,color:TAN,fontStyle:"italic"}}>{cat.state}</span>
+                    <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{cat.state}</span>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                    <div style={{width:60,height:4,background:"rgba(26,46,74,0.1)",borderRadius:2}}>
-                      <div style={{width:pct+"%",height:"100%",background:cat.color,borderRadius:2,transition:"width 0.4s"}}/>
+                    <div style={{width:60,height:4,background:"rgba(26,46,74,0.1)",borderRadius:8}}>
+                      <div style={{width:pct+"%",height:"100%",background:cat.color,borderRadius:8,transition:"width 0.4s"}}/>
                     </div>
-                    <span style={{fontSize:12,color:cat.color,fontWeight:"bold",minWidth:28,textAlign:"right"}}>{done}/{total}</span>
+                    <span style={{fontSize:13,color:cat.color,fontWeight:"bold",minWidth:28,textAlign:"right"}}>{done}/{total}</span>
                   </div>
                 </div>
                 {open.length>0&&(
@@ -2834,7 +2834,7 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
                     {open.map(t=>(
                       <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,paddingLeft:4}}>
                         <div style={{width:6,height:6,borderRadius:"50%",background:cat.color,flexShrink:0,opacity:0.5}}/>
-                        <span style={{fontSize:13,color:INK,lineHeight:1.4}}>{t.label}</span>
+                        <span style={{fontSize:15,color:INK,lineHeight:1.4}}>{t.label}</span>
                         <RDot level={t.resistance}/>
                       </div>
                     ))}
@@ -2848,21 +2848,21 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
         {/* Prayer snapshot */}
         {activePrayers.length>0&&(
           <div style={{marginBottom:28}}>
-            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Active Prayer</div>
+            <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Active Prayer</div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {activePrayers.slice(0,8).map(p=>{
                 const tag=RTAGS.find(t=>t.id===p.relationship)||RTAGS[0];
                 return(
-                  <div key={p.id} style={{padding:"10px 14px",background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,display:"flex",alignItems:"flex-start",gap:10}}>
-                    <span style={{fontSize:13,color:tag.color,flexShrink:0}}>{tag.icon}</span>
+                  <div key={p.id} style={{padding:"10px 14px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:8,display:"flex",alignItems:"flex-start",gap:10}}>
+                    <span style={{fontSize:15,color:tag.color,flexShrink:0}}>{tag.icon}</span>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:14,color:INK,fontWeight:"bold"}}>{p.name}</div>
-                      <div style={{fontSize:13,color:TAN,lineHeight:1.4,marginTop:2}}>{p.request}</div>
+                      <div style={{fontSize:15,color:INK,fontWeight:"bold"}}>{p.name}</div>
+                      <div style={{fontSize:15,color:TAN,lineHeight:1.4,marginTop:2}}>{p.request}</div>
                     </div>
                   </div>
                 );
               })}
-              {activePrayers.length>8&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",textAlign:"center",padding:"6px"}}>+{activePrayers.length-8} more on your prayer list</div>}
+              {activePrayers.length>8&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",textAlign:"center",padding:"6px"}}>+{activePrayers.length-8} more on your prayer list</div>}
             </div>
           </div>
         )}
@@ -2870,18 +2870,18 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
         {/* Shelf snapshot */}
         {shelf.length>0&&(
           <div style={{marginBottom:28}}>
-            <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ The Shelf</div>
+            <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ The Shelf</div>
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
               {SHELF_TIMEFRAMES.map(tf=>{
                 const items=shelf.filter(s=>s.timeframe===tf.id);
                 if(!items.length)return null;
                 return(
                   <div key={tf.id}>
-                    <div style={{fontSize:10,color:tf.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:5,opacity:0.85}}>— {tf.label}</div>
+                    <div style={{fontSize:12,color:tf.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:5,opacity:0.85}}>— {tf.label}</div>
                     {items.slice(0,5).map(item=>(
-                      <div key={item.id} style={{padding:"7px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:2,marginBottom:4,fontSize:13,color:INK}}>{item.label}</div>
+                      <div key={item.id} style={{padding:"7px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+tf.color,borderRadius:8,marginBottom:4,fontSize:15,color:INK}}>{item.label}</div>
                     ))}
-                    {items.length>5&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",paddingLeft:14,marginBottom:6}}>+{items.length-5} more</div>}
+                    {items.length>5&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",paddingLeft:14,marginBottom:6}}>+{items.length-5} more</div>}
                   </div>
                 );
               })}
@@ -2891,17 +2891,17 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
         {/* Habits snapshot */}
         <div style={{marginBottom:28}}>
-          <div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Habits Today</div>
+          <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:14,opacity:0.8}}>✦ Habits Today</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
             {allHabits.map(h=>{
               const done=!!th[h.id];
               const str=streaks[h.id]?.count||0;
               const hcat=HCATS.find(hc=>hc.id===h.cat);
               return(
-                <div key={h.id} style={{padding:"5px 10px",background:done?((hcat?.color||GRN)+"18"):"rgba(255,255,255,0.5)",border:"1px solid "+(done?(hcat?.color||GRN)+"50":FINK),borderRadius:2,fontSize:12,color:done?(hcat?.color||GRN):TAN,display:"flex",alignItems:"center",gap:5}}>
+                <div key={h.id} style={{padding:"5px 10px",background:done?((hcat?.color||GRN)+"18"):"rgba(255,255,255,0.5)",border:"1px solid "+(done?(hcat?.color||GRN)+"50":FINK),borderRadius:8,fontSize:13,color:done?(hcat?.color||GRN):TAN,display:"flex",alignItems:"center",gap:5}}>
                   <span style={{fontSize:11}}>{done?"✓":"○"}</span>
                   {h.label}
-                  {str>1&&<span style={{fontSize:11,opacity:0.8}}>{str}🔥</span>}
+                  {str>1&&<span style={{fontSize:13,opacity:0.8}}>{str}🔥</span>}
                 </div>
               );
             })}
@@ -2910,8 +2910,8 @@ function LifeSnapshotOverlay({cats,habits,prayers,shelf,streaks,onClose}){
 
         {/* Footer */}
         <div style={{borderTop:"1px solid rgba(26,46,74,0.15)",paddingTop:16,marginTop:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontSize:11,color:TAN,fontStyle:"italic"}}>"Trust in the Lord with all your heart." — Proverbs 3:5</div>
-          <div style={{fontSize:10,color:TAN,opacity:0.6,letterSpacing:"1px"}}>SGM Orientation</div>
+          <div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>"Trust in the Lord with all your heart." — Proverbs 3:5</div>
+          <div style={{fontSize:12,color:TAN,opacity:0.6,letterSpacing:"1px"}}>SGM Orientation</div>
         </div>
       </div>
     </div>
@@ -2946,25 +2946,25 @@ function AISuggestButton({cats,planner,setPlanner}){
   }
   return(
     <div>
-      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+      <button onClick={suggest} disabled={aiLoad} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
         {aiLoad?"◎ Planning your day…":"✦ Suggest My Day"}
       </button>
       {aiSug&&(
-        <div style={{marginTop:10,padding:"14px 16px",background:GOLD+"08",border:"1px solid "+GOLD+"40",borderRadius:2}}>
+        <div style={{marginTop:10,padding:"14px 16px",background:GOLD+"08",border:"1px solid "+GOLD+"40",borderRadius:8}}>
           <SL c={GOLD}>Suggested Plan</SL>
           {DAYBLOCKS.map(block=>{
             const tasks=aiSug[block.id]||[];
             if(!tasks.length)return null;
             return(
               <div key={block.id} style={{marginBottom:8}}>
-                <div style={{fontSize:11,color:GOLD,letterSpacing:"1px",textTransform:"uppercase",marginBottom:3}}>{block.label}</div>
-                {tasks.map((t,i)=><div key={i} style={{fontSize:13,color:INK,padding:"2px 0"}}>· {t}</div>)}
+                <div style={{fontSize:13,color:GOLD,letterSpacing:"1px",textTransform:"uppercase",marginBottom:3}}>{block.label}</div>
+                {tasks.map((t,i)=><div key={i} style={{fontSize:15,color:INK,padding:"2px 0"}}>· {t}</div>)}
               </div>
             );
           })}
           <div style={{display:"flex",gap:8,marginTop:10}}>
-            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Apply to Week Tab</button>
-            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Dismiss</button>
+            <button onClick={applySug} style={{flex:1,padding:"8px",background:"transparent",color:GOLD,border:"1px solid "+GOLD,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Apply to Week Tab</button>
+            <button onClick={()=>setAiSug(null)} style={{padding:"8px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Dismiss</button>
           </div>
         </div>
       )}
@@ -3100,30 +3100,30 @@ function LetsTalkTab({letstalk,setLetstalk}){
   function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));setExpandedCard(null);}
   function copyPrompt(){navigator.clipboard.writeText(activePrompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});}
 
-  const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:2};
-  const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:15,color:INK,outline:"none",borderRadius:2};
+  const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8};
+  const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8};
 
   return(
     <div style={{animation:"fadeIn 0.4s ease"}}>
-      <div style={{fontSize:22,color:INK,fontFamily:"Georgia,serif",marginBottom:4}}>Let's Talk</div>
+      <div style={{fontSize:22,color:INK,fontFamily:BODY,marginBottom:4}}>Let's Talk</div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Conversation prep for the people in your life.</p>
 
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
         {LT_SECTIONS.map(s=>(
           <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);}}
-            style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"all 0.2s"}}>
+            style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
             {s.icon} {s.label}
           </button>
         ))}
       </div>
 
-      <div style={{padding:"12px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:2,marginBottom:16}}>
-        <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,fontWeight:"bold"}}>
+      <div style={{padding:"12px 14px",background:sec.color+"10",borderLeft:"3px solid "+sec.color,borderRadius:8,marginBottom:16}}>
+        <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,fontWeight:"bold"}}>
           {sec.icon} {isDeeper?"Going Deeper":isMap?"Relationship Map":"Develop a Topic"}
         </div>
-        <p style={{fontSize:14,color:INK,margin:0,lineHeight:1.7,fontStyle:"italic"}}>{sec.desc}</p>
+        <p style={{fontSize:15,color:INK,margin:0,lineHeight:1.7,fontStyle:"italic"}}>{sec.desc}</p>
         {isMap&&(
-          <p style={{fontSize:13,color:TAN,margin:"10px 0 0",lineHeight:1.65,borderTop:"1px solid "+sec.color+"25",paddingTop:10}}>
+          <p style={{fontSize:15,color:TAN,margin:"10px 0 0",lineHeight:1.65,borderTop:"1px solid "+sec.color+"25",paddingTop:10}}>
             These are your observations, not facts or verdicts. Written to help you love better, pray more specifically, and show up with grace. Between you and God.
           </p>
         )}
@@ -3132,63 +3132,63 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {isDeeper&&(
         <div style={{animation:"fadeIn 0.3s ease"}}>
           <div style={{marginBottom:10}}>
-            <div style={{fontSize:13,color:TAN,marginBottom:4}}>Where did this come from?</div>
+            <div style={{fontSize:15,color:TAN,marginBottom:4}}>Where did this come from?</div>
             <input value={deeperSource} onChange={e=>setDeeperSource(e.target.value)} placeholder="Podcast, sermon, conversation, book, video..." style={inp2}/>
           </div>
           <div style={{marginBottom:12}}>
-            <div style={{fontSize:13,color:TAN,marginBottom:4}}>What did you capture? Paste it all in.</div>
+            <div style={{fontSize:15,color:TAN,marginBottom:4}}>What did you capture? Paste it all in.</div>
             <textarea value={deeperInput} onChange={e=>setDeeperInput(e.target.value)} rows={6}
               placeholder="Dump everything here — notes, quotes, what hit you, what you're still chewing on. Nothing is too raw."
               style={ta}/>
           </div>
           <button onClick={processDeeper} disabled={!deeperInput.trim()||deeperLoading}
-            style={{width:"100%",padding:"12px",background:deeperInput.trim()&&!deeperLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:deeperInput.trim()&&!deeperLoading?"pointer":"default",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2,marginBottom:12}}>
+            style={{width:"100%",padding:"12px",background:deeperInput.trim()&&!deeperLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:deeperInput.trim()&&!deeperLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:12}}>
             {deeperLoading?"Going deeper...":"Go Deeper"}
           </button>
           {deeperLoading&&(
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0"}}>
               <div style={{width:16,height:16,border:"2px solid "+sec.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-              <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Processing what you captured...</span>
+              <span style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Processing what you captured...</span>
             </div>
           )}
           {deeperResult&&!deeperLoading&&(
-            <div style={{padding:"16px",background:"rgba(255,255,255,0.75)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,marginBottom:16,animation:"fadeIn 0.3s ease"}}>
-              <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,opacity:0.85}}>Going Deeper</div>
+            <div style={{padding:"16px",background:"white",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:8,marginBottom:16,animation:"fadeIn 0.3s ease"}}>
+              <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,opacity:0.85}}>Going Deeper</div>
               <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{deeperResult}</p>
               <div style={{display:"flex",gap:8}}>
-                <button onClick={saveDeeperCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Save This</button>
-                <button onClick={()=>{setDeeperResult(null);setDeeperInput("");setDeeperSource("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Clear</button>
+                <button onClick={saveDeeperCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save This</button>
+                <button onClick={()=>{setDeeperResult(null);setDeeperInput("");setDeeperSource("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Clear</button>
               </div>
             </div>
           )}
           {cards.length>0&&(
             <div style={{marginTop:8}}>
-              <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>Saved</div>
+              <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>Saved</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {cards.map(card=>(
-                  <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+                  <div key={card.id} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:8,overflow:"hidden"}}>
                     <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"12px 14px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                       <div style={{flex:1}}>
                         <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:2}}>{card.topic}</div>
-                        <div style={{fontSize:13,color:TAN}}>{card.date}</div>
+                        <div style={{fontSize:15,color:TAN}}>{card.date}</div>
                       </div>
-                      <span style={{fontSize:13,color:sec.color,marginLeft:10}}>{expandedCard===card.id?"▲":"▼"}</span>
+                      <span style={{fontSize:15,color:sec.color,marginLeft:10}}>{expandedCard===card.id?"▲":"▼"}</span>
                     </div>
                     {expandedCard===card.id&&(
                       <div style={{padding:"0 14px 14px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
                         {card.raw&&<div style={{marginTop:12}}>
-                          <div style={{fontSize:12,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.7}}>What You Captured</div>
-                          <p style={{fontSize:14,color:TAN,lineHeight:1.7,fontStyle:"italic",margin:0}}>{card.raw}</p>
+                          <div style={{fontSize:13,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.7}}>What You Captured</div>
+                          <p style={{fontSize:15,color:TAN,lineHeight:1.7,fontStyle:"italic",margin:0}}>{card.raw}</p>
                         </div>}
                         {card.insight&&<div style={{marginTop:14}}>
-                          <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>Going Deeper</div>
-                          <p style={{fontSize:14,color:INK,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}}>{card.insight}</p>
+                          <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>Going Deeper</div>
+                          <p style={{fontSize:15,color:INK,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}}>{card.insight}</p>
                         </div>}
                         <div style={{marginTop:14,display:"flex",gap:8}}>
-                          <button onClick={()=>copyForClaude(card)} style={{flex:1,padding:"8px",background:copiedCard===card.id?GRN:"transparent",color:copiedCard===card.id?"white":sec.color,border:"1px solid "+(copiedCard===card.id?GRN:sec.color),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,transition:"all 0.2s"}}>
+                          <button onClick={()=>copyForClaude(card)} style={{flex:1,padding:"8px",background:copiedCard===card.id?GRN:"transparent",color:copiedCard===card.id?"white":sec.color,border:"1px solid "+(copiedCard===card.id?GRN:sec.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
                             {copiedCard===card.id?"Copied":"Copy for Claude"}
                           </button>
-                          <button onClick={()=>deleteCard(card.id)} style={{padding:"8px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Delete</button>
+                          <button onClick={()=>deleteCard(card.id)} style={{padding:"8px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
                         </div>
                       </div>
                     )}
@@ -3203,57 +3203,57 @@ function LetsTalkTab({letstalk,setLetstalk}){
       {!isDeeper&&(<>
         <div style={{display:"flex",gap:8,marginBottom:16}}>
           <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
-            style={{flex:1,padding:"10px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>
+            style={{flex:1,padding:"10px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
             {showAdd?"Cancel":"+ Add Card"}
           </button>
           <button onClick={()=>{setShowPrompt(s=>!s);setShowAdd(false);setPasteMode(false);}}
-            style={{padding:"10px 16px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>?</button>
+            style={{padding:"10px 16px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>?</button>
         </div>
         {showPrompt&&(
-          <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.7)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-            <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>{isMap?"Relationship Map":"Develop a Topic"}</div>
-            <pre style={{fontFamily:"Georgia,serif",fontSize:13,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
+          <div style={{marginBottom:16,padding:"14px 16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:13,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>{isMap?"Relationship Map":"Develop a Topic"}</div>
+            <pre style={{fontFamily:BODY,fontSize:15,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={copyPrompt} style={{flex:1,padding:"9px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,transition:"background 0.3s"}}>{copied?"Copied":"Copy Prompt"}</button>
-              <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Paste Card</button>
+              <button onClick={copyPrompt} style={{flex:1,padding:"9px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s"}}>{copied?"Copied":"Copy Prompt"}</button>
+              <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Paste Card</button>
             </div>
           </div>
         )}
         {pasteMode&&(
-          <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.65)",border:"1px solid "+TANL,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-            <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>Paste from Claude</div>
+          <div style={{marginBottom:16,padding:"14px 16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold"}}>Paste from Claude</div>
             <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={8}
               placeholder={isMap?"TOPIC: ...\nHOW THEY'RE WIRED: ...\nWHERE FRICTION COMES FROM: ...\nHOW TO LOVE THEM WELL: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ...":"TOPIC: ...\nYOUR POSITION: ...\nKEY POINTS: ...\nHOW IT USUALLY GOES: ...\nSCRIPTURE: ...\nIN JOE'S WORDS: ..."}
               style={{...ta,marginBottom:10}}/>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={depositPaste} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Deposit Card</button>
-              <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
+              <button onClick={depositPaste} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Deposit Card</button>
+              <button onClick={()=>{setPasteMode(false);setPasteText("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
             </div>
           </div>
         )}
         {showAdd&&(
-          <div style={{marginBottom:20,padding:"16px",background:"rgba(255,255,255,0.6)",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:2,animation:"fadeIn 0.2s ease"}}>
-            <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:14,fontWeight:"bold"}}>{isMap?"New Relationship Profile":"New Card"}</div>
+          <div style={{marginBottom:20,padding:"16px",background:"white",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
+            <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:14,fontWeight:"bold"}}>{isMap?"New Relationship Profile":"New Card"}</div>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               <div>
-                <div style={{fontSize:13,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
+                <div style={{fontSize:15,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
                 <input value={activeForm.topic} onChange={e=>setActiveForm(f=>({...f,topic:e.target.value}))} placeholder={isMap?"Name...":"Topic or name..."} style={inp2}/>
               </div>
               {activeFields.map(f=>(
                 <div key={f.key}>
-                  <div style={{fontSize:13,color:TAN,marginBottom:4}}>{f.label}</div>
+                  <div style={{fontSize:15,color:TAN,marginBottom:4}}>{f.label}</div>
                   <textarea value={activeForm[f.key]||""} onChange={e=>setActiveForm(ff=>({...ff,[f.key]:e.target.value}))} placeholder={f.ph} rows={2} style={ta}/>
                 </div>
               ))}
               <div style={{display:"flex",gap:8}}>
-                <button onClick={addCard} style={{flex:1,padding:"11px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:15,borderRadius:2}}>Save</button>
-                <button onClick={()=>setShowAdd(false)} style={{padding:"11px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
+                <button onClick={addCard} style={{flex:1,padding:"11px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save</button>
+                <button onClick={()=>setShowAdd(false)} style={{padding:"11px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
               </div>
             </div>
           </div>
         )}
         {cards.length===0&&!showAdd&&!pasteMode&&(
-          <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:2}}>
+          <div style={{padding:"24px 16px",textAlign:"center",border:"1px dashed "+TANL,borderRadius:8}}>
             <p style={{color:TAN,fontStyle:"italic",fontSize:15,margin:0}}>No cards yet for {sec.label}. Add one above or paste from Claude.</p>
           </div>
         )}
@@ -3261,28 +3261,28 @@ function LetsTalkTab({letstalk,setLetstalk}){
           {cards.map(card=>{
             const fields=(card._mode==="map"||isMap)?MAP_FIELDS:TOPIC_FIELDS;
             return(
-              <div key={card.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:2,overflow:"hidden"}}>
+              <div key={card.id} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+sec.color,borderRadius:8,overflow:"hidden"}}>
                 <div onClick={()=>setExpandedCard(expandedCard===card.id?null:card.id)} style={{padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:16,color:INK,fontWeight:"bold",marginBottom:4}}>{card.topic}</div>
                     {(card.position||card.wiring)&&(
-                      <div style={{fontSize:14,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>
+                      <div style={{fontSize:15,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>
                         {(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"...":""}
                       </div>
                     )}
                   </div>
-                  <div style={{fontSize:13,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
+                  <div style={{fontSize:15,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
                 </div>
                 {expandedCard===card.id&&(
                   <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
                     {fields.filter(f=>card[f.key]).map(f=>(
                       <div key={f.key} style={{marginTop:12}}>
-                        <div style={{fontSize:12,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>{f.label}</div>
-                        <p style={{fontSize:14,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
+                        <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>{f.label}</div>
+                        <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
                       </div>
                     ))}
                     <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
-                      <button onClick={()=>deleteCard(card.id)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>Delete</button>
+                      <button onClick={()=>deleteCard(card.id)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
                     </div>
                   </div>
                 )}
@@ -3450,14 +3450,14 @@ export default function App(){
   if(showSnapshot)return <LifeSnapshotOverlay cats={cats} habits={habits} prayers={prayers} shelf={shelf} streaks={streaks} onClose={()=>setShowSnapshot(false)}/>;
 
 
-  if(!loaded)return <div style={{minHeight:"100vh",background:PAPER,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"Georgia,serif",fontStyle:"italic",color:TAN}}>Loading…</div>;
+  if(!loaded)return <div style={{minHeight:"100vh",background:PAPER,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:BODY,fontStyle:"italic",color:TAN}}>Loading…</div>;
 
   const aC=cats.find(c=>c.id===activeCat);
   const overall=getOverall();
-  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.8)",fontFamily:"Georgia,serif",fontSize:14,color:INK,outline:"none",borderRadius:2};
+  const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8};
 
   return(
-    <div style={{minHeight:"100vh",background:INK,fontFamily:"Georgia,serif",color:INK,paddingBottom:60}}>
+    <div style={{minHeight:"100vh",background:INK,fontFamily:BODY,color:INK,paddingBottom:60}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
       <div style={{background:INK,position:"sticky",top:0,zIndex:100,width:"100%",left:0,right:0,overflow:"hidden"}}>
@@ -3468,9 +3468,9 @@ export default function App(){
             </div>
             <div style={{width:1,height:90,background:"rgba(255,255,255,0.18)"}}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:11,color:TANL,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
+              <div style={{fontSize:13,color:TANL,letterSpacing:"3px",textTransform:"uppercase",marginBottom:2}}>Steen Growth Ministries</div>
               <div style={{fontSize:22,fontWeight:"bold",color:"white",letterSpacing:"-0.5px",lineHeight:1.1}}>Life Orientation</div>
-              <div style={{fontSize:12,color:TANL,fontStyle:"italic",opacity:0.85,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).replace(",", " —")}</div>
+              <div style={{fontSize:13,color:TANL,fontStyle:"italic",opacity:0.85,marginTop:3}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).replace(",", " —")}</div>
             </div>
           </div>
           <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:4}}>
@@ -3483,7 +3483,7 @@ export default function App(){
                       <span style={{display:"flex",alignItems:"center",justifyContent:"center",height:24}}>
                         {tab.type==="cross"?<CrossSVG color={isAct?"#6DDCE8":TANL} size={19}/>:<span style={{fontSize:tab.g==="✦"?26:21,color:isAct?"#6DDCE8":TANL,lineHeight:1}}>{tab.g}</span>}
                       </span>
-                      <span style={{fontSize:10,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#6DDCE8":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
+                      <span style={{fontSize:12,fontWeight:isAct?"bold":"normal",letterSpacing:"0.04em",color:isAct?"#6DDCE8":TANL,opacity:isAct?1:0.85,lineHeight:1}}>{tab.label}</span>
                     </button>
                   );
                 })}
@@ -3505,13 +3505,13 @@ export default function App(){
               <div style={{textAlign:"center"}}>
                 <Ring size={140} pct={overall} color="#6DDCE8" color2="#1A2E4A" sw={12} main={true}>
                   <div style={{fontSize:32,fontWeight:"bold",color:INK,lineHeight:1,letterSpacing:"-1px"}}>{overall}%</div>
-                  <div style={{fontSize:10,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Overall</div>
+                  <div style={{fontSize:12,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginTop:3}}>Overall</div>
                 </Ring>
-                <div style={{marginTop:10,fontSize:14,fontStyle:"italic",color:GOLD}}>Life Projects</div>
+                <div style={{marginTop:10,fontSize:15,fontStyle:"italic",color:GOLD}}>Life Projects</div>
               </div>
             </div>
             <div style={{marginBottom:12}}>
-              <button onClick={()=>setShowSnapshot(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+INK,color:INK,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              <button onClick={()=>setShowSnapshot(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+INK,color:INK,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                 <span style={{fontSize:15}}>◎</span> Life Snapshot
               </button>
             </div>
@@ -3523,20 +3523,20 @@ export default function App(){
                 const pct=getCatPct(cat);
                 const isAct=activeCat===cat.id;
                 return(
-                  <div key={cat.id} onClick={()=>setActiveCat(isAct?null:cat.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 6px",cursor:"pointer",background:isAct?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.25)",border:"1px solid "+(isAct?cat.color:FINK),borderRadius:2,transition:"all 0.2s"}}>
-                    <Ring size={56} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:14,color:cat.color}}>{cat.icon}</span></Ring>
-                    <div style={{marginTop:6,fontSize:10,fontWeight:"bold",color:INK,textAlign:"center",lineHeight:1.2}}>{cat.label}</div>
-                    <div style={{fontSize:10,color:TAN,marginTop:2}}>{cat.tasks.filter(t=>t.done).length}/{cat.tasks.length}</div>
+                  <div key={cat.id} onClick={()=>setActiveCat(isAct?null:cat.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 6px",cursor:"pointer",background:isAct?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.25)",border:"1px solid "+(isAct?cat.color:FINK),borderRadius:8,transition:"all 0.2s"}}>
+                    <Ring size={56} pct={pct} color={cat.color} color2={cat.color2||"#6DDCE8"} sw={4}><span style={{fontSize:15,color:cat.color}}>{cat.icon}</span></Ring>
+                    <div style={{marginTop:6,fontSize:12,fontWeight:"bold",color:INK,textAlign:"center",lineHeight:1.2}}>{cat.label}</div>
+                    <div style={{fontSize:12,color:TAN,marginTop:2}}>{cat.tasks.filter(t=>t.done).length}/{cat.tasks.length}</div>
                   </div>
                 );
               })}
             </div>
             {aC&&(
-              <div style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+FINK,borderTop:"3px solid "+aC.color,padding:"18px 16px",marginBottom:20,borderRadius:2,animation:"fadeIn 0.3s ease"}}>
+              <div style={{background:"white",border:"1px solid "+FINK,borderTop:"3px solid "+aC.color,padding:"18px 16px",marginBottom:20,borderRadius:8,animation:"fadeIn 0.3s ease"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
                   <div>
                     <div style={{fontSize:17,fontWeight:"bold",color:aC.color}}>{aC.icon} {aC.label}</div>
-                    <div style={{fontStyle:"italic",fontSize:14,color:INK,marginTop:2,opacity:0.7}}>{aC.state}</div>
+                    <div style={{fontStyle:"italic",fontSize:15,color:INK,marginTop:2,opacity:0.7}}>{aC.state}</div>
                   </div>
                   <button onClick={()=>setActiveCat(null)} style={{background:"none",border:"none",color:TAN,cursor:"pointer",fontSize:20}}>x</button>
                 </div>
@@ -3544,23 +3544,23 @@ export default function App(){
                 {/* Active projects */}
                 <div style={{display:"flex",flexDirection:"column",gap:6}}>
                   {aC.tasks.filter(t=>!t.done).map(task=>(
-                    <div key={task.id} style={{background:"rgba(255,255,255,0.75)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden"}}>
+                    <div key={task.id} style={{background:"white",border:"1px solid "+FINK,borderRadius:8,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px"}}>
                         <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:20,height:20,borderRadius:"50%",flexShrink:0,marginTop:1,cursor:"pointer",border:"2px solid "+TANL,background:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}/>
                         <div style={{flex:1}}>
-                          <div style={{fontSize:14,color:INK,lineHeight:1.4}}>{task.label}</div>
+                          <div style={{fontSize:15,color:INK,lineHeight:1.4}}>{task.label}</div>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
                             <RDot level={task.resistance}/>
                             {(task.roadblocks&&task.roadblocks.length>0?task.roadblocks:[task.roadblock].filter(Boolean)).map(rb=>(
-                              <span key={rb} style={{fontSize:11,color:OX,fontStyle:"italic"}}>{rb}</span>
+                              <span key={rb} style={{fontSize:13,color:OX,fontStyle:"italic"}}>{rb}</span>
                             ))}
-                            {task.steps&&task.steps.length>0&&<span style={{fontSize:11,color:aC.color}}>{task.steps.filter(s=>s.done).length}/{task.steps.length} steps</span>}
+                            {task.steps&&task.steps.length>0&&<span style={{fontSize:13,color:aC.color}}>{task.steps.filter(s=>s.done).length}/{task.steps.length} steps</span>}
                           </div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0}}>
-                          <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:11,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>Break down</button>
+                          <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:13,fontFamily:BODY,borderRadius:8,whiteSpace:"nowrap"}}>Break down</button>
                           <button onClick={()=>{setShelf(s=>[...s,{id:"sh"+Date.now(),label:task.label,timeframe:"week",note:"From "+aC.label}]);setCats(prev=>prev.map(c=>c.id!==aC.id?c:{...c,tasks:c.tasks.filter(t=>t.id!==task.id)}));}}
-                            style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:11,fontFamily:"Georgia,serif",borderRadius:2,whiteSpace:"nowrap"}}>→ Shelf</button>
+                            style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:13,fontFamily:BODY,borderRadius:8,whiteSpace:"nowrap"}}>→ Shelf</button>
                         </div>
                       </div>
                       {task.steps&&task.steps.length>0&&(
@@ -3576,17 +3576,17 @@ export default function App(){
                 {aC.tasks.filter(t=>t.done).length>0&&(
                   <div style={{marginTop:12}}>
                     <button onClick={()=>setShowCompleted(s=>({...s,[aC.id]:!s[aC.id]}))}
-                      style={{width:"100%",padding:"6px",background:"transparent",border:"1px solid "+FINK,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,fontStyle:"italic",borderRadius:2,textAlign:"left"}}>
+                      style={{width:"100%",padding:"6px",background:"transparent",border:"1px solid "+FINK,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,fontStyle:"italic",borderRadius:8,textAlign:"left"}}>
                       {showCompleted[aC.id]?"▲":"▼"} Completed ({aC.tasks.filter(t=>t.done).length})
                     </button>
                     {showCompleted[aC.id]&&(
                       <div style={{display:"flex",flexDirection:"column",gap:4,marginTop:6}}>
                         {aC.tasks.filter(t=>t.done).map(task=>(
-                          <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:aC.color+"08",border:"1px solid "+aC.color+"25",borderRadius:2}}>
+                          <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:aC.color+"08",border:"1px solid "+aC.color+"25",borderRadius:8}}>
                             <div onClick={()=>toggleTask(aC.id,task.id)} style={{width:18,height:18,borderRadius:"50%",flexShrink:0,cursor:"pointer",border:"2px solid "+aC.color,background:aC.color,display:"flex",alignItems:"center",justifyContent:"center"}}>
                               <span style={{color:"white",fontSize:10}}>✓</span>
                             </div>
-                            <div style={{fontSize:13,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
+                            <div style={{fontSize:15,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
                           </div>
                         ))}
                       </div>
@@ -3602,13 +3602,13 @@ export default function App(){
                       <option value="low">Low resistance</option><option value="medium">Medium resistance</option><option value="high">High resistance</option>
                     </select>
                     <div>
-                      <div style={{fontSize:12,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
+                      <div style={{fontSize:13,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                         {Object.keys(SCVS).map(k=>{
                           const sel=(newTask.roadblocks||[]).includes(k);
                           return(
                             <button key={k} onClick={()=>setNewTask(n=>{const rb=n.roadblocks||[];return{...n,roadblocks:sel?rb.filter(r=>r!==k):[...rb,k]};})}
-                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
                               {k}
                             </button>
                           );
@@ -3616,12 +3616,12 @@ export default function App(){
                       </div>
                     </div>
                     <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Add Project</button>
-                      <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:2}}>Cancel</button>
+                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Add Project</button>
+                      <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
                     </div>
                   </div>
                 ):(
-                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,fontStyle:"italic",borderRadius:2}}>+ Add project</button>
+                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,fontStyle:"italic",borderRadius:8}}>+ Add project</button>
                 )}
               </div>
             )}
@@ -3649,16 +3649,16 @@ export default function App(){
         {view==="scripture"&&(
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <SL>Scripture for the Roadblocks</SL>
-            <p style={{fontStyle:"italic",color:TAN,fontSize:14,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
+            <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
 
             {/* Manual scripture add */}
             <ManualScriptureAdd/>
 
             {Object.entries(SCVS).map(([key,val])=>(
-              <div key={key} style={{padding:"16px 18px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+OX,borderRadius:2,marginBottom:10}}>
-                <div style={{fontSize:10,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
+              <div key={key} style={{padding:"16px 18px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8,marginBottom:10}}>
+                <div style={{fontSize:12,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
                 <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{val.v}"</p>
-                <p style={{color:GOLD,fontSize:13,marginTop:6,marginBottom:0}}>{val.r}</p>
+                <p style={{color:GOLD,fontSize:15,marginTop:6,marginBottom:0}}>{val.r}</p>
               </div>
             ))}
           </div>
