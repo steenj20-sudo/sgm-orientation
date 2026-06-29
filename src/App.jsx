@@ -1,4 +1,4 @@
-// SGM Orientation v73 — going deeper, copy for claude, stack reset, font bump
+// SGM Orientation v74 — image of the day landscape only, richer caption, letstalk fixes
 import { useState, useEffect, useRef } from "react";
 
 const INK = "#1A2E4A";
@@ -887,15 +887,21 @@ Return ONLY valid JSON, no markdown, no extra text.`;
         const searchRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&isPublicDomain=true&medium=Paintings&hasImages=true`);
         const searchData=await searchRes.json();
         if(searchData.objectIDs&&searchData.objectIDs.length>0){
-          // Try up to 5 objects to find one with a real image
-          const ids=searchData.objectIDs.slice(0,30);
-          for(let i=0;i<5;i++){
+          // Try up to 10 objects to find one with a landscape image
+          const ids=searchData.objectIDs.slice(0,50);
+          for(let i=0;i<10;i++){
             const idx=(new Date().getDate()+i)%ids.length;
             const objRes=await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${ids[idx]}`);
             const objData=await objRes.json();
             if(objData.primaryImage&&objData.primaryImage.length>0){
+              // Check dimensions — skip portrait orientation
+              if(objData.primaryImageSmall){
+                const img=new Image();
+                await new Promise(res=>{img.onload=res;img.onerror=res;img.src=objData.primaryImageSmall;});
+                if(img.naturalHeight>img.naturalWidth)continue; // skip portrait
+              }
               imageUrl=objData.primaryImage;
-              imageCredit=[objData.title,objData.artistDisplayName,objData.objectDate].filter(Boolean).join(" · ");
+              imageCredit=[objData.title,objData.artistDisplayName,objData.objectDate,objData.repository].filter(Boolean).join(" · ");
               break;
             }
           }
@@ -909,7 +915,7 @@ Today's theme: ${theme}
 Write a short article in this exact JSON format:
 {
   "headline": "A compelling headline — specific, not generic",
-  "image_description": "One sentence describing what the viewer is seeing and why it matters spiritually.",
+  "image_description": "2-3 sentences. Describe what the viewer is seeing in the painting — the scene, the figures, the mood, the light — then connect it to why it matters spiritually or historically. Make it feel like a museum guide who actually loves what they're talking about.",
   "body": "3-4 paragraphs. Enriching journalism — informs, enriches, invites creative pondering. Warm, intelligent voice. Something a curious faith-filled person would genuinely want to read at 6am."
 }
 
@@ -1175,7 +1181,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                   {!articleContent&&(
                     <button onClick={generateArticle} disabled={articleLoading}
                       style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
-                      {articleLoading?"Generating…":"✦ Load Today's Enrichment"}
+                      {articleLoading?"Generating…":"✦ Load Image of the Day"}
                     </button>
                   )}
                   {articleContent?.error&&(
@@ -1195,13 +1201,13 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             {articleContent&&!articleContent.error&&(
               <>
                 <div style={{padding:"12px 16px 8px"}}>
-                  <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ Daily Enrichment</div>
+                  <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ Image of the Day</div>
                   <div style={{fontSize:15,fontWeight:"bold",color:INK,lineHeight:1.35,marginBottom:4}}>{articleContent.headline}</div>
                   {articleContent.imageCredit&&<div style={{fontSize:10,color:TANL,fontStyle:"italic"}}>{articleContent.imageCredit}</div>}
                 </div>
                 <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"6px 16px 12px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
-                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 4px",lineHeight:1.5}}>{articleContent.image_description?.slice(0,120)}…</p>
-                  <div style={{fontSize:11,color:"#2E6B8A",opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full enrichment"}</div>
+                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 4px",lineHeight:1.6}}>{articleContent.image_description}</p>
+                  <div style={{fontSize:11,color:"#2E6B8A",opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full article"}</div>
                 </div>
                 {articleExpanded&&(
                   <div style={{padding:"0 16px 16px",animation:"fadeIn 0.25s ease"}}>
