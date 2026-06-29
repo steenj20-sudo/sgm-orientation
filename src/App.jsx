@@ -339,7 +339,7 @@ function ProjectScreen({task,cat,onBack,onUpdate}){
           )}
         </div>
       </div>
-      <div style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 100px"}}>
+      <div style={{maxWidth:700,margin:"0 auto",padding:"28px 20px 140px"}}>
         {task.roadblock&&SCVS[task.roadblock]&&(
           <div style={{background:OXF,borderLeft:"3px solid "+OX,padding:"14px 18px",marginBottom:28}}>
             <SL>Roadblock: {task.roadblock}</SL>
@@ -441,7 +441,7 @@ function HabitsTab({habits,setHabits,streaks,setStreaks,customHabits,setCustomHa
     setAddingHabit(false);
   }
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
         <SL>Daily Habits</SL>
         <button onClick={()=>setEditMode(e=>!e)}
@@ -518,7 +518,7 @@ function PrayerTab({prayers,setPrayers}){
   const grouped=RTAGS.reduce((acc,tag)=>{const items=active.filter(p=>p.relationship===tag.id);if(items.length)acc.push({tag,items});return acc;},[]);
   const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,width:"100%"};
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <SL>Prayer</SL>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Carry them well. Record what God does.</p>
       <div style={{display:"flex",gap:8,marginBottom:20}}>
@@ -1157,7 +1157,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
   const [selectedDay,setSelectedDay]=useState(tk);
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       {/* Toggle */}
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {["day","week"].map(m=>(
@@ -2094,7 +2094,7 @@ Here is my unload:
   }
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       {/* Insights panel */}
       <LibraryInsights library={library} setAc={setAc} ac={ac}/>
 
@@ -2333,7 +2333,7 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
   const recentDays=getRecentDays();
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       {/* Header with view toggle */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <SL>Field Notes</SL>
@@ -2516,7 +2516,7 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history}){
   const taskCount=cats.flatMap(c=>c.tasks).length;
   const doneCount=cats.flatMap(c=>c.tasks).filter(t=>t.done).length;
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <SL>Archive</SL>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
@@ -2571,7 +2571,7 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   const filtered=filter==="all"?shelf:shelf.filter(s=>s.timeframe===filter);
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <SL>The Shelf</SL>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
 
@@ -3104,7 +3104,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const inp2={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8};
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease"}}>
+    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <div style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:28,fontWeight:700,color:INK,marginBottom:4,letterSpacing:"-0.5px"}}>Let's Talk</div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Conversation prep for the people in your life.</p>
 
@@ -3457,7 +3457,7 @@ export default function App(){
   const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8};
 
   return(
-    <div style={{minHeight:"100vh",background:INK,fontFamily:BODY,color:INK,paddingBottom:60}}>
+    <div style={{minHeight:"100vh",background:INK,fontFamily:BODY,color:INK,paddingBottom:80}}>
       <style>{"@keyframes pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:0.8;transform:scale(1.03)}} @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes fadeSave{0%{opacity:1}80%{opacity:1}100%{opacity:0}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} *{box-sizing:border-box;} button{transition:opacity 0.15s;} button:hover{opacity:0.82;}"}</style>
 
       <div style={{background:INK,position:"sticky",top:0,zIndex:100,width:"100%",left:0,right:0,overflow:"hidden"}}>
@@ -3499,7 +3499,7 @@ export default function App(){
       <div style={{maxWidth:700,margin:"0 auto",padding:"24px 20px 0",background:PAPER,minHeight:"calc(100vh - 180px)"}}>
 
         {view==="dashboard"&&(
-          <div style={{animation:"fadeIn 0.4s ease"}}>
+          <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
             <DailyMsg cats={cats} habits={habits} prayers={prayers} streaks={streaks}/>
             <div style={{display:"flex",justifyContent:"center",marginBottom:36}}>
               <div style={{textAlign:"center"}}>
@@ -3647,7 +3647,7 @@ export default function App(){
         )}
 
         {view==="scripture"&&(
-          <div style={{animation:"fadeIn 0.4s ease"}}>
+          <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
             <SL>Scripture for the Roadblocks</SL>
             <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
 
