@@ -1,5 +1,14 @@
-// SGM Orientation v75 — image of the day landscape only, richer caption, letstalk fixes
+// SGM Orientation v76 — RTB design treatment: white cards, Inter body, varied layout
 import { useState, useEffect, useRef } from "react";
+
+// Inject Inter font
+if(typeof document!=="undefined"&&!document.getElementById("inter-font")){
+  const link=document.createElement("link");
+  link.id="inter-font";
+  link.rel="stylesheet";
+  link.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap";
+  document.head.appendChild(link);
+}
 
 const INK = "#1A2E4A";
 const PAPER = "#F5F0E8";
@@ -12,6 +21,10 @@ const AMB = "#7A5200";
 const PUR = "#4A3A7A";
 const FINK = "rgba(26,46,74,0.12)";
 const OXF = "rgba(122,31,31,0.07)";
+const BODY = "'Inter',system-ui,sans-serif";
+const SERIF = "Georgia,'Playfair Display',serif";
+const CARD = {background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:10};
+const SEC = {fontSize:15,color:"#3a4a5a",fontFamily:BODY,lineHeight:1.75};
 
 const BG = "repeating-linear-gradient(transparent,transparent 27px,rgba(26,46,74,0.025) 27px,rgba(26,46,74,0.025) 28px)";
 
@@ -178,7 +191,7 @@ const TABS_ROW2 = [
 const TABS=[...TABS_ROW1,...TABS_ROW2];
 
 function SL({children,c=OX}){
-  return <div style={{fontSize:10,fontWeight:"bold",color:c,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.9}}>✦ {children}</div>;
+  return <div style={{fontSize:11,fontWeight:600,color:c,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.9,fontFamily:"'Inter',system-ui,sans-serif"}}>✦ {children}</div>;
 }
 
 function RDot({level}){
@@ -1159,18 +1172,18 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
           {/* MOVEMENT 1 — RECEIVE */}
 
-          {/* Yesterday's Recap */}
+          {/* Yesterday's Recap — editorial, no card box */}
           {(recapContent||recapLoading)&&(
-            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.55)",border:"1px solid "+TANL+"60",borderLeft:"4px solid "+GOLD,borderRadius:2,animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,fontWeight:"bold",opacity:0.9}}>✦ Yesterday</div>
-              {recapLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic"}}>Reflecting on yesterday…</div>}
+            <div style={{marginBottom:20,paddingBottom:16,borderBottom:"1px solid "+FINK,animation:"fadeIn 0.4s ease"}}>
+              <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,letterSpacing:"2px",textTransform:"uppercase",color:TAN,marginBottom:8}}>✦ Yesterday</div>
+              {recapLoading&&<div style={{fontSize:14,color:TAN,fontStyle:"italic",fontFamily:BODY}}>Reflecting on yesterday…</div>}
               {recapContent&&(
                 <>
-                  <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:"0 0 6px"}}>{recapContent}</p>
-                  <div onClick={()=>setRecapExpanded(e=>!e)} style={{fontSize:11,color:GOLD,opacity:0.7,fontStyle:"italic",cursor:"pointer"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
+                  <p style={{fontSize:15,lineHeight:1.8,color:INK,margin:"0 0 8px",fontFamily:SERIF,fontStyle:"italic"}}>{recapContent}</p>
+                  <div onClick={()=>setRecapExpanded(e=>!e)} style={{fontSize:12,color:GOLD,fontFamily:BODY,opacity:0.8,cursor:"pointer"}}>{recapExpanded?"▲ Close":"↓ Keep reading"}</div>
                   {recapExpanded&&(
-                    <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+TANL+"40",animation:"fadeIn 0.2s ease"}}>
-                      <p style={{fontSize:13,lineHeight:1.75,color:INK,margin:0,fontStyle:"italic"}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
+                    <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+                      <p style={{fontSize:14,lineHeight:1.8,color:"#3a4a5a",margin:0,fontFamily:BODY}}>You showed up yesterday. That's the work. Today is a new page — same you, fresh start.</p>
                     </div>
                   )}
                 </>
@@ -1178,20 +1191,20 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             </div>
           )}
 
-          {/* Daily Image + Article */}
-          <div style={{marginBottom:16,background:"rgba(255,255,255,0.55)",border:"1px solid "+FINK,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
+          {/* Daily Image + Article — white card */}
+          <div style={{...CARD,marginBottom:16,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
 
-            {/* Image — clean, no text overlay */}
+            {/* Image */}
             <div style={{position:"relative",overflow:"hidden",minHeight:180,background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)"}}>
               {articleContent&&!articleContent.error&&articleContent.imageUrl?(
                 <img src={articleContent.imageUrl} alt={articleContent.headline}
-                  style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block",background:"#1A1A18"}}/>
+                  style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block",background:"#111820"}}/>
               ):(
                 <div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
                   <div style={{position:"absolute",inset:0,opacity:0.15,backgroundImage:"radial-gradient(circle at 30% 40%, #6DDCE8 0%, transparent 60%)",pointerEvents:"none"}}/>
                   {!articleContent&&(
                     <button onClick={generateArticle} disabled={articleLoading}
-                      style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:"Georgia,serif",fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
+                      style={{background:"transparent",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"12px 24px",cursor:articleLoading?"default":"pointer",fontFamily:BODY,fontSize:14,borderRadius:3,position:"relative",zIndex:10,WebkitTapHighlightColor:"rgba(109,220,232,0.3)"}}>
                       {articleLoading?"Generating…":"✦ Load Image of the Day"}
                     </button>
                   )}
@@ -1199,7 +1212,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
                     <div style={{display:"flex",flexDirection:"column",alignItems:"center",zIndex:10,position:"relative"}}>
                       <div style={{color:"rgba(255,255,255,0.85)",fontSize:13,fontStyle:"italic",marginBottom:10,textAlign:"center",padding:"0 20px"}}>{articleContent.msg||"Could not load. Tap to retry."}</div>
                       <button onClick={()=>{setArticleContent(null);setTimeout(generateArticle,100);}}
-                        style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,borderRadius:2}}>
+                        style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.6)",color:"white",padding:"8px 18px",cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:2}}>
                         Try Again
                       </button>
                     </div>
@@ -1208,22 +1221,22 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               )}
             </div>
 
-            {/* Text below the image — headline, credit, expand */}
+            {/* Text below image */}
             {articleContent&&!articleContent.error&&(
               <>
-                <div style={{padding:"12px 16px 8px"}}>
-                  <div style={{fontSize:9,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>✦ Image of the Day</div>
-                  <div style={{fontSize:15,fontWeight:"bold",color:INK,lineHeight:1.35,marginBottom:4}}>{articleContent.headline}</div>
-                  {articleContent.imageCredit&&<div style={{fontSize:10,color:TANL,fontStyle:"italic"}}>{articleContent.imageCredit}</div>}
+                <div style={{padding:"14px 16px 10px"}}>
+                  <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ Image of the Day</div>
+                  <div style={{fontSize:16,fontWeight:"bold",color:INK,lineHeight:1.35,marginBottom:6,fontFamily:SERIF}}>{articleContent.headline}</div>
+                  {articleContent.imageCredit&&<div style={{fontSize:11,color:TAN,fontStyle:"italic",fontFamily:BODY}}>{articleContent.imageCredit}</div>}
                 </div>
-                <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"6px 16px 12px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
-                  <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:"0 0 4px",lineHeight:1.6}}>{articleContent.image_description}</p>
-                  <div style={{fontSize:11,color:"#2E6B8A",opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full article"}</div>
+                <div onClick={()=>setArticleExpanded(e=>!e)} style={{padding:"8px 16px 14px",cursor:"pointer",borderTop:"1px solid "+FINK}}>
+                  <p style={{fontSize:14,color:"#3a4a5a",fontFamily:BODY,margin:"0 0 6px",lineHeight:1.7}}>{articleContent.image_description}</p>
+                  <div style={{fontSize:12,color:"#2E6B8A",fontFamily:BODY,opacity:0.8,fontStyle:"italic"}}>{articleExpanded?"▲ Close article":"↓ Read full article"}</div>
                 </div>
                 {articleExpanded&&(
                   <div style={{padding:"0 16px 16px",animation:"fadeIn 0.25s ease"}}>
-                    <div style={{fontSize:10,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
-                    <p style={{fontSize:14,lineHeight:1.85,color:INK,margin:0,whiteSpace:"pre-line"}}>{articleContent.body}</p>
+                    <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ The Story</div>
+                    <p style={{fontSize:15,lineHeight:1.85,color:"#2a3a4a",fontFamily:BODY,margin:0,whiteSpace:"pre-line"}}>{articleContent.body}</p>
                   </div>
                 )}
               </>
@@ -1232,16 +1245,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
           {/* MOVEMENT 2 — ENGAGE */}
 
-          {/* Bible Verse + Morning Study */}
-          <div style={{marginBottom:20,background:"rgba(255,255,255,0.6)",border:"1px solid "+OX+"30",borderTop:"4px solid "+OX,borderRadius:2,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
-            {/* Verse — always visible, the day's anchor */}
-            <div style={{padding:"16px 16px 10px"}}>
-              <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold",opacity:0.9}}>✦ Today's Anchor</div>
-              <p style={{fontSize:17,lineHeight:1.8,color:INK,margin:"0 0 6px",fontStyle:"italic"}}>"{todayVerse?.v}"</p>
-              <p style={{color:GOLD,fontSize:13,margin:"0 0 10px"}}>{todayVerse?.r}</p>
+          {/* Bible Verse — lighter blue card, distinct from navy nav */}
+          <div style={{marginBottom:20,background:"#2E5B8A",borderRadius:10,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
+            <div style={{padding:"18px 16px 12px"}}>
+              <div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:"rgba(109,220,232,0.8)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:10}}>✦ Today's Anchor</div>
+              <p style={{fontSize:18,lineHeight:1.8,color:"white",margin:"0 0 8px",fontFamily:SERIF,fontStyle:"italic"}}>"{todayVerse?.v}"</p>
+              <p style={{color:"rgba(184,149,106,0.9)",fontSize:13,margin:"0 0 10px",fontFamily:BODY}}>{todayVerse?.r}</p>
               {todayVerse?.app&&(
-                <div style={{padding:"10px 14px",background:OX+"08",borderLeft:"3px solid "+OX,borderRadius:2,marginBottom:10}}>
-                  <div style={{fontSize:10,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>Spiritual · {todayVerse.app.split(".")[0]}.</div>
+                <div style={{padding:"10px 14px",background:"rgba(255,255,255,0.08)",borderLeft:"3px solid rgba(109,220,232,0.5)",borderRadius:2,marginBottom:10}}>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",fontFamily:BODY,lineHeight:1.65}}>{todayVerse.app.split(".")[0]}.</div>
                 </div>
               )}
             </div>
@@ -1250,14 +1262,14 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             <button onClick={()=>{
               setStudyExpanded(e=>!e);
               if(!studyContent&&!studyLoading&&todayVerse)generateStudy(todayVerse.v,todayVerse.r);
-            }} style={{width:"100%",padding:"10px 16px",background:studyExpanded?OX+"10":"transparent",border:"none",borderTop:"1px solid "+OX+"25",color:OX,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+            }} style={{width:"100%",padding:"10px 16px",background:studyExpanded?"rgba(255,255,255,0.1)":"transparent",border:"none",borderTop:"1px solid rgba(255,255,255,0.12)",color:"rgba(109,220,232,0.8)",cursor:"pointer",fontFamily:BODY,fontSize:12,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
               <span>{studyExpanded?"▲ Close study":"↓ Open morning study"}</span>
-              <span style={{fontSize:10,color:TANL,fontStyle:"italic"}}>tap to expand</span>
+              <span style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontStyle:"italic"}}>tap to expand</span>
             </button>
 
             {studyExpanded&&(
-              <div style={{padding:"16px",borderTop:"1px solid "+OX+"20",animation:"fadeIn 0.25s ease"}}>
-                {studyLoading&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",textAlign:"center",padding:"20px"}}>Preparing your study…</div>}
+              <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,0.1)",animation:"fadeIn 0.25s ease"}}>
+                {studyLoading&&<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",fontStyle:"italic",textAlign:"center",padding:"20px",fontFamily:BODY}}>Preparing your study…</div>}
                 {studyContent&&!studyContent.error&&(
                   <div>
                     {[
@@ -1748,28 +1760,28 @@ function StackSection({stack,setStack}){
           const col=STACK_COLORS[win.colorIdx%STACK_COLORS.length];
           const isEditing=editingId===win.id;
           return(
-            <div key={win.id} style={{background:"rgba(255,255,255,0.6)",border:"1px solid "+col+"40",borderLeft:"4px solid "+col,borderRadius:2,overflow:"hidden"}}>
+            <div key={win.id} style={{background:"white",border:"1px solid rgba(184,149,106,0.2)",borderLeft:"4px solid "+col,borderRadius:8,overflow:"hidden"}}>
 
               {/* Win row */}
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px"}}>
                 <div style={{width:8,height:8,borderRadius:"50%",background:col,flexShrink:0}}/>
-                <div style={{flex:1,fontSize:13,color:INK,lineHeight:1.5}}>{win.label}</div>
+                <div style={{flex:1,fontSize:15,color:INK,lineHeight:1.5,fontFamily:BODY}}>{win.label}</div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                  <div style={{fontSize:11,color:TANL}}>{win.time}</div>
+                  <div style={{fontSize:12,color:TAN,fontFamily:BODY}}>{win.time}</div>
                   <button onClick={()=>removeWin(win.id)}
                     style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:16,padding:"2px 4px",flexShrink:0,lineHeight:1}}>×</button>
                 </div>
               </div>
 
-              {/* Duration row — always visible */}
+              {/* Duration row */}
               <div style={{padding:"0 14px 11px",display:"flex",alignItems:"center",gap:8}}>
                 {win.duration&&!isEditing
                   ?<button onClick={()=>openEdit(win)}
-                      style={{fontSize:12,color:col,fontWeight:"bold",background:col+"18",padding:"4px 12px",borderRadius:12,border:"1px solid "+col+"40",cursor:"pointer",fontFamily:"Georgia,serif"}}>
+                      style={{fontSize:12,color:col,fontWeight:"bold",background:col+"18",padding:"4px 12px",borderRadius:12,border:"1px solid "+col+"40",cursor:"pointer",fontFamily:BODY}}>
                       {win.duration} — tap to edit
                     </button>
                   :<button onClick={()=>openEdit(win)}
-                      style={{fontSize:12,color:TAN,background:"transparent",padding:"4px 12px",borderRadius:12,border:"1px dashed "+TANL,cursor:"pointer",fontFamily:"Georgia,serif"}}>
+                      style={{fontSize:12,color:TAN,background:"transparent",padding:"4px 12px",borderRadius:12,border:"1px dashed "+TANL,cursor:"pointer",fontFamily:BODY}}>
                       + How long did this take?
                     </button>
                 }
@@ -1778,11 +1790,11 @@ function StackSection({stack,setStack}){
               {/* Inline duration picker */}
               {isEditing&&(
                 <div style={{padding:"12px 14px",borderTop:"1px solid "+col+"25",background:col+"06",animation:"fadeIn 0.2s ease"}}>
-                  <div style={{fontSize:10,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>How long did this take?</div>
+                  <div style={{fontSize:11,color:col,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85,fontFamily:BODY,fontWeight:600}}>How long did this take?</div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
                     {DURATIONS.map(d=>(
                       <button key={d} onClick={()=>setEditDuration(d)}
-                        style={{padding:"6px 12px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:12,transition:"all 0.15s"}}>
+                        style={{padding:"6px 12px",background:editDuration===d?col:"transparent",color:editDuration===d?"white":TAN,border:"1px solid "+(editDuration===d?col:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:12,transition:"all 0.15s"}}>
                         {d}
                       </button>
                     ))}
@@ -1791,13 +1803,13 @@ function StackSection({stack,setStack}){
                     <input value={editDuration} onChange={e=>setEditDuration(e.target.value)}
                       placeholder="Or type — e.g. 45 min"
                       onKeyDown={e=>e.key==="Enter"&&saveDuration(win.id)}
-                      style={{flex:1,padding:"9px 12px",border:"1px solid "+TANL,background:"rgba(255,255,255,0.85)",fontFamily:"Georgia,serif",fontSize:13,color:INK,outline:"none",borderRadius:2}}/>
+                      style={{flex:1,padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:13,color:INK,outline:"none",borderRadius:6}}/>
                     <button onClick={()=>saveDuration(win.id)}
-                      style={{padding:"9px 18px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
+                      style={{padding:"9px 18px",background:col,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6,flexShrink:0}}>
                       Save
                     </button>
                     <button onClick={()=>setEditingId(null)}
-                      style={{padding:"9px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2,flexShrink:0}}>
+                      style={{padding:"9px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6,flexShrink:0}}>
                       ×
                     </button>
                   </div>
@@ -2190,42 +2202,41 @@ Here is my unload:
       )}
 
       {/* List */}
-      {ac!=="all"&&<div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
-      {ac==="all"&&library.length>1&&<div style={{fontSize:10,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      {ac!=="all"&&<div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ {LCATS.find(c=>c.id===ac)?.label||"Principles"}</div>}
+      {ac==="all"&&library.length>1&&<div style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:12,opacity:0.8}}>✦ All Principles</div>}
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {listEntries.map(item=>{
           const cat=LCATS.find(c=>c.id===item.category)||LCATS[0];
           const isExp=expanded===item.id;
           return(
-            <div key={item.id} style={{background:"rgba(255,255,255,0.60)",border:"1px solid "+(isExp?cat.color+"50":FINK),borderLeft:"4px solid "+cat.color,borderRadius:2,overflow:"hidden",transition:"border-color 0.2s"}}>
-              <div onClick={()=>setExpanded(isExp?null:item.id)} style={{padding:"13px 14px",cursor:"pointer"}}>
+            <div key={item.id} style={{background:"white",border:"1px solid rgba(184,149,106,0.2)",borderLeft:"4px solid "+cat.color,borderRadius:10,overflow:"hidden",transition:"border-color 0.2s"}}>
+              <div onClick={()=>setExpanded(isExp?null:item.id)} style={{padding:"14px 16px",cursor:"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                  <span style={{fontSize:12,color:cat.color}}>{cat.icon}</span>
-                  <span style={{fontSize:10,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.label}</span>
-                  <span style={{marginLeft:"auto",fontSize:11,color:TANL,flexShrink:0}}>{item.date}</span>
+                  <span style={{fontSize:11,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2px",textTransform:"uppercase"}}>{cat.icon} {cat.label}</span>
+                  <span style={{marginLeft:"auto",fontSize:11,color:TAN,fontFamily:BODY,flexShrink:0}}>{item.date}</span>
                 </div>
-                <p style={{fontSize:14,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic"}}>&ldquo;{item.principle}&rdquo;</p>
-                <div style={{fontSize:12,color:isExp?cat.color:TANL,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
+                <p style={{fontSize:15,lineHeight:1.7,color:INK,margin:"0 0 8px",fontStyle:"italic",fontFamily:SERIF}}>&ldquo;{item.principle}&rdquo;</p>
+                <div style={{fontSize:12,color:isExp?cat.color:TAN,fontFamily:BODY,transition:"color 0.2s"}}>{isExp?"▲ Close":"▼ Full context + scripture"}</div>
               </div>
               {isExp&&(
-                <div style={{padding:"0 14px 16px",borderTop:"1px solid "+cat.color+"20",animation:"fadeIn 0.25s ease"}}>
-                  {item.context&&<><div style={{paddingTop:14,fontSize:10,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
-                  <p style={{fontSize:14,lineHeight:1.8,color:INK,margin:"0 0 12px"}}>{item.context}</p></>}
-                  {item.pattern&&<div style={{fontSize:12,color:TAN,fontStyle:"italic",marginBottom:12}}>Pattern: {item.pattern}</div>}
-                  {item.tag&&<div style={{display:"inline-block",fontSize:11,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12}}>#{item.tag}</div>}
+                <div style={{padding:"0 16px 16px",borderTop:"1px solid "+cat.color+"20",animation:"fadeIn 0.25s ease"}}>
+                  {item.context&&<><div style={{paddingTop:14,fontSize:11,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
+                  <p style={{fontSize:15,lineHeight:1.8,color:"#2a3a4a",fontFamily:BODY,margin:"0 0 12px"}}>{item.context}</p></>}
+                  {item.pattern&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",fontFamily:BODY,marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.tag&&<div style={{display:"inline-block",fontSize:12,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12,fontFamily:BODY}}>#{item.tag}</div>}
                   {item.scripture&&(
-                    <div style={{borderLeft:"3px solid "+cat.color,padding:"10px 14px",background:cat.color+"08",marginBottom:12}}>
-                      <p style={{fontStyle:"italic",fontSize:14,lineHeight:1.65,margin:0,color:INK}}>&ldquo;{item.scripture}&rdquo;</p>
-                      <p style={{color:GOLD,fontSize:12,margin:"6px 0 0"}}>{item.scriptureRef}</p>
+                    <div style={{borderLeft:"3px solid "+cat.color,padding:"12px 14px",background:cat.color+"08",marginBottom:12,borderRadius:"0 6px 6px 0"}}>
+                      <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.7,margin:0,color:INK,fontFamily:SERIF}}>&ldquo;{item.scripture}&rdquo;</p>
+                      <p style={{color:GOLD,fontSize:12,margin:"6px 0 0",fontFamily:BODY}}>{item.scriptureRef}</p>
                     </div>
                   )}
                   <div style={{display:"flex",gap:8}}>
                     <button onClick={()=>share(item)}
-                      style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                      style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+cat.color,color:cat.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>
                       {copied===item.id?"✓ Copied to clipboard":"↗ Share this principle"}
                     </button>
                     <button onClick={()=>{if(window.confirm("Delete this principle? This can't be undone."))deleteEntry(item.id);}}
-                      style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:"Georgia,serif",fontSize:13,borderRadius:2}}>
+                      style={{padding:"9px 14px",background:"transparent",border:"1px solid "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>
                       Delete
                     </button>
                   </div>
@@ -2234,7 +2245,7 @@ Here is my unload:
             </div>
           );
         })}
-        {!listEntries.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}><div style={{fontSize:22,marginBottom:10}}>✦</div>No principles in this category yet.</div>}
+        {!listEntries.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic",fontFamily:BODY}}><div style={{fontSize:22,marginBottom:10}}>✦</div>No principles in this category yet.</div>}
       </div>
     </div>
   );
