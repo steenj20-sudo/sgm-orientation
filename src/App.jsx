@@ -1,4 +1,4 @@
-// SGM Orientation v85 — Edit + delete for Let's Talk card profiles and individual conversation log entries
+// SGM Orientation v86 — In-app "Where do I put this?" quick reference: floating button + situation lookup + tab guide overlay
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -3818,6 +3818,85 @@ function LetsTalkTab({letstalk,setLetstalk}){
 }
 
 
+const WHERE_GUIDE_TABS=[
+  {tab:"Week",icon:"◈",desc:"Your morning. Today's verse and study, your day plan, calendar, yesterday's recap."},
+  {tab:"Habits",icon:"✓",desc:"Daily checklist that resets every day. Vitamins, prayer, stretching — the small stuff."},
+  {tab:"Map",icon:"◎",desc:"Your life areas — Faith, Family, SGM, Health, etc. Projects and tasks live here."},
+  {tab:"Shelf",icon:"⊡",desc:"Quick capture for anything you don't want to deal with right now. Also has the SGM Guides (RTB, IDF, GLF)."},
+  {tab:"Word",icon:"✦",desc:"Scripture for specific struggles — perfectionism, shame, fear, and so on."},
+  {tab:"Identity",icon:"☰",desc:"Where the real battle gets tracked. Deposit a principle when God shows you something about a pattern."},
+  {tab:"Prayer",icon:"+",desc:"People and requests you're carrying. Mark answered prayers as a testimony log."},
+  {tab:"Field Notes",icon:"◷",desc:"End-of-day honest reflection. The Stack, completions, one paragraph about today."},
+  {tab:"Let's Talk",icon:"♡",desc:"Conversation prep, things you heard that stuck with you, and your read on the people in your life."},
+  {tab:"Archive",icon:"⊡",desc:"Your backup. Copy what's new and paste into Notion."},
+];
+
+const WHERE_GUIDE_SITUATIONS=[
+  {q:"Something just happened with a person — Shawn, a kid, a friend",a:"Let's Talk → People I Know",icon:"♡",color:"#7A4F6A"},
+  {q:"I need to remember to do something, but not right now",a:"Shelf",icon:"⊡",color:OX},
+  {q:"I heard something — sermon, podcast, conversation — and I'm not done with it",a:"Let's Talk → Going Deeper",icon:"⬇",color:"#2E5B8A"},
+  {q:"I'm wrestling with shame, perfectionism, or a pattern I keep hitting",a:"Identity",icon:"☰",color:OX},
+  {q:"Someone needs prayer",a:"Prayer",icon:"+",color:OX},
+  {q:"I have a hard or important conversation coming up",a:"Let's Talk → Develop a Topic",icon:"✦",color:OX},
+  {q:"I want to be honest about how today actually went",a:"Field Notes",icon:"◷",color:GOLD},
+  {q:"I just want to check off the basics and move on",a:"Habits",icon:"✓",color:GRN},
+  {q:"I need to see everything going on in my life at once",a:"Map",icon:"◎",color:"#1A7A8A"},
+];
+
+function WhereGuideOverlay({onClose}){
+  const [tab,setTab]=useState("situations");
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,74,0.55)",zIndex:400,display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn 0.2s ease"}}
+      onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{background:PAPER,width:"100%",maxWidth:700,maxHeight:"82vh",borderRadius:"16px 16px 0 0",overflowY:"auto",animation:"fadeIn 0.25s ease"}}>
+        <div style={{position:"sticky",top:0,background:PAPER,borderBottom:"1px solid "+FINK,padding:"16px 20px 12px",zIndex:1}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontFamily:SERIF,fontSize:20,fontWeight:700,color:INK}}>Where do I put this?</div>
+            <button onClick={onClose} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={()=>setTab("situations")} style={{flex:1,padding:"8px",background:tab==="situations"?INK:"transparent",color:tab==="situations"?"white":TAN,border:"1px solid "+(tab==="situations"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+              In the moment
+            </button>
+            <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"8px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+              What each tab does
+            </button>
+          </div>
+        </div>
+
+        <div style={{padding:"16px 20px 40px"}}>
+          {tab==="situations"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {WHERE_GUIDE_SITUATIONS.map((s,i)=>(
+                <div key={i} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+s.color,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <span style={{fontSize:18,color:s.color,flexShrink:0,marginTop:1}}>{s.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:15,color:INK,lineHeight:1.5,marginBottom:4}}>{s.q}</div>
+                    <div style={{fontSize:14,color:s.color,fontWeight:"bold"}}>→ {s.a}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {tab==="tabs"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {WHERE_GUIDE_TABS.map((t,i)=>(
+                <div key={i} style={{background:"white",border:"1px solid "+FINK,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <span style={{fontSize:18,color:OX,flexShrink:0,marginTop:1}}>{t.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:3}}>{t.tab}</div>
+                    <div style={{fontSize:14,color:TAN,lineHeight:1.55}}>{t.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
   const [cats,setCats]=useState(INIT_CATS);
   const [library,setLibrary]=useState(INIT_LIB);
@@ -3846,6 +3925,7 @@ export default function App(){
   const [showSnapshot,setShowSnapshot]=useState(false);
   const [showCompleted,setShowCompleted]=useState({});
   const [lastArchivedAt,setLastArchivedAt]=useState(null);
+  const [showWhereGuide,setShowWhereGuide]=useState(false);
 
   const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
   const todayVerse=ANCH[dayOfYear%ANCH.length];
@@ -4194,6 +4274,13 @@ export default function App(){
         {view==="letstalk"&&<LetsTalkTab letstalk={letstalk} setLetstalk={setLetstalk}/>}
 
       </div>
+
+      {/* Floating Where Guide button */}
+      <button onClick={()=>setShowWhereGuide(true)}
+        style={{position:"fixed",bottom:20,right:16,width:50,height:50,borderRadius:"50%",background:INK,border:"2px solid #6DDCE8",color:"#6DDCE8",fontSize:20,fontFamily:SERIF,fontWeight:"bold",cursor:"pointer",zIndex:90,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px rgba(0,0,0,0.25)"}}>
+        ?
+      </button>
+      {showWhereGuide&&<WhereGuideOverlay onClose={()=>setShowWhereGuide(false)}/>}
     </div>
   );
 }
