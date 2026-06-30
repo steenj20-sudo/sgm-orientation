@@ -1,4 +1,4 @@
-// SGM Orientation v88 — third overlay tab "What It Solves" — per-tab problem/solution cards with color, icon, and temperature note
+// SGM Orientation v89 — Check In: free-speak box on Today tab, reads the loop (feeling + task tension), gives scripture + direct call to push through or rest + how to do it responsibly
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -698,6 +698,29 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   const [studyExpanded,setStudyExpanded]=useState(false);
   const [articleExpanded,setArticleExpanded]=useState(false);
   const [studyLoading,setStudyLoading]=useState(false);
+
+  // Check-In — free-speak loop reader
+  const [checkInOpen,setCheckInOpen]=useState(false);
+  const [checkInInput,setCheckInInput]=useState("");
+  const [checkInResult,setCheckInResult]=useState(null);
+  const [checkInLoading,setCheckInLoading]=useState(false);
+
+  async function processCheckIn(){
+    if(!checkInInput.trim())return;
+    setCheckInLoading(true);setCheckInResult(null);
+    const prompt=`You are helping Joe Steen in the middle of his day. He is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. He just spoke freely about how he's feeling and what he has to do. He has his own frameworks for this exact moment: the Future Self Reframe (instead of "do it now," ask what life looks like 2-3 days out if he acts vs doesn't), and the Familiarity Trap (avoidance often returns to a known, comfortable mindset that feels like home, even when it's not serving him). The system behind task avoidance — high empathy, pattern sensitivity — is the same system behind his ministry effectiveness. Avoidance is usually avoiding the feeling, not the task itself.\n\nHere's what Joe just said:\n${checkInInput}\n\nRespond in this exact format, short and direct, no fluff, like a trusted friend who knows him well:\n\nTHE LOOP: [Name what's actually happening in 1-2 sentences — the feeling and the pull, in plain language]\nSCRIPTURE: [One short verse that fits, with reference]\nTHE CALL: [One direct sentence: push through, or rest — pick one, don't hedge]\nHOW TO DO IT RIGHT: [1-2 sentences on how to do that responsibly — if push through, what's the smallest next action; if rest, what makes it actual rest and not avoidance]\n\nBe honest, not soft. No "you've got this" filler. Plain English.`;
+    try{
+      const result=await claudeAPI(prompt,500);
+      setCheckInResult(result);
+    }catch(e){
+      setCheckInResult("Couldn't reach Claude right now. Take a breath, name the loop yourself, and make the call.");
+    }
+    setCheckInLoading(false);
+  }
+
+  function clearCheckIn(){
+    setCheckInInput("");setCheckInResult(null);setCheckInOpen(false);
+  }
   const [articleLoading,setArticleLoading]=useState(false);
   const [studyContent,setStudyContent]=useState(null);
   const [articleContent,setArticleContent]=useState(null);
@@ -1169,6 +1192,51 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
       {mode==="day"&&(
         <div>
+
+          {/* CHECK-IN — free-speak loop reader */}
+          <div style={{marginBottom:20}}>
+            {!checkInOpen?(
+              <button onClick={()=>setCheckInOpen(true)}
+                style={{width:"100%",padding:"14px 16px",background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+                <span style={{fontSize:20,color:OX}}>◉</span>
+                <div>
+                  <div style={{fontSize:15,color:INK,fontWeight:"bold"}}>What's going on right now?</div>
+                  <div style={{fontSize:13,color:TAN,marginTop:2}}>Say what you're feeling and what's on your plate. Get a straight read.</div>
+                </div>
+              </button>
+            ):(
+              <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,padding:"16px",animation:"fadeIn 0.25s ease"}}>
+                <div style={{fontSize:13,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ Check In</div>
+                {!checkInResult&&(<>
+                  <textarea value={checkInInput} onChange={e=>setCheckInInput(e.target.value)} rows={4}
+                    placeholder="Just talk it out — how you're feeling, what you've got to do today..."
+                    style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={processCheckIn} disabled={!checkInInput.trim()||checkInLoading}
+                      style={{flex:1,padding:"11px",background:checkInInput.trim()&&!checkInLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:checkInInput.trim()&&!checkInLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                      {checkInLoading?"Reading the loop...":"Read This"}
+                    </button>
+                    <button onClick={clearCheckIn} style={{padding:"11px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
+                  </div>
+                  {checkInLoading&&(
+                    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0"}}>
+                      <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                      <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Naming the loop...</span>
+                    </div>
+                  )}
+                </>)}
+                {checkInResult&&(
+                  <div>
+                    <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{checkInResult}</p>
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={()=>{setCheckInInput("");setCheckInResult(null);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Talk It Out Again</button>
+                      <button onClick={clearCheckIn} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Close</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* MOVEMENT 1 — RECEIVE */}
 
