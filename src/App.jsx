@@ -1,4 +1,4 @@
-// SGM Orientation v84 — People I Know conversation log with tone tags + pattern surfacing; Archive overhaul (auto-detect new since last copy, dated entries, append-only, never loses data)
+// SGM Orientation v85 — Edit + delete for Let's Talk card profiles and individual conversation log entries
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -3275,6 +3275,9 @@ function ConversationLog({card,onUpdateLog}){
   const [tone,setTone]=useState("warm");
   const [aiHelp,setAiHelp]=useState(false);
   const [aiLoading,setAiLoading]=useState(false);
+  const [editingEntry,setEditingEntry]=useState(null);
+  const [editNotes,setEditNotes]=useState("");
+  const [editTone,setEditTone]=useState("warm");
   const log=card.conversationLog||[];
 
   async function aiAssist(){
@@ -3304,6 +3307,22 @@ function ConversationLog({card,onUpdateLog}){
 
   function deleteEntry(id){
     onUpdateLog(log.filter(e=>e.id!==id));
+  }
+
+  function startEditEntry(entry){
+    setEditNotes(entry.notes);
+    setEditTone(entry.tone);
+    setEditingEntry(entry.id);
+  }
+
+  function saveEditEntry(){
+    if(!editNotes.trim())return;
+    onUpdateLog(log.map(e=>e.id===editingEntry?{...e,notes:editNotes.trim(),tone:editTone}:e));
+    setEditingEntry(null);
+  }
+
+  function cancelEditEntry(){
+    setEditingEntry(null);
   }
 
   // Pattern surfacing — tone frequency across this person's log
@@ -3364,12 +3383,34 @@ function ConversationLog({card,onUpdateLog}){
         <div style={{display:"flex",flexDirection:"column",gap:6}}>
           {log.map(entry=>{
             const toneTag=TONE_TAGS.find(t=>t.id===entry.tone)||TONE_TAGS[0];
+            const isEditing=editingEntry===entry.id;
+            if(isEditing){
+              return(
+                <div key={entry.id} style={{padding:"10px 12px",background:"white",border:"1px solid "+toneTag.color+"60",borderLeft:"3px solid "+toneTag.color,borderRadius:8}}>
+                  <textarea value={editNotes} onChange={e=>setEditNotes(e.target.value)} rows={3}
+                    style={{width:"100%",padding:"8px 10px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:14,color:INK,outline:"none",resize:"vertical",lineHeight:1.6,borderRadius:6,marginBottom:8}}/>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8}}>
+                    {TONE_TAGS.map(t=>(
+                      <button key={t.id} onClick={()=>setEditTone(t.id)}
+                        style={{padding:"3px 8px",background:editTone===t.id?t.color:"transparent",color:editTone===t.id?"white":t.color,border:"1px solid "+t.color,cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:6}}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={saveEditEntry} style={{flex:1,padding:"6px",background:toneTag.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>Save</button>
+                    <button onClick={cancelEditEntry} style={{padding:"6px 10px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:6}}>Cancel</button>
+                  </div>
+                </div>
+              );
+            }
             return(
               <div key={entry.id} style={{padding:"10px 12px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+toneTag.color,borderRadius:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
                   <span style={{fontSize:12,color:toneTag.color,letterSpacing:"1.5px",textTransform:"uppercase",fontWeight:"bold"}}>{toneTag.label}</span>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <span style={{fontSize:12,color:TAN}}>{entry.date}</span>
+                    <button onClick={()=>startEditEntry(entry)} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:12,padding:0}}>Edit</button>
                     <button onClick={()=>deleteEntry(entry.id)} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,padding:0}}>×</button>
                   </div>
                 </div>
@@ -3402,6 +3443,8 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const [developInput,setDevelopInput]=useState("");
   const [developResult,setDevelopResult]=useState(null);
   const [developLoading,setDevelopLoading]=useState(false);
+  const [editingCard,setEditingCard]=useState(null);
+  const [editForm,setEditForm]=useState({});
 
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
   const isMap=sec.mode==="map";
@@ -3496,6 +3539,23 @@ function LetsTalkTab({letstalk,setLetstalk}){
   }
 
   function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));setExpandedCard(null);}
+
+  function startEditCard(card){
+    setEditForm({topic:card.topic,position:card.position||"",keypoints:card.keypoints||"",howgoes:card.howgoes||"",wiring:card.wiring||"",friction:card.friction||"",bestway:card.bestway||"",scripture:card.scripture||"",inwords:card.inwords||""});
+    setEditingCard(card.id);
+  }
+
+  function saveEditCard(){
+    if(!editForm.topic?.trim())return;
+    setLetstalk(p=>p.map(c=>c.id===editingCard?{...c,...editForm}:c));
+    setEditingCard(null);
+    setEditForm({});
+  }
+
+  function cancelEditCard(){
+    setEditingCard(null);
+    setEditForm({});
+  }
   function copyPrompt(){navigator.clipboard.writeText(activePrompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});}
 
   const ta={width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8};
@@ -3508,7 +3568,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
 
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
         {LT_SECTIONS.map(s=>(
-          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);setDevelopMode(false);setDevelopResult(null);setDevelopInput("");}}
+          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);setDevelopMode(false);setDevelopResult(null);setDevelopInput("");setEditingCard(null);}}
             style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
             {s.icon} {s.label}
           </button>
@@ -3712,20 +3772,40 @@ function LetsTalkTab({letstalk,setLetstalk}){
                 </div>
                 {expandedCard===card.id&&(
                   <div style={{padding:"0 16px 16px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                    {fields.filter(f=>card[f.key]).map(f=>(
-                      <div key={f.key} style={{marginTop:12}}>
-                        <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>{f.label}</div>
-                        <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
+                    {editingCard===card.id?(
+                      <div style={{marginTop:12}}>
+                        <div style={{marginBottom:10}}>
+                          <div style={{fontSize:13,color:TAN,marginBottom:4}}>{isMap?"Person's Name":"Topic / Person"}</div>
+                          <input value={editForm.topic||""} onChange={e=>setEditForm(f=>({...f,topic:e.target.value}))} style={inp2}/>
+                        </div>
+                        {fields.map(f=>(
+                          <div key={f.key} style={{marginBottom:10}}>
+                            <div style={{fontSize:13,color:TAN,marginBottom:4}}>{f.label}</div>
+                            <textarea value={editForm[f.key]||""} onChange={e=>setEditForm(ff=>({...ff,[f.key]:e.target.value}))} rows={2} style={ta}/>
+                          </div>
+                        ))}
+                        <div style={{display:"flex",gap:8,marginTop:4}}>
+                          <button onClick={saveEditCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save Changes</button>
+                          <button onClick={cancelEditCard} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
+                        </div>
                       </div>
-                    ))}
-                    {(card._mode==="map"||isMap)&&(
-                      <ConversationLog card={card} onUpdateLog={(newLog)=>{
-                        setLetstalk(p=>p.map(c=>c.id===card.id?{...c,conversationLog:newLog}:c));
-                      }}/>
-                    )}
-                    <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
-                      <button onClick={()=>deleteCard(card.id)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
-                    </div>
+                    ):(<>
+                      {fields.filter(f=>card[f.key]).map(f=>(
+                        <div key={f.key} style={{marginTop:12}}>
+                          <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:4,opacity:0.8}}>{f.label}</div>
+                          <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
+                        </div>
+                      ))}
+                      {(card._mode==="map"||isMap)&&(
+                        <ConversationLog card={card} onUpdateLog={(newLog)=>{
+                          setLetstalk(p=>p.map(c=>c.id===card.id?{...c,conversationLog:newLog}:c));
+                        }}/>
+                      )}
+                      <div style={{marginTop:14,display:"flex",gap:8,justifyContent:"flex-end"}}>
+                        <button onClick={()=>startEditCard(card)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Edit</button>
+                        <button onClick={()=>deleteCard(card.id)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
+                      </div>
+                    </>)}
                   </div>
                 )}
               </div>
