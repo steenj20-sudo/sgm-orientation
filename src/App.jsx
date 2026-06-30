@@ -1,4 +1,4 @@
-// SGM Orientation v83 — Bible study expansion panel background/font fixed to match other cards
+// SGM Orientation v84 — People I Know conversation log with tone tags + pattern surfacing; Archive overhaul (auto-detect new since last copy, dated entries, append-only, never loses data)
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -2462,78 +2462,209 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
   );
 }
 
-function ArchiveTab({cats,library,prayers,habits,streaks,history}){
+function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,lastArchivedAt,setLastArchivedAt}){
   const [copied,setCopied]=useState(false);
-  const tk=new Date().toISOString().slice(0,10);
+  const [showFull,setShowFull]=useState(false);
   const now=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
-  function gen(){
+  const nowISO=new Date().toISOString();
+  const lastDate=lastArchivedAt?new Date(lastArchivedAt):null;
+
+  function idTime(id){
+    // Extract a timestamp from common id shapes used across the app
+    if(typeof id==="number")return id;
+    if(typeof id==="string"){
+      const m=id.match(/(\d{10,})/);
+      if(m)return parseInt(m[1]);
+    }
+    return null;
+  }
+
+  function isNew(item){
+    if(!lastArchivedAt)return true; // first ever archive — everything is "new"
+    const t=idTime(item.id);
+    if(t)return t>lastArchivedAt;
+    if(item.date){
+      const dt=new Date(item.date).getTime();
+      if(!isNaN(dt))return dt>=new Date(lastDate.toDateString()).getTime();
+    }
+    return false;
+  }
+
+  function genSection(forceFull){
     const L=[];
-    L.push("SGM LIFE ORIENTATION - ARCHIVE SNAPSHOT");
-    L.push("Generated: "+now);
-    L.push("================================================");
-    L.push("\nLIFE CATEGORIES");
-    L.push("------------------------------");
-    cats.forEach(cat=>{
-      L.push("\n"+cat.label.toUpperCase()+" - "+cat.state);
-      cat.tasks.forEach(t=>{
-        const st=t.steps&&t.steps.length?" ("+t.steps.filter(x=>x.done).length+"/"+t.steps.length+" steps)":"";
-        L.push("  "+(t.done?"✓":"○")+" "+t.label+" ["+t.resistance+"]"+st);
+    const filt=(arr)=>forceFull?arr:arr.filter(isNew);
+
+    // Tasks — completions since last archive (or full list of done tasks)
+    const allTasks=cats.flatMap(c=>c.tasks.map(t=>({...t,catLabel:c.label})));
+    const newCompletions=filt(history);
+    if(newCompletions.length){
+      L.push("TASKS COMPLETED");
+      L.push("------------------------------");
+      newCompletions.forEach(h=>L.push("["+h.date+"] check "+h.task+" ("+h.category+")"));
+      L.push("");
+    }
+
+    // Prayers
+    const newPrayers=filt(prayers.filter(p=>!p.answered));
+    const newAnswered=filt(prayers.filter(p=>p.answered));
+    if(newPrayers.length){
+      L.push("NEW PRAYERS");
+      L.push("------------------------------");
+      newPrayers.forEach(p=>L.push("["+p.dateAdded+"] * "+p.name+" ("+p.relationship+") — "+p.request));
+      L.push("");
+    }
+    if(newAnswered.length){
+      L.push("ANSWERED PRAYERS");
+      L.push("------------------------------");
+      newAnswered.forEach(p=>L.push("["+p.answeredDate+"] check "+p.name+" — "+p.request));
+      L.push("");
+    }
+
+    // Identity / Library
+    const newLib=filt(library);
+    if(newLib.length){
+      L.push("IDENTITY DEPOSITS");
+      L.push("------------------------------");
+      newLib.forEach(p=>L.push("["+p.date+"] ("+p.category+") "+p.principle+(p.scripture?" — \""+p.scripture+"\" "+(p.scriptureRef||""):"")));
+      L.push("");
+    }
+
+    // Shelf
+    const newShelf=filt(shelf||[]);
+    if(newShelf.length){
+      L.push("SHELF — CAPTURED");
+      L.push("------------------------------");
+      newShelf.forEach(s=>L.push("["+s.dateAdded+"] "+s.label+" ("+s.timeframe+")"));
+      L.push("");
+    }
+
+    // Let's Talk — group by section
+    const lt=letstalk||[];
+    const ltNew=filt(lt);
+    if(ltNew.length){
+      const bySection={};
+      ltNew.forEach(c=>{
+        const key=c.section==="deeper"?"Going Deeper":c.section==="people"?"People I Know":(LT_SECTIONS.find(s=>s.id===c.section)?.label||c.section);
+        if(!bySection[key])bySection[key]=[];
+        bySection[key].push(c);
+      });
+      Object.entries(bySection).forEach(([label,items])=>{
+        L.push("LET'S TALK — "+label.toUpperCase());
+        L.push("------------------------------");
+        items.forEach(c=>{
+          L.push("["+c.date+"] "+c.topic);
+          if(c.position)L.push("  Position: "+c.position);
+          if(c.wiring)L.push("  Wiring: "+c.wiring);
+          if(c.friction)L.push("  Friction: "+c.friction);
+          if(c.bestway)L.push("  How to love well: "+c.bestway);
+          if(c.insight)L.push("  Insight: "+c.insight);
+          if(c.scripture)L.push("  Scripture: "+c.scripture);
+          if(c.inwords)L.push("  In Joe's Words: "+c.inwords);
+        });
+        L.push("");
+      });
+    }
+
+    // People I Know — new conversation log entries (nested, may not be "new" at card level)
+    const peopleCards=lt.filter(c=>c.section==="people"&&c.conversationLog?.length);
+    const newLogLines=[];
+    peopleCards.forEach(card=>{
+      const newEntries=forceFull?card.conversationLog:card.conversationLog.filter(e=>{
+        const t=idTime(e.id);
+        return t?t>lastArchivedAt:false;
+      });
+      newEntries.forEach(e=>{
+        newLogLines.push("["+e.date+"] "+card.topic+" ("+e.tone+"): "+e.notes);
       });
     });
-    const active=prayers.filter(p=>!p.answered);
-    const answered=prayers.filter(p=>p.answered);
-    L.push("\nACTIVE PRAYERS");
-    L.push("------------------------------");
-    if(!active.length)L.push("  None recorded.");
-    active.forEach(p=>L.push("  * "+p.name+" ("+p.relationship+") - "+p.request));
-    if(answered.length){
-      L.push("\nANSWERED PRAYERS");
+    if(newLogLines.length){
+      L.push("PEOPLE I KNOW — CONVERSATIONS LOGGED");
       L.push("------------------------------");
-      answered.forEach(p=>L.push("  check "+p.name+" - "+p.request+" [Answered "+p.answeredDate+"]"));
+      newLogLines.forEach(l=>L.push(l));
+      L.push("");
     }
-    const th=habits[tk]||{};
-    L.push("\nHABIT STREAKS");
-    L.push("------------------------------");
-    L.push("Today: "+Object.values(th).filter(Boolean).length+"/12 completed");
-    Object.entries(streaks).forEach(([id,s])=>{if(s.count>1)L.push("  "+id+": "+s.count+" day streak");});
-    if(history.length){
-      L.push("\nRECENT COMPLETIONS");
+
+    // Habit streaks — only meaningful as current-state snapshot, always include if requested full
+    if(forceFull){
+      const tk=new Date().toISOString().slice(0,10);
+      const th=habits[tk]||{};
+      L.push("HABIT STREAKS (current)");
       L.push("------------------------------");
-      history.slice(0,20).forEach(h=>L.push("  done "+h.task+" ("+h.category+") - "+h.date));
+      L.push("Today: "+Object.values(th).filter(Boolean).length+" completed");
+      Object.entries(streaks).forEach(([id,s])=>{if(s.count>1)L.push("  "+id+": "+s.count+" day streak");});
+      L.push("");
     }
-    L.push("\nWORKING LIBRARY");
-    L.push("------------------------------");
-    ["identity","relationships","capacity","warfare","stewardship","ministry"].forEach(cat=>{
-      const items=library.filter(p=>p.category===cat);
-      if(!items.length)return;
-      L.push("\n"+cat.toUpperCase());
-      items.forEach(p=>L.push("  - "+p.principle+" ["+p.date+"]"));
-    });
-    L.push("\n================================================");
-    L.push("End of Archive - Paste into Kingdom Notebook");
+
+    return L;
+  }
+
+  function gen(forceFull){
+    const L=[];
+    L.push("SGM LIFE ORIENTATION — "+(forceFull?"FULL SNAPSHOT":"ARCHIVE — NEW SINCE "+(lastDate?lastDate.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"BEGINNING")));
+    L.push("Generated: "+now);
+    L.push("================================================");
+    L.push("");
+    const body=genSection(forceFull);
+    if(!body.length){
+      L.push("Nothing new since your last archive. Nothing to file.");
+    }else{
+      L.push(...body);
+    }
+    L.push("================================================");
+    L.push("End of Archive — Paste into Kingdom Notebook");
     return L.join("\n");
   }
+
+  const newBody=genSection(false);
+  const hasNew=newBody.length>0;
+
+  function handleCopy(){
+    navigator.clipboard.writeText(gen(showFull)).then(()=>{
+      setCopied(true);
+      if(!showFull)setLastArchivedAt(Date.now());
+      setTimeout(()=>setCopied(false),2500);
+    });
+  }
+
   const taskCount=cats.flatMap(c=>c.tasks).length;
   const doneCount=cats.flatMap(c=>c.tasks).filter(t=>t.done).length;
+
   return(
     <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <SL>Archive</SL>
-      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:20}}>Your running backup. Copy and paste into your Kingdom Notebook. If the app ever disappears, nothing is lost.</p>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:10}}>Your running backup. Copy what's new and paste into your Kingdom Notebook. Nothing is lost even if you skip a night — it just waits here until you copy it.</p>
+      <p style={{fontSize:13,color:TAN,marginBottom:20}}>{lastArchivedAt?"Last archived: "+new Date(lastArchivedAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"Never archived yet — everything below is new."}</p>
+
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
-        {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Categories",cats.length],["Completions",history.length]].map(([label,val])=>(
+        {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Shelf",(shelf||[]).length],["Let's Talk",(letstalk||[]).length]].map(([label,val])=>(
           <div key={label} style={{padding:"12px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:"bold",color:INK,letterSpacing:"-0.5px"}}>{val}</div>
             <div style={{fontSize:13,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
           </div>
         ))}
       </div>
-      <button onClick={()=>navigator.clipboard.writeText(gen()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
-        style={{width:"100%",marginBottom:20,padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s"}}>
-        {copied?"check Copied to Clipboard":"Copy Full Archive"}
+
+      <div style={{display:"flex",gap:6,marginBottom:16}}>
+        <button onClick={()=>setShowFull(false)} style={{flex:1,padding:"7px",background:!showFull?INK:"transparent",color:!showFull?"white":TAN,border:"1px solid "+(!showFull?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+          New Since Last Time {hasNew?"":"(none)"}
+        </button>
+        <button onClick={()=>setShowFull(true)} style={{flex:1,padding:"7px",background:showFull?INK:"transparent",color:showFull?"white":TAN,border:"1px solid "+(showFull?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+          Full Snapshot
+        </button>
+      </div>
+
+      <button onClick={handleCopy} disabled={!showFull&&!hasNew}
+        style={{width:"100%",marginBottom:10,padding:"12px",background:copied?GRN:((!showFull&&!hasNew)?"rgba(26,46,74,0.2)":INK),color:"white",border:"none",cursor:(!showFull&&!hasNew)?"default":"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s"}}>
+        {copied?"check Copied to Clipboard":showFull?"Copy Full Snapshot":"Copy New Entries"}
       </button>
+      {!showFull&&(
+        <p style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:20,textAlign:"center"}}>Copying resets the "new since" marker to now. Full Snapshot never resets it.</p>
+      )}
+      {showFull&&<div style={{marginBottom:20}}/>}
+
       <SL>Preview</SL>
       <div style={{background:"rgba(255,255,255,0.4)",border:"1px solid "+FINK,borderRadius:8,padding:"14px 16px",maxHeight:320,overflowY:"auto"}}>
-        <pre style={{fontSize:13,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:BODY}}>{gen()}</pre>
+        <pre style={{fontSize:13,color:INK,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:BODY}}>{gen(showFull)}</pre>
       </div>
     </div>
   );
@@ -3129,6 +3260,129 @@ Ask Claude: "Help me build a relationship profile for [name]. Here's my honest r
 
 These are your observations — not facts, not verdicts. Written to help you love better, pray more specifically, and show up with grace. Between you and God.`;
 
+const TONE_TAGS=[
+  {id:"warm",label:"Warm",color:GRN},
+  {id:"tense",label:"Tense",color:OX},
+  {id:"distant",label:"Distant",color:TAN},
+  {id:"breakthrough",label:"Breakthrough",color:GOLD},
+  {id:"hard",label:"Hard",color:PUR},
+  {id:"routine",label:"Routine",color:"#2E6B8A"},
+];
+
+function ConversationLog({card,onUpdateLog}){
+  const [adding,setAdding]=useState(false);
+  const [input,setInput]=useState("");
+  const [tone,setTone]=useState("warm");
+  const [aiHelp,setAiHelp]=useState(false);
+  const [aiLoading,setAiLoading]=useState(false);
+  const log=card.conversationLog||[];
+
+  async function aiAssist(){
+    if(!input.trim())return;
+    setAiLoading(true);
+    const prompt=`You are helping Joe Steen log a conversation he had with ${card.topic}, for his private relationship notes (for prayer and self-awareness only — never shown to the other person). Joe's raw notes:\n\n${input}\n\nIn 2-3 honest sentences, reflect back what happened and suggest which tone tag fits best from this list: Warm, Tense, Distant, Breakthrough, Hard, Routine. Format:\n\nREFLECTION: [2-3 sentences]\nSUGGESTED TONE: [one tag from the list]`;
+    try{
+      const result=await claudeAPI(prompt,400);
+      const toneMatch=result.match(/SUGGESTED TONE:\s*(\w+)/i);
+      const reflMatch=result.match(/REFLECTION:(.+?)(?=SUGGESTED TONE|$)/si);
+      if(toneMatch){
+        const found=TONE_TAGS.find(t=>t.label.toLowerCase()===toneMatch[1].toLowerCase().trim());
+        if(found)setTone(found.id);
+      }
+      if(reflMatch)setInput(p=>p+"\n\n— "+reflMatch[1].trim());
+    }catch(e){}
+    setAiLoading(false);
+    setAiHelp(false);
+  }
+
+  function saveEntry(){
+    if(!input.trim())return;
+    const entry={id:Date.now(),date:new Date().toISOString().slice(0,10),tone,notes:input.trim()};
+    onUpdateLog([entry,...log]);
+    setInput("");setAdding(false);setTone("warm");
+  }
+
+  function deleteEntry(id){
+    onUpdateLog(log.filter(e=>e.id!==id));
+  }
+
+  // Pattern surfacing — tone frequency across this person's log
+  const toneCounts={};
+  log.forEach(e=>{toneCounts[e.tone]=(toneCounts[e.tone]||0)+1;});
+  const topTone=Object.entries(toneCounts).sort((a,b)=>b[1]-a[1])[0];
+  const topToneTag=topTone?TONE_TAGS.find(t=>t.id===topTone[0]):null;
+
+  return(
+    <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid "+FINK}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{fontSize:13,color:"#7A4F6A",letterSpacing:"2px",textTransform:"uppercase",opacity:0.85}}>✦ Conversation Log</div>
+        <button onClick={()=>setAdding(a=>!a)}
+          style={{background:adding?"#7A4F6A":"transparent",border:"1px solid #7A4F6A",color:adding?"white":"#7A4F6A",padding:"4px 10px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+          {adding?"Cancel":"+ Log Conversation"}
+        </button>
+      </div>
+
+      {topToneTag&&log.length>=3&&(
+        <div style={{padding:"8px 12px",background:topToneTag.color+"10",borderLeft:"3px solid "+topToneTag.color,borderRadius:8,marginBottom:12}}>
+          <p style={{fontSize:13,color:INK,margin:0,lineHeight:1.6,fontStyle:"italic"}}>
+            Pattern: <strong>{topToneTag.label}</strong> shows up most ({topTone[1]} of {log.length} logged conversations).
+          </p>
+        </div>
+      )}
+
+      {adding&&(
+        <div style={{marginBottom:14,padding:"12px",background:"#7A4F6A08",border:"1px solid #7A4F6A30",borderRadius:8}}>
+          <div style={{fontSize:13,color:TAN,marginBottom:6}}>What happened, what was said, what you noticed...</div>
+          <textarea value={input} onChange={e=>setInput(e.target.value)} rows={4}
+            placeholder="Raw notes on the conversation..."
+            style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+          <button onClick={aiAssist} disabled={!input.trim()||aiLoading}
+            style={{width:"100%",padding:"8px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:input.trim()?"pointer":"default",fontFamily:BODY,fontSize:13,borderRadius:8,marginBottom:10,opacity:input.trim()?1:0.5}}>
+            {aiLoading?"Reading the tone...":"✦ Help me read the tone"}
+          </button>
+          <div style={{fontSize:13,color:TAN,marginBottom:6}}>Tone</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+            {TONE_TAGS.map(t=>(
+              <button key={t.id} onClick={()=>setTone(t.id)}
+                style={{padding:"5px 10px",background:tone===t.id?t.color:"transparent",color:tone===t.id?"white":t.color,border:"1px solid "+t.color,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={saveEntry} disabled={!input.trim()}
+            style={{width:"100%",padding:"9px",background:"#7A4F6A",color:"white",border:"none",cursor:input.trim()?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8,opacity:input.trim()?1:0.5}}>
+            Save Entry
+          </button>
+        </div>
+      )}
+
+      {!log.length&&!adding&&(
+        <p style={{fontSize:13,color:TAN,fontStyle:"italic",margin:0}}>No conversations logged yet. Start tracking after you talk.</p>
+      )}
+
+      {log.length>0&&(
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {log.map(entry=>{
+            const toneTag=TONE_TAGS.find(t=>t.id===entry.tone)||TONE_TAGS[0];
+            return(
+              <div key={entry.id} style={{padding:"10px 12px",background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+toneTag.color,borderRadius:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                  <span style={{fontSize:12,color:toneTag.color,letterSpacing:"1.5px",textTransform:"uppercase",fontWeight:"bold"}}>{toneTag.label}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:12,color:TAN}}>{entry.date}</span>
+                    <button onClick={()=>deleteEntry(entry.id)} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:13,padding:0}}>×</button>
+                  </div>
+                </div>
+                <p style={{fontSize:14,color:INK,lineHeight:1.6,margin:0,whiteSpace:"pre-wrap"}}>{entry.notes}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LetsTalkTab({letstalk,setLetstalk}){
   const [section,setSection]=useState("home");
   const [showAdd,setShowAdd]=useState(false);
@@ -3450,6 +3704,9 @@ function LetsTalkTab({letstalk,setLetstalk}){
                         {(card.position||card.wiring||"").slice(0,80)}{(card.position||card.wiring||"").length>80?"...":""}
                       </div>
                     )}
+                    {(card._mode==="map"||isMap)&&card.conversationLog?.length>0&&(
+                      <div style={{fontSize:12,color:"#7A4F6A",marginTop:4}}>{card.conversationLog.length} conversation{card.conversationLog.length===1?"":"s"} logged</div>
+                    )}
                   </div>
                   <div style={{fontSize:15,color:sec.color,marginLeft:10,flexShrink:0}}>{expandedCard===card.id?"▲":"▼"}</div>
                 </div>
@@ -3461,6 +3718,11 @@ function LetsTalkTab({letstalk,setLetstalk}){
                         <p style={{fontSize:15,lineHeight:1.75,color:INK,margin:0}}>{card[f.key]}</p>
                       </div>
                     ))}
+                    {(card._mode==="map"||isMap)&&(
+                      <ConversationLog card={card} onUpdateLog={(newLog)=>{
+                        setLetstalk(p=>p.map(c=>c.id===card.id?{...c,conversationLog:newLog}:c));
+                      }}/>
+                    )}
                     <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>
                       <button onClick={()=>deleteCard(card.id)} style={{padding:"6px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
                     </div>
@@ -3503,6 +3765,7 @@ export default function App(){
   const [letstalk,setLetstalk]=useState([]);
   const [showSnapshot,setShowSnapshot]=useState(false);
   const [showCompleted,setShowCompleted]=useState({});
+  const [lastArchivedAt,setLastArchivedAt]=useState(null);
 
   const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
   const todayVerse=ANCH[dayOfYear%ANCH.length];
@@ -3534,6 +3797,7 @@ export default function App(){
       try{const r=localStorage.getItem("sgm3-planner");if(r)setPlanner(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-shelf");if(r)setShelf(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-letstalk");if(r)setLetstalk(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-last-archived");if(r)setLastArchivedAt(JSON.parse(r));}catch(e){}
       setLoaded(true);
     }
     load();
@@ -3552,6 +3816,7 @@ export default function App(){
       try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
       try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
       try{localStorage.setItem("sgm3-letstalk",JSON.stringify(letstalk));}catch(e){}
+      try{localStorage.setItem("sgm3-last-archived",JSON.stringify(lastArchivedAt));}catch(e){}
       try{
         const todayKey=new Date().toISOString().slice(0,10);
         const saved=JSON.parse(localStorage.getItem("sgm3-stack")||"{}");
@@ -3560,7 +3825,7 @@ export default function App(){
       }catch(e){}
     },800);
     return()=>clearTimeout(timer);
-  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,letstalk,loaded]);
+  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,letstalk,lastArchivedAt,loaded]);
 
   // Stack daily reset
   useEffect(()=>{
@@ -3845,7 +4110,7 @@ export default function App(){
         )}
 
         {view==="library"&&<LibraryTab library={library} setLibrary={setLibrary}/>}
-        {view==="archive"&&<ArchiveTab cats={cats} library={library} prayers={prayers} habits={habits} streaks={streaks} history={history}/>}
+        {view==="archive"&&<ArchiveTab cats={cats} library={library} prayers={prayers} habits={habits} streaks={streaks} history={history} shelf={shelf} letstalk={letstalk} lastArchivedAt={lastArchivedAt} setLastArchivedAt={setLastArchivedAt}/>}
         {view==="letstalk"&&<LetsTalkTab letstalk={letstalk} setLetstalk={setLetstalk}/>}
 
       </div>
