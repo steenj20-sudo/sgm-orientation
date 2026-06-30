@@ -1,4 +1,4 @@
-// SGM Orientation v86 — In-app "Where do I put this?" quick reference: floating button + situation lookup + tab guide overlay
+// SGM Orientation v87 — Quick Reference combines tab guide + in-the-moment lookup in one scroll; new Why I Built This tab for explaining SGM to people
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -3843,56 +3843,93 @@ const WHERE_GUIDE_SITUATIONS=[
   {q:"I need to see everything going on in my life at once",a:"Map",icon:"◎",color:"#1A7A8A"},
 ];
 
+const WHY_BUILT_THIS=[
+  {
+    h:"The problem",
+    body:"I had 20 years of life experience, sobriety, scripture, and lessons learned the hard way — and nowhere to put any of it. It lived in my head, in scattered notes, in conversations I'd have once and never capture again. I'd learn something real and then lose it because there was no system catching it."
+  },
+  {
+    h:"What this actually is",
+    body:"A personal operating system for my life — tasks, prayer, habits, scripture, and the people I love — all in one place, built so that nothing I learn or notice gets lost. When I catch a pattern in myself, I can record it. When I have a hard conversation coming up, I can prep for it. When I talk to someone and notice something worth remembering, it's saved instead of forgotten by next week."
+  },
+  {
+    h:"Why it's not just a to-do app",
+    body:"To-do apps track tasks. This tracks growth — the tasks, but also the why behind them, the patterns underneath them, and the relationships they touch. It's the difference between checking a box and actually understanding myself better over time."
+  },
+  {
+    h:"How AI fits in",
+    body:"AI is the microphone, not the message. It doesn't think for me or tell me what to believe — it helps me capture my own thinking faster, organize what I already know, and ask better questions. Everything that comes out of it still has to pass through me first."
+  },
+  {
+    h:"Who it's for",
+    body:"Right now, just me. It's the proving ground for Steen Growth Ministries — everything I'm building for other people eventually gets tested on myself first. If it doesn't actually help me grow, it's not ready to hand to anyone else."
+  },
+];
+
 function WhereGuideOverlay({onClose}){
-  const [tab,setTab]=useState("situations");
+  const [tab,setTab]=useState("tabs");
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(26,46,74,0.55)",zIndex:400,display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn 0.2s ease"}}
       onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{background:PAPER,width:"100%",maxWidth:700,maxHeight:"82vh",borderRadius:"16px 16px 0 0",overflowY:"auto",animation:"fadeIn 0.25s ease"}}>
         <div style={{position:"sticky",top:0,background:PAPER,borderBottom:"1px solid "+FINK,padding:"16px 20px 12px",zIndex:1}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div style={{fontFamily:SERIF,fontSize:20,fontWeight:700,color:INK}}>Where do I put this?</div>
+            <div style={{fontFamily:SERIF,fontSize:20,fontWeight:700,color:INK}}>{tab==="tabs"?"Quick Reference":"Why I Built This"}</div>
             <button onClick={onClose} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setTab("situations")} style={{flex:1,padding:"8px",background:tab==="situations"?INK:"transparent",color:tab==="situations"?"white":TAN,border:"1px solid "+(tab==="situations"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
-              In the moment
-            </button>
             <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"8px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
-              What each tab does
+              Quick Reference
+            </button>
+            <button onClick={()=>setTab("why")} style={{flex:1,padding:"8px",background:tab==="why"?INK:"transparent",color:tab==="why"?"white":TAN,border:"1px solid "+(tab==="why"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+              Why I Built This
             </button>
           </div>
         </div>
 
         <div style={{padding:"16px 20px 40px"}}>
-          {tab==="situations"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {WHERE_GUIDE_SITUATIONS.map((s,i)=>(
-                <div key={i} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+s.color,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <span style={{fontSize:18,color:s.color,flexShrink:0,marginTop:1}}>{s.icon}</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:15,color:INK,lineHeight:1.5,marginBottom:4}}>{s.q}</div>
-                    <div style={{fontSize:14,color:s.color,fontWeight:"bold"}}>→ {s.a}</div>
+          {tab==="tabs"&&(
+            <div>
+              <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ What Each Tab Does</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+                {WHERE_GUIDE_TABS.map((t,i)=>(
+                  <div key={i} style={{background:"white",border:"1px solid "+FINK,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                    <span style={{fontSize:18,color:OX,flexShrink:0,marginTop:1}}>{t.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:3}}>{t.tab}</div>
+                      <div style={{fontSize:14,color:TAN,lineHeight:1.55}}>{t.desc}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ In The Moment</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {WHERE_GUIDE_SITUATIONS.map((s,i)=>(
+                  <div key={i} style={{background:"white",border:"1px solid "+FINK,borderLeft:"3px solid "+s.color,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                    <span style={{fontSize:18,color:s.color,flexShrink:0,marginTop:1}}>{s.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:15,color:INK,lineHeight:1.5,marginBottom:4}}>{s.q}</div>
+                      <div style={{fontSize:14,color:s.color,fontWeight:"bold"}}>→ {s.a}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          {tab==="tabs"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {WHERE_GUIDE_TABS.map((t,i)=>(
-                <div key={i} style={{background:"white",border:"1px solid "+FINK,borderRadius:8,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <span style={{fontSize:18,color:OX,flexShrink:0,marginTop:1}}>{t.icon}</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:15,color:INK,fontWeight:"bold",marginBottom:3}}>{t.tab}</div>
-                    <div style={{fontSize:14,color:TAN,lineHeight:1.55}}>{t.desc}</div>
-                  </div>
+          {tab==="why"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:18}}>
+              {WHY_BUILT_THIS.map((s,i)=>(
+                <div key={i}>
+                  <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ {s.h}</div>
+                  <p style={{fontSize:15,lineHeight:1.8,color:INK,margin:0}}>{s.body}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
     </div>
   );
 }
