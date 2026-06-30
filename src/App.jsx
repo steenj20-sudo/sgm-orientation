@@ -1,4 +1,4 @@
-// SGM Orientation v82 — Let's Talk Develop a Topic AI flow restored; Shelf Guides section added
+// SGM Orientation v83 — Bible study expansion panel background/font fixed to match other cards
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -1268,8 +1268,8 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             </button>
 
             {studyExpanded&&(
-              <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,0.1)",animation:"fadeIn 0.25s ease"}}>
-                {studyLoading&&<div style={{fontSize:15,color:"rgba(255,255,255,0.6)",fontStyle:"italic",textAlign:"center",padding:"20px",fontFamily:BODY}}>Preparing your study…</div>}
+              <div style={{padding:"16px",background:"white",borderTop:"1px solid "+FINK,animation:"fadeIn 0.25s ease"}}>
+                {studyLoading&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",textAlign:"center",padding:"20px",fontFamily:BODY}}>Preparing your study…</div>}
                 {studyContent&&!studyContent.error&&(
                   <div>
                     {[
