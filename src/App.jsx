@@ -1,4 +1,4 @@
-// SGM Orientation v77 — global RTB design treatment applied across all tabs
+// SGM Orientation v82 — Let's Talk Develop a Topic AI flow restored; Shelf Guides section added
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -2539,6 +2539,33 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history}){
   );
 }
 
+const SGM_GUIDES = [
+  {
+    id:"rtb",
+    label:"Root, Trunk & Branch",
+    abbr:"RTB",
+    color:OX,
+    desc:"A personal framework for understanding how you're built — the roots that feed you, the trunk that holds you, and the branches that extend into the world.",
+    prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nGenerate Joe's RTB as a structured HTML-style text output:\n\nROOT\n• [3-4 roots Joe draws from — his faith, his sobriety, his anchor verse Proverbs 3:5-6, his family]\n\nTRUNK\n• [3-4 core identity statements about Joe — empath, systems thinker, discipler, 20 years sober, visual learner]\n\nBRANCH\n• [3-4 active branches — SGM, Celebrate Recovery, family/dad season, discipleship relationships]\n\nClose with one sentence in Joe's voice about what this framework means for how he lives right now.\n\nHonest. Plain English. No filler. Written as if Joe is reading his own map.`
+  },
+  {
+    id:"idf",
+    label:"Internal Deployment Framework",
+    abbr:"IDF",
+    color:GOLD,
+    desc:"How you deploy your internal resources — capacity, energy, attention, and care — across the areas of your life that matter most.",
+    prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nGenerate his IDF across these deployment zones:\n\nSPIRITUAL DEPLOYMENT\n• How Joe's faith and spiritual formation resources get deployed day to day\n\nFAMILY DEPLOYMENT\n• How Joe shows up for Shawn, the kids, and the home in this season\n\nMINISTRY DEPLOYMENT\n• SGM and Celebrate Recovery — where and how he extends outward\n\nCAPACITY MANAGEMENT\n• What threatens his capacity and what restores it — honest, specific\n\nANCHOR\n• One sentence on what holds the whole deployment together\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language.`
+  },
+  {
+    id:"glf",
+    label:"Ground Level Framework",
+    abbr:"GLF",
+    color:"#2E6B8A",
+    desc:"A street-level map of where you actually are right now — not the vision, not the goals, but the honest ground-floor reality of this season.",
+    prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nGenerate the GLF across these ground-level categories:\n\nWHERE I AM NOW\n• The honest 2-3 sentence summary of this life season — no spin\n\nWHAT'S WORKING\n• 2-3 real things that are actually working in Joe's life right now\n\nWHAT'S OPEN\n• 2-3 honest open loops or unresolved things Joe is carrying\n\nWHAT I KNOW TO BE TRUE\n• 2-3 settled convictions Joe holds that don't change regardless of circumstances\n\nWHAT'S NEXT AT GROUND LEVEL\n• The one next right step — not the plan, just the next thing\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. Written like Joe is looking at a map of his own terrain.`
+  },
+];
+
 function ShelfTab({shelf,setShelf,cats,setCats}){
   const [input,setInput]=useState("");
   const [timeframe,setTimeframe]=useState("week");
@@ -2663,6 +2690,94 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
                   </div>
                 ))}
               </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* SGM Guides section */}
+      <GuidesSection/>
+    </div>
+  );
+}
+
+function GuidesSection(){
+  const [activeGuide,setActiveGuide]=useState(null);
+  const [guideResult,setGuideResult]=useState({});
+  const [guideLoading,setGuideLoading]=useState({});
+  const [copiedGuide,setCopiedGuide]=useState(null);
+
+  async function generateGuide(guide){
+    if(guideLoading[guide.id])return;
+    setGuideLoading(p=>({...p,[guide.id]:true}));
+    setGuideResult(p=>({...p,[guide.id]:null}));
+    try{
+      const text=await claudeAPI(guide.prompt,1000);
+      setGuideResult(p=>({...p,[guide.id]:text}));
+    }catch(e){
+      setGuideResult(p=>({...p,[guide.id]:"Couldn't reach Claude right now. Try again in a moment."}));
+    }
+    setGuideLoading(p=>({...p,[guide.id]:false}));
+  }
+
+  function copyGuide(guide){
+    const text=guideResult[guide.id];
+    if(!text)return;
+    navigator.clipboard?.writeText(guide.label+"\n\n"+text).then(()=>{setCopiedGuide(guide.id);setTimeout(()=>setCopiedGuide(null),2000);});
+  }
+
+  return(
+    <div style={{marginTop:32}}>
+      <div style={{height:1,background:FINK,marginBottom:24}}/>
+      <div style={{fontSize:12,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ SGM Guides</div>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Personal orientation frameworks. Tap to generate or review.</p>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {SGM_GUIDES.map(guide=>{
+          const isOpen=activeGuide===guide.id;
+          const result=guideResult[guide.id];
+          const loading=guideLoading[guide.id];
+          return(
+            <div key={guide.id} style={{background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+guide.color,borderRadius:10,overflow:"hidden"}}>
+              <div onClick={()=>setActiveGuide(isOpen?null:guide.id)}
+                style={{padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:guide.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:3,opacity:0.85}}>{guide.abbr}</div>
+                  <div style={{fontSize:16,color:INK,fontWeight:"bold",fontFamily:SERIF,marginBottom:2}}>{guide.label}</div>
+                  <div style={{fontSize:14,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>{guide.desc}</div>
+                </div>
+                <span style={{color:guide.color,fontSize:16,flexShrink:0}}>{isOpen?"▲":"▼"}</span>
+              </div>
+              {isOpen&&(
+                <div style={{borderTop:"1px solid "+FINK,padding:"14px 16px 16px",animation:"fadeIn 0.25s ease"}}>
+                  {!result&&!loading&&(
+                    <button onClick={()=>generateGuide(guide)}
+                      style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid "+guide.color,color:guide.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                      Generate {guide.abbr}
+                    </button>
+                  )}
+                  {loading&&(
+                    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0"}}>
+                      <div style={{width:16,height:16,border:"2px solid "+guide.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                      <span style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Building your {guide.abbr}...</span>
+                    </div>
+                  )}
+                  {result&&!loading&&(
+                    <div>
+                      <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{result}</p>
+                      <div style={{display:"flex",gap:8}}>
+                        <button onClick={()=>copyGuide(guide)}
+                          style={{flex:1,padding:"9px",background:copiedGuide===guide.id?GRN:"transparent",color:copiedGuide===guide.id?"white":guide.color,border:"1px solid "+(copiedGuide===guide.id?GRN:guide.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
+                          {copiedGuide===guide.id?"Copied":"Copy"}
+                        </button>
+                        <button onClick={()=>generateGuide(guide)}
+                          style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                          Regenerate
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -3029,6 +3144,10 @@ function LetsTalkTab({letstalk,setLetstalk}){
   const [deeperResult,setDeeperResult]=useState(null);
   const [deeperLoading,setDeeperLoading]=useState(false);
   const [copiedCard,setCopiedCard]=useState(null);
+  const [developMode,setDevelopMode]=useState(false);
+  const [developInput,setDevelopInput]=useState("");
+  const [developResult,setDevelopResult]=useState(null);
+  const [developLoading,setDevelopLoading]=useState(false);
 
   const sec=LT_SECTIONS.find(s=>s.id===section)||LT_SECTIONS[0];
   const isMap=sec.mode==="map";
@@ -3061,6 +3180,31 @@ function LetsTalkTab({letstalk,setLetstalk}){
     try{const result=await claudeAPI(prompt,800);setDeeperResult(result);}
     catch(e){setDeeperResult("Couldn't reach Claude right now. Try again.");}
     setDeeperLoading(false);
+  }
+
+  async function processDevelop(){
+    if(!developInput.trim())return;
+    setDevelopLoading(true);setDevelopResult(null);
+    const prompt=`You are helping Joe Steen develop a conversation card for his "${sec.label}" context. Joe is a stay-at-home dad, 20 years sober, founder of SGM, leads Celebrate Recovery. His anchor verse is Proverbs 3:5-6. His voice is honest, warm, direct — like a trusted friend over coffee.\n\nSection context: ${sec.desc}\n\nHere is Joe's raw thinking:\n${developInput}\n\nBuild this into a Let's Talk card. Return in this exact format:\n\nTOPIC: [Name or topic — one line]\nYOUR POSITION: [What Joe actually believes or wants to communicate — in his voice, 2-3 sentences]\nKEY POINTS: [2-3 things that need to land — numbered]\nHOW IT USUALLY GOES: [What typically happens in this kind of conversation — honest, 1-2 sentences]\nSCRIPTURE: [One verse that anchors it, if applicable — or leave blank]\nIN JOE'S WORDS: [One honest sentence from Joe's perspective on why this conversation matters]\n\nNo extra text before or after the card format. Stay in Joe's voice throughout.`;
+    try{const result=await claudeAPI(prompt,800);setDevelopResult(result);}
+    catch(e){setDevelopResult("Couldn't reach Claude right now. Try again.");}
+    setDevelopLoading(false);
+  }
+
+  function saveDevelopCard(){
+    if(!developResult)return;
+    const get=(label)=>{const m=developResult.match(new RegExp(label+":(.+?)(?=\\n[A-Z]|$)","si"));return m?m[1].trim():"";};
+    const card={
+      id:Date.now(),section,date:new Date().toISOString().slice(0,10),_mode:"topic",
+      topic:get("TOPIC")||developInput.slice(0,60)+"...",
+      position:get("YOUR POSITION"),
+      keypoints:get("KEY POINTS"),
+      howgoes:get("HOW IT USUALLY GOES"),
+      scripture:get("SCRIPTURE"),
+      inwords:get("IN JOE'S WORDS"),
+    };
+    setLetstalk(p=>[card,...(p||[])]);
+    setDevelopInput("");setDevelopResult(null);setDevelopMode(false);
   }
 
   function saveDeeperCard(){
@@ -3110,7 +3254,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
 
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
         {LT_SECTIONS.map(s=>(
-          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);}}
+          <button key={s.id} onClick={()=>{setSection(s.id);setShowAdd(false);setExpandedCard(null);setPasteMode(false);setShowPrompt(false);setDevelopMode(false);setDevelopResult(null);setDevelopInput("");}}
             style={{padding:"6px 12px",background:section===s.id?s.color:"transparent",color:section===s.id?"white":TAN,border:"1px solid "+(section===s.id?s.color:TANL),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
             {s.icon} {s.label}
           </button>
@@ -3201,8 +3345,44 @@ function LetsTalkTab({letstalk,setLetstalk}){
       )}
 
       {!isDeeper&&(<>
+        {!isMap&&(
+          <div style={{marginBottom:16}}>
+            <button onClick={()=>{setDevelopMode(d=>!d);setShowAdd(false);setPasteMode(false);setShowPrompt(false);setDevelopResult(null);setDevelopInput("");}}
+              style={{width:"100%",padding:"11px",background:developMode?sec.color:"transparent",border:"1px solid "+sec.color,color:developMode?"white":sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:developMode?12:0}}>
+              {developMode?"× Close":"✦ Develop a Topic"}
+            </button>
+            {developMode&&(
+              <div style={{animation:"fadeIn 0.25s ease"}}>
+                <div style={{fontSize:15,color:TAN,marginBottom:8}}>Paste your raw thinking — a quote, a note, what's on your mind. Claude builds the card.</div>
+                <textarea value={developInput} onChange={e=>setDevelopInput(e.target.value)} rows={5}
+                  placeholder={"What's the topic or conversation you're trying to prepare for? Dump your raw thinking here — notes, what you believe, how it usually goes, what you want to say..."}
+                  style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+                <button onClick={processDevelop} disabled={!developInput.trim()||developLoading}
+                  style={{width:"100%",padding:"11px",background:developInput.trim()&&!developLoading?sec.color:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:developInput.trim()&&!developLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:10}}>
+                  {developLoading?"Building your card...":"Build Card"}
+                </button>
+                {developLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0"}}>
+                    <div style={{width:16,height:16,border:"2px solid "+sec.color,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                    <span style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Building your Let's Talk card...</span>
+                  </div>
+                )}
+                {developResult&&!developLoading&&(
+                  <div style={{padding:"16px",background:"white",border:"1px solid "+sec.color+"40",borderTop:"3px solid "+sec.color,borderRadius:8,animation:"fadeIn 0.3s ease"}}>
+                    <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:12,opacity:0.85}}>Your Card</div>
+                    <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{developResult}</p>
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={saveDevelopCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save Card</button>
+                      <button onClick={()=>{setDevelopResult(null);setDevelopInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Clear</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{display:"flex",gap:8,marginBottom:16}}>
-          <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);}}
+          <button onClick={()=>{setShowAdd(s=>!s);setPasteMode(false);setShowPrompt(false);setDevelopMode(false);}}
             style={{flex:1,padding:"10px",background:"transparent",border:"1px dashed "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
             {showAdd?"Cancel":"+ Add Card"}
           </button>
