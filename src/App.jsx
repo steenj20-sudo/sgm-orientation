@@ -1,4 +1,4 @@
-// SGM Orientation v87 — Quick Reference combines tab guide + in-the-moment lookup in one scroll; new Why I Built This tab for explaining SGM to people
+// SGM Orientation v88 — third overlay tab "What It Solves" — per-tab problem/solution cards with color, icon, and temperature note
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -3866,6 +3866,70 @@ const WHY_BUILT_THIS=[
   },
 ];
 
+const PROBLEM_SOLVED=[
+  {
+    tab:"Week",icon:"◈",color:"#1A7A8A",
+    problem:"Mornings without direction — scattered between calendar and to-do lists, no spiritual anchor before the day started pulling at me.",
+    helping:"One place that opens with scripture and a study, shows what's actually on the calendar, and sets the tone before anything else competes for my attention.",
+    temp:"Calm. This is the one that starts the day right."
+  },
+  {
+    tab:"Habits",icon:"✓",color:GRN,
+    problem:"I'd forget the small stuff — vitamins, stretching, prayer — not because it didn't matter, but because nothing was tracking it.",
+    helping:"A short daily checklist that resets every morning. I check it off, I watch the streak build, and the small stuff stops slipping.",
+    temp:"Light. Almost satisfying. Low effort, real payoff."
+  },
+  {
+    tab:"Map",icon:"◎",color:"#1A7A8A",
+    problem:"My life felt like too many moving pieces at once — Faith, Family, SGM, Health — with no way to see all of it together.",
+    helping:"Every area of my life lives here as its own category, with real tasks and real progress. I can see the whole map instead of carrying it all in my head.",
+    temp:"Grounding. It quiets the noise of 'what am I forgetting.'"
+  },
+  {
+    tab:"Shelf",icon:"⊡",color:OX,
+    problem:"My head was the only place ideas and tasks lived, so I was either dropping things or carrying mental weight all day trying not to forget them.",
+    helping:"I dump it here the second it crosses my mind and it's off me. I don't have to hold it anymore — the app does.",
+    temp:"Low-pressure, almost relieving. This one's quiet but it does a lot."
+  },
+  {
+    tab:"Word",icon:"✦",color:OX,
+    problem:"I'd know I needed scripture for a specific struggle — shame, fear, perfectionism — but couldn't always find the right verse in the moment.",
+    helping:"Scripture organized by the actual roadblock, not just by book and chapter. When the struggle hits, the right word is already waiting.",
+    temp:"Steadying. Feels like having ammunition ready instead of searching for it mid-fight."
+  },
+  {
+    tab:"Identity",icon:"☰",color:OX,
+    problem:"The same patterns — shame, perfectionism, fear — kept resurfacing and I had no record of it, so I'd relearn the same lesson from scratch every single time it came back around.",
+    helping:"Every time God shows me something about a pattern, I deposit it right here, tagged, dated. Now I can actually see what keeps recurring instead of getting blindsided by it again.",
+    temp:"This is the one that confronts me the most, but it's also the one doing the deepest work."
+  },
+  {
+    tab:"Prayer",icon:"+",color:OX,
+    problem:"I'd promise someone I'd pray for them and then genuinely lose track — not from not caring, just from not having anywhere to put it.",
+    helping:"Every name and request lives here. I can see who I'm carrying, and when something gets answered, it becomes part of my testimony instead of disappearing.",
+    temp:"Faithful. This one keeps me honest about who I said I'd carry."
+  },
+  {
+    tab:"Field Notes",icon:"◷",color:GOLD,
+    problem:"Most days just blurred together — I'd finish one without ever really processing what actually happened in it.",
+    helping:"A few minutes at the end of the day to be honest about what I did, what I'm carrying, and what's worth remembering — before it's gone.",
+    temp:"Reflective. Slows me down enough to actually notice my own life."
+  },
+  {
+    tab:"Let's Talk",icon:"♡",color:"#7A4F6A",
+    problem:"I'd walk into important conversations underprepared, or hear something that stuck with me and lose the thread before I ever did anything with it, or struggle to remember the real patterns in how I relate to the people closest to me.",
+    helping:"A place to prep conversations before they happen, capture what's still sitting with me after I hear something, and keep an honest read on the people I love so I can pray for them and show up better.",
+    temp:"This one does the most — conversation prep, processing, and relationship awareness, all in one place."
+  },
+  {
+    tab:"Archive",icon:"⊡",color:INK,
+    problem:"Everything lived only in this app — if it ever broke or disappeared, years of growth would go with it.",
+    helping:"A running, dated backup that only shows what's new since I last copied it, so I can paste it into Notion without duplicating or losing anything, even if I miss a few nights.",
+    temp:"Insurance. Quiet in the background until I need it."
+  },
+];
+
+
 function WhereGuideOverlay({onClose}){
   const [tab,setTab]=useState("tabs");
   return(
@@ -3878,16 +3942,45 @@ function WhereGuideOverlay({onClose}){
             <button onClick={onClose} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"8px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+            <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"8px 4px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
               Quick Reference
             </button>
-            <button onClick={()=>setTab("why")} style={{flex:1,padding:"8px",background:tab==="why"?INK:"transparent",color:tab==="why"?"white":TAN,border:"1px solid "+(tab==="why"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+            <button onClick={()=>setTab("why")} style={{flex:1,padding:"8px 4px",background:tab==="why"?INK:"transparent",color:tab==="why"?"white":TAN,border:"1px solid "+(tab==="why"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
               Why I Built This
+            </button>
+            <button onClick={()=>setTab("problem")} style={{flex:1,padding:"8px 4px",background:tab==="problem"?INK:"transparent",color:tab==="problem"?"white":TAN,border:"1px solid "+(tab==="problem"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+              What It Solves
             </button>
           </div>
         </div>
 
         <div style={{padding:"16px 20px 40px"}}>
+          {tab==="problem"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,margin:"0 0 4px"}}>The actual friction each tab solves, in plain terms.</p>
+              {PROBLEM_SOLVED.map((p,i)=>(
+                <div key={i} style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 8px rgba(26,46,74,0.08)"}}>
+                  <div style={{background:p.color,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{fontSize:20,color:"white"}}>{p.icon}</span>
+                    <span style={{fontSize:16,color:"white",fontWeight:"bold",fontFamily:SERIF}}>{p.tab}</span>
+                  </div>
+                  <div style={{padding:"14px 16px"}}>
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,color:p.color,letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold",marginBottom:4,opacity:0.85}}>The problem I had</div>
+                      <p style={{fontSize:14,lineHeight:1.65,color:INK,margin:0}}>{p.problem}</p>
+                    </div>
+                    <div style={{marginBottom:12,padding:"10px 12px",background:p.color+"0D",borderLeft:"3px solid "+p.color,borderRadius:6}}>
+                      <div style={{fontSize:11,color:p.color,letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold",marginBottom:4,opacity:0.85}}>How this is helping</div>
+                      <p style={{fontSize:14,lineHeight:1.65,color:INK,margin:0}}>{p.helping}</p>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:13,color:TAN,fontStyle:"italic"}}>{p.temp}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {tab==="tabs"&&(
             <div>
               <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ What Each Tab Does</div>
