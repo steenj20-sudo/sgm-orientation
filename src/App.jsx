@@ -1,4 +1,4 @@
-// SGM Orientation v89 — Check In: free-speak box on Today tab, reads the loop (feeling + task tension), gives scripture + direct call to push through or rest + how to do it responsibly
+// SGM Orientation v91 — Check In Insights tab (pattern read + loop frequency + entry history); Field Notes persistence fix; Bible study + Field Notes pulled into Archive; Archive format overhauled with [DATE][TYPE] tags for Notion search
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -678,7 +678,7 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
   );
 }
 
-function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse}){
+function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse,checkIns,setCheckIns}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
   const [calLoading,setCalLoading]=useState(false);
@@ -712,6 +712,18 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
     try{
       const result=await claudeAPI(prompt,500);
       setCheckInResult(result);
+      const loopMatch=result.match(/THE LOOP:(.+?)(?=SCRIPTURE:|$)/si);
+      const callMatch=result.match(/THE CALL:(.+?)(?=HOW TO DO IT RIGHT:|$)/si);
+      const entry={
+        id:Date.now(),
+        date:new Date().toISOString().slice(0,10),
+        time:new Date().toISOString(),
+        input:checkInInput.trim(),
+        loop:loopMatch?loopMatch[1].trim():"",
+        call:callMatch?callMatch[1].trim():"",
+        full:result,
+      };
+      setCheckIns(p=>[entry,...(p||[])]);
     }catch(e){
       setCheckInResult("Couldn't reach Claude right now. Take a breath, name the loop yourself, and make the call.");
     }
@@ -719,7 +731,26 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   }
 
   function clearCheckIn(){
-    setCheckInInput("");setCheckInResult(null);setCheckInOpen(false);
+    setCheckInInput("");setCheckInResult(null);setCheckInOpen(false);setCheckInTab("today");
+  }
+
+  const [checkInTab,setCheckInTab]=useState("today");
+  const [insightResult,setInsightResult]=useState(null);
+  const [insightLoading,setInsightLoading]=useState(false);
+
+  async function generateInsight(){
+    if(!checkIns?.length)return;
+    setInsightLoading(true);setInsightResult(null);
+    const entries=checkIns.slice(0,20);
+    const summary=entries.map((e,i)=>`[${e.date}] You said: ${e.input}\nLoop: ${e.loop}\nCall: ${e.call}`).join("\n\n");
+    const prompt=`You are helping Joe Steen understand his own patterns across his recent Check In entries. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. His own frameworks: the Familiarity Trap (avoidance returns to a known comfortable mindset), the Future Self Reframe (act for the person you're becoming), and the insight that avoidance is avoiding the feeling, not the task.\n\nHere are his recent Check In entries (newest first):\n\n${summary}\n\nWrite a short, honest pattern read — 3-4 sentences max. Name the loop that keeps showing up most, when it tends to hit, and one honest observation about the pattern of his calls (push through vs rest). Don't be soft. Don't be a coach. Sound like a trusted friend who's been watching closely. Plain English, no filler.\n\nReturn only the pattern read. Nothing else.`;
+    try{
+      const result=await claudeAPI(prompt,300);
+      setInsightResult(result);
+    }catch(e){
+      setInsightResult("Couldn't reach Claude right now. Try again in a moment.");
+    }
+    setInsightLoading(false);
   }
   const [articleLoading,setArticleLoading]=useState(false);
   const [studyContent,setStudyContent]=useState(null);
@@ -1193,45 +1224,119 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       {mode==="day"&&(
         <div>
 
-          {/* CHECK-IN — free-speak loop reader */}
+          {/* CHECK-IN — free-speak loop reader with Insights tab */}
           <div style={{marginBottom:20}}>
             {!checkInOpen?(
-              <button onClick={()=>setCheckInOpen(true)}
+              <button onClick={()=>{setCheckInOpen(true);setCheckInTab("today");}}
                 style={{width:"100%",padding:"14px 16px",background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
                 <span style={{fontSize:20,color:OX}}>◉</span>
-                <div>
-                  <div style={{fontSize:15,color:INK,fontWeight:"bold"}}>What's going on right now?</div>
-                  <div style={{fontSize:13,color:TAN,marginTop:2}}>Say what you're feeling and what's on your plate. Get a straight read.</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:15,color:INK,fontWeight:"bold",fontFamily:SERIF}}>What's going on right now?</div>
+                  <div style={{fontSize:13,color:TAN,marginTop:2}}>Say what you're feeling and what's on your plate.</div>
                 </div>
+                {checkIns?.length>0&&<span style={{fontSize:12,color:OX,opacity:0.7,flexShrink:0}}>{checkIns.length} entries</span>}
               </button>
             ):(
-              <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,padding:"16px",animation:"fadeIn 0.25s ease"}}>
-                <div style={{fontSize:13,color:OX,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ Check In</div>
-                {!checkInResult&&(<>
-                  <textarea value={checkInInput} onChange={e=>setCheckInInput(e.target.value)} rows={4}
-                    placeholder="Just talk it out — how you're feeling, what you've got to do today..."
-                    style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
-                  <div style={{display:"flex",gap:8}}>
-                    <button onClick={processCheckIn} disabled={!checkInInput.trim()||checkInLoading}
-                      style={{flex:1,padding:"11px",background:checkInInput.trim()&&!checkInLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:checkInInput.trim()&&!checkInLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
-                      {checkInLoading?"Reading the loop...":"Read This"}
-                    </button>
-                    <button onClick={clearCheckIn} style={{padding:"11px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
+              <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,overflow:"hidden",animation:"fadeIn 0.25s ease"}}>
+                {/* Tab bar */}
+                <div style={{display:"flex",gap:6,padding:"12px 16px 10px",borderBottom:"1px solid "+FINK}}>
+                  <div style={{fontSize:13,color:OX,letterSpacing:"2px",textTransform:"uppercase",opacity:0.85,flex:1,display:"flex",alignItems:"center"}}>✦ Check In</div>
+                  <button onClick={()=>setCheckInTab("today")} style={{padding:"5px 12px",background:checkInTab==="today"?INK:"transparent",color:checkInTab==="today"?"white":TAN,border:"1px solid "+(checkInTab==="today"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:7}}>Today</button>
+                  <button onClick={()=>{setCheckInTab("insights");if(!insightResult&&checkIns?.length)generateInsight();}} style={{padding:"5px 12px",background:checkInTab==="insights"?INK:"transparent",color:checkInTab==="insights"?"white":TAN,border:"1px solid "+(checkInTab==="insights"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:7}}>Insights{checkIns?.length?` (${checkIns.length})`:""}</button>
+                  <button onClick={clearCheckIn} style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:18,padding:"0 2px",lineHeight:1}}>×</button>
+                </div>
+
+                {/* TODAY TAB */}
+                {checkInTab==="today"&&(
+                  <div style={{padding:"14px 16px 16px",animation:"fadeIn 0.2s ease"}}>
+                    {!checkInResult&&(<>
+                      <textarea value={checkInInput} onChange={e=>setCheckInInput(e.target.value)} rows={4}
+                        placeholder="Just talk it out — how you're feeling, what you've got to do today..."
+                        style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+                      <div style={{display:"flex",gap:8}}>
+                        <button onClick={processCheckIn} disabled={!checkInInput.trim()||checkInLoading}
+                          style={{flex:1,padding:"11px",background:checkInInput.trim()&&!checkInLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:checkInInput.trim()&&!checkInLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                          {checkInLoading?"Reading the loop...":"Read This"}
+                        </button>
+                      </div>
+                      {checkInLoading&&(
+                        <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0"}}>
+                          <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                          <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Naming the loop...</span>
+                        </div>
+                      )}
+                    </>)}
+                    {checkInResult&&(
+                      <div style={{animation:"fadeIn 0.3s ease"}}>
+                        <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{checkInResult}</p>
+                        <div style={{display:"flex",gap:8}}>
+                          <button onClick={()=>{setCheckInInput("");setCheckInResult(null);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Talk It Out Again</button>
+                          <button onClick={()=>{setCheckInTab("insights");if(!insightResult&&checkIns?.length)generateInsight();}} style={{padding:"9px 12px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>See Patterns</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {checkInLoading&&(
-                    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0"}}>
-                      <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-                      <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Naming the loop...</span>
-                    </div>
-                  )}
-                </>)}
-                {checkInResult&&(
-                  <div>
-                    <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{checkInResult}</p>
-                    <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>{setCheckInInput("");setCheckInResult(null);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Talk It Out Again</button>
-                      <button onClick={clearCheckIn} style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Close</button>
-                    </div>
+                )}
+
+                {/* INSIGHTS TAB */}
+                {checkInTab==="insights"&&(
+                  <div style={{padding:"14px 16px 16px",animation:"fadeIn 0.2s ease"}}>
+                    {!checkIns?.length?(
+                      <p style={{fontSize:15,color:TAN,fontStyle:"italic",textAlign:"center",padding:"20px 0"}}>No entries yet. Come back after your first Check In.</p>
+                    ):(<>
+                      {/* Stats row */}
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+                        {[
+                          ["Total",(checkIns||[]).length],
+                          ["Push Through",(checkIns||[]).filter(c=>/push/i.test(c.call)).length],
+                          ["Rest",(checkIns||[]).filter(c=>/rest/i.test(c.call)).length],
+                        ].map(([label,val])=>(
+                          <div key={label} style={{background:"rgba(245,240,232,0.8)",border:"1px solid "+FINK,borderRadius:8,padding:"10px 8px",textAlign:"center"}}>
+                            <div style={{fontSize:22,fontWeight:"bold",color:INK,fontFamily:SERIF,letterSpacing:"-0.5px"}}>{val}</div>
+                            <div style={{fontSize:11,color:TAN,textTransform:"uppercase",letterSpacing:"0.5px",marginTop:2}}>{label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pattern read */}
+                      {insightLoading&&(
+                        <div style={{display:"flex",alignItems:"center",gap:10,padding:"16px 0",justifyContent:"center"}}>
+                          <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                          <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Reading your patterns...</span>
+                        </div>
+                      )}
+                      {!insightResult&&!insightLoading&&(
+                        <button onClick={generateInsight} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid "+GOLD,color:GOLD,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:14}}>
+                          ✦ Generate Pattern Read
+                        </button>
+                      )}
+                      {insightResult&&!insightLoading&&(
+                        <div style={{background:INK,borderRadius:10,padding:"14px 16px",marginBottom:14,position:"relative",overflow:"hidden"}}>
+                          <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,background:"radial-gradient(circle,rgba(108,220,232,0.07),transparent 70%)",borderRadius:"50%"}}/>
+                          <div style={{fontSize:11,color:CYAN,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ Pattern Read — {checkIns.length} {checkIns.length===1?"entry":"entries"}</div>
+                          <p style={{fontSize:15,color:"white",lineHeight:1.75,margin:"0 0 10px",fontFamily:BODY}}>{insightResult}</p>
+                          <button onClick={generateInsight} style={{background:"transparent",border:"none",color:"rgba(255,255,255,0.35)",cursor:"pointer",fontFamily:BODY,fontSize:12,padding:0}}>Refresh ↻</button>
+                        </div>
+                      )}
+
+                      {/* Recent entries */}
+                      <div style={{fontSize:11,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ Recent Entries</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {(checkIns||[]).slice(0,8).map(entry=>{
+                          const isPush=/push/i.test(entry.call);
+                          const callColor=isPush?GRN:"#2E5B8A";
+                          return(
+                            <div key={entry.id} style={{background:"rgba(245,240,232,0.6)",border:"1px solid "+FINK,borderLeft:"3px solid "+callColor,borderRadius:8,padding:"10px 12px"}}>
+                              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                                <span style={{fontSize:11,color:callColor,fontWeight:"bold",letterSpacing:"1.5px",textTransform:"uppercase"}}>{isPush?"Push Through":"Rest"}</span>
+                                <span style={{fontSize:12,color:TAN}}>{entry.date}</span>
+                              </div>
+                              <p style={{fontSize:14,color:INK,lineHeight:1.55,margin:0}}>{entry.loop||entry.input?.slice(0,100)}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>)}
                   </div>
                 )}
               </div>
@@ -2321,7 +2426,19 @@ Here is my unload:
 
 function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,streaks}){
   const [view,setView]=useState("today");
-  const [joiceInputs,setJoeInputs]=useState({});
+  const [joiceInputs,setJoeInputs]=useState(()=>{
+    try{const s=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");const tk=new Date().toISOString().slice(0,10);return s[tk]||{};}catch(e){return{};}
+  });
+
+  // Save joiceInputs to localStorage keyed by date whenever they change
+  useEffect(()=>{
+    try{
+      const tk=new Date().toISOString().slice(0,10);
+      const saved=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");
+      saved[tk]=joiceInputs;
+      localStorage.setItem("sgm3-fieldnotes",JSON.stringify(saved));
+    }catch(e){}
+  },[joiceInputs]);
   const [copied,setCopied]=useState(false);
   const today=new Date().toISOString().slice(0,10);
   const tk=today;
@@ -2530,7 +2647,7 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
   );
 }
 
-function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,lastArchivedAt,setLastArchivedAt}){
+function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,checkIns,lastArchivedAt,setLastArchivedAt}){
   const [copied,setCopied]=useState(false);
   const [showFull,setShowFull]=useState(false);
   const now=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
@@ -2560,15 +2677,64 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,
 
   function genSection(forceFull){
     const L=[];
-    const filt=(arr)=>forceFull?arr:arr.filter(isNew);
+    const filt=(arr)=>forceFull?arr:(arr||[]).filter(isNew);
+    const tag=(date,type,content)=>`[${date}] [${type}] ${content}`;
 
-    // Tasks — completions since last archive (or full list of done tasks)
-    const allTasks=cats.flatMap(c=>c.tasks.map(t=>({...t,catLabel:c.label})));
+    // Check In
+    const newCheckIns=filt(checkIns||[]);
+    if(newCheckIns.length){
+      L.push("## CHECK IN");
+      newCheckIns.forEach(c=>{
+        L.push(tag(c.date,"CHECK IN",c.input));
+        if(c.loop)L.push(`  Loop: ${c.loop}`);
+        if(c.call)L.push(`  Call: ${c.call}`);
+      });
+      L.push("");
+    }
+
+    // Field Notes — read from localStorage keyed by date
+    try{
+      const allNotes=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");
+      const noteEntries=Object.entries(allNotes).sort((a,b)=>b[0].localeCompare(a[0]));
+      const newNotes=forceFull?noteEntries:noteEntries.filter(([date])=>{
+        if(!lastArchivedAt)return true;
+        return new Date(date).getTime()>=new Date(new Date(lastArchivedAt).toDateString()).getTime();
+      });
+      if(newNotes.length){
+        L.push("## FIELD NOTES");
+        newNotes.forEach(([date,note])=>{
+          if(note.fieldnote)L.push(tag(date,"FIELD NOTE",note.fieldnote));
+          if(note.stack)L.push(tag(date,"FIELD NOTE — STACK",note.stack));
+          if(note.pattern)L.push(tag(date,"FIELD NOTE — PATTERN",note.pattern));
+        });
+        L.push("");
+      }
+    }catch(e){}
+
+    // Bible Study — read from localStorage
+    try{
+      const allStudy=JSON.parse(localStorage.getItem("sgm3-bible-study")||"{}");
+      const studyEntries=Object.entries(allStudy).sort((a,b)=>b[0].localeCompare(a[0]));
+      const newStudy=forceFull?studyEntries:studyEntries.filter(([date])=>{
+        if(!lastArchivedAt)return true;
+        return new Date(date).getTime()>=new Date(new Date(lastArchivedAt).toDateString()).getTime();
+      });
+      if(newStudy.length){
+        L.push("## BIBLE STUDY");
+        newStudy.forEach(([date,s])=>{
+          if(s.ref)L.push(tag(date,"BIBLE STUDY",s.ref));
+          if(s.prayer)L.push(`  Prayer: ${s.prayer}`);
+          if(s.observation)L.push(`  Observation: ${s.observation}`);
+        });
+        L.push("");
+      }
+    }catch(e){}
+
+    // Tasks completed
     const newCompletions=filt(history);
     if(newCompletions.length){
-      L.push("TASKS COMPLETED");
-      L.push("------------------------------");
-      newCompletions.forEach(h=>L.push("["+h.date+"] check "+h.task+" ("+h.category+")"));
+      L.push("## TASKS COMPLETED");
+      newCompletions.forEach(h=>L.push(tag(h.date,"TASK",`${h.task} (${h.category})`)));
       L.push("");
     }
 
@@ -2576,64 +2742,52 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,
     const newPrayers=filt(prayers.filter(p=>!p.answered));
     const newAnswered=filt(prayers.filter(p=>p.answered));
     if(newPrayers.length){
-      L.push("NEW PRAYERS");
-      L.push("------------------------------");
-      newPrayers.forEach(p=>L.push("["+p.dateAdded+"] * "+p.name+" ("+p.relationship+") — "+p.request));
+      L.push("## PRAYERS");
+      newPrayers.forEach(p=>L.push(tag(p.dateAdded||"—","PRAYER",`${p.name} (${p.relationship}) — ${p.request}`)));
       L.push("");
     }
     if(newAnswered.length){
-      L.push("ANSWERED PRAYERS");
-      L.push("------------------------------");
-      newAnswered.forEach(p=>L.push("["+p.answeredDate+"] check "+p.name+" — "+p.request));
+      L.push("## ANSWERED PRAYERS");
+      newAnswered.forEach(p=>L.push(tag(p.answeredDate||"—","ANSWERED",`${p.name} — ${p.request}`)));
       L.push("");
     }
 
-    // Identity / Library
+    // Identity deposits
     const newLib=filt(library);
     if(newLib.length){
-      L.push("IDENTITY DEPOSITS");
-      L.push("------------------------------");
-      newLib.forEach(p=>L.push("["+p.date+"] ("+p.category+") "+p.principle+(p.scripture?" — \""+p.scripture+"\" "+(p.scriptureRef||""):"")));
+      L.push("## IDENTITY DEPOSITS");
+      newLib.forEach(p=>L.push(tag(p.date,"IDENTITY: "+p.category.toUpperCase(),p.principle+(p.scripture?` — "${p.scripture}" ${p.scriptureRef||""}`:""))));
       L.push("");
     }
 
     // Shelf
     const newShelf=filt(shelf||[]);
     if(newShelf.length){
-      L.push("SHELF — CAPTURED");
-      L.push("------------------------------");
-      newShelf.forEach(s=>L.push("["+s.dateAdded+"] "+s.label+" ("+s.timeframe+")"));
+      L.push("## SHELF");
+      newShelf.forEach(s=>L.push(tag(s.dateAdded||"—","SHELF",`${s.label} (${s.timeframe})`)));
       L.push("");
     }
 
-    // Let's Talk — group by section
+    // Let's Talk
     const lt=letstalk||[];
     const ltNew=filt(lt);
     if(ltNew.length){
-      const bySection={};
+      L.push("## LET'S TALK");
       ltNew.forEach(c=>{
-        const key=c.section==="deeper"?"Going Deeper":c.section==="people"?"People I Know":(LT_SECTIONS.find(s=>s.id===c.section)?.label||c.section);
-        if(!bySection[key])bySection[key]=[];
-        bySection[key].push(c);
+        const sectionLabel=c.section==="deeper"?"GOING DEEPER":c.section==="people"?"PEOPLE I KNOW":(LT_SECTIONS.find(s=>s.id===c.section)?.label||c.section).toUpperCase();
+        L.push(tag(c.date,`LET'S TALK: ${sectionLabel}`,c.topic));
+        if(c.position)L.push(`  Position: ${c.position}`);
+        if(c.wiring)L.push(`  Wiring: ${c.wiring}`);
+        if(c.friction)L.push(`  Friction: ${c.friction}`);
+        if(c.bestway)L.push(`  How to love well: ${c.bestway}`);
+        if(c.insight)L.push(`  Insight: ${c.insight}`);
+        if(c.scripture)L.push(`  Scripture: ${c.scripture}`);
+        if(c.inwords)L.push(`  In Joe's Words: ${c.inwords}`);
       });
-      Object.entries(bySection).forEach(([label,items])=>{
-        L.push("LET'S TALK — "+label.toUpperCase());
-        L.push("------------------------------");
-        items.forEach(c=>{
-          L.push("["+c.date+"] "+c.topic);
-          if(c.position)L.push("  Position: "+c.position);
-          if(c.wiring)L.push("  Wiring: "+c.wiring);
-          if(c.friction)L.push("  Friction: "+c.friction);
-          if(c.bestway)L.push("  How to love well: "+c.bestway);
-          if(c.insight)L.push("  Insight: "+c.insight);
-          if(c.scripture)L.push("  Scripture: "+c.scripture);
-          if(c.inwords)L.push("  In Joe's Words: "+c.inwords);
-        });
-        L.push("");
-      });
+      L.push("");
     }
 
-    // People I Know — new conversation log entries (nested, may not be "new" at card level)
+    // People I Know conversation logs
     const peopleCards=lt.filter(c=>c.section==="people"&&c.conversationLog?.length);
     const newLogLines=[];
     peopleCards.forEach(card=>{
@@ -2642,24 +2796,22 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,
         return t?t>lastArchivedAt:false;
       });
       newEntries.forEach(e=>{
-        newLogLines.push("["+e.date+"] "+card.topic+" ("+e.tone+"): "+e.notes);
+        newLogLines.push(tag(e.date,`PEOPLE: ${card.topic}`,`(${e.tone}) ${e.notes}`));
       });
     });
     if(newLogLines.length){
-      L.push("PEOPLE I KNOW — CONVERSATIONS LOGGED");
-      L.push("------------------------------");
+      L.push("## PEOPLE I KNOW — CONVERSATIONS");
       newLogLines.forEach(l=>L.push(l));
       L.push("");
     }
 
-    // Habit streaks — only meaningful as current-state snapshot, always include if requested full
+    // Habits — full snapshot only
     if(forceFull){
-      const tk=new Date().toISOString().slice(0,10);
-      const th=habits[tk]||{};
-      L.push("HABIT STREAKS (current)");
-      L.push("------------------------------");
-      L.push("Today: "+Object.values(th).filter(Boolean).length+" completed");
-      Object.entries(streaks).forEach(([id,s])=>{if(s.count>1)L.push("  "+id+": "+s.count+" day streak");});
+      const tk2=new Date().toISOString().slice(0,10);
+      const th=habits[tk2]||{};
+      L.push("## HABITS (current snapshot)");
+      L.push(tag(tk2,"HABITS",Object.values(th).filter(Boolean).length+" completed today"));
+      Object.entries(streaks).forEach(([id,s])=>{if(s.count>1)L.push(`  ${id}: ${s.count} day streak`);});
       L.push("");
     }
 
@@ -2668,18 +2820,21 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,
 
   function gen(forceFull){
     const L=[];
-    L.push("SGM LIFE ORIENTATION — "+(forceFull?"FULL SNAPSHOT":"ARCHIVE — NEW SINCE "+(lastDate?lastDate.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"BEGINNING")));
-    L.push("Generated: "+now);
+    const now2=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+    L.push("# SGM LIFE ORIENTATION — "+(forceFull?"FULL SNAPSHOT":"ARCHIVE"));
+    L.push(`Generated: ${now2}`);
+    if(!forceFull&&lastDate)L.push(`New since: ${lastDate.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}`);
     L.push("================================================");
+    L.push("Search tip: use [TYPE] keywords e.g. [IDENTITY] [CHECK IN] [PRAYER] [PEOPLE: Name]");
     L.push("");
     const body=genSection(forceFull);
     if(!body.length){
-      L.push("Nothing new since your last archive. Nothing to file.");
+      L.push("Nothing new since your last archive.");
     }else{
       L.push(...body);
     }
     L.push("================================================");
-    L.push("End of Archive — Paste into Kingdom Notebook");
+    L.push("End of Archive — Paste into Kingdom Notebook > SGM Daily Archive");
     return L.join("\n");
   }
 
@@ -2704,7 +2859,7 @@ function ArchiveTab({cats,library,prayers,habits,streaks,history,shelf,letstalk,
       <p style={{fontSize:13,color:TAN,marginBottom:20}}>{lastArchivedAt?"Last archived: "+new Date(lastArchivedAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"Never archived yet — everything below is new."}</p>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
-        {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Shelf",(shelf||[]).length],["Let's Talk",(letstalk||[]).length]].map(([label,val])=>(
+        {[["Tasks",doneCount+"/"+taskCount],["Prayers",prayers.filter(p=>!p.answered).length],["Answered",prayers.filter(p=>p.answered).length],["Principles",library.length],["Shelf",(shelf||[]).length],["Let's Talk",(letstalk||[]).length],["Check Ins",(checkIns||[]).length]].map(([label,val])=>(
           <div key={label} style={{padding:"12px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:"bold",color:INK,letterSpacing:"-0.5px"}}>{val}</div>
             <div style={{fontSize:13,color:TAN,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>{label}</div>
@@ -4120,6 +4275,7 @@ export default function App(){
   const [planner,setPlanner]=useState({});
   const [shelf,setShelf]=useState([]);
   const [letstalk,setLetstalk]=useState([]);
+  const [checkIns,setCheckIns]=useState([]);
   const [showSnapshot,setShowSnapshot]=useState(false);
   const [showCompleted,setShowCompleted]=useState({});
   const [lastArchivedAt,setLastArchivedAt]=useState(null);
@@ -4155,6 +4311,7 @@ export default function App(){
       try{const r=localStorage.getItem("sgm3-planner");if(r)setPlanner(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-shelf");if(r)setShelf(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-letstalk");if(r)setLetstalk(JSON.parse(r));}catch(e){}
+      try{const r=localStorage.getItem("sgm3-checkins");if(r)setCheckIns(JSON.parse(r));}catch(e){}
       try{const r=localStorage.getItem("sgm3-last-archived");if(r)setLastArchivedAt(JSON.parse(r));}catch(e){}
       setLoaded(true);
     }
@@ -4174,6 +4331,7 @@ export default function App(){
       try{localStorage.setItem("sgm3-planner",JSON.stringify(planner));}catch(e){}
       try{localStorage.setItem("sgm3-shelf",JSON.stringify(shelf));}catch(e){}
       try{localStorage.setItem("sgm3-letstalk",JSON.stringify(letstalk));}catch(e){}
+      try{localStorage.setItem("sgm3-checkins",JSON.stringify(checkIns));}catch(e){}
       try{localStorage.setItem("sgm3-last-archived",JSON.stringify(lastArchivedAt));}catch(e){}
       try{
         const todayKey=new Date().toISOString().slice(0,10);
@@ -4183,7 +4341,7 @@ export default function App(){
       }catch(e){}
     },800);
     return()=>clearTimeout(timer);
-  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,letstalk,lastArchivedAt,loaded]);
+  },[cats,history,library,habits,customHabits,streaks,prayers,planner,shelf,stack,letstalk,checkIns,lastArchivedAt,loaded]);
 
   // Stack daily reset
   useEffect(()=>{
@@ -4434,7 +4592,7 @@ export default function App(){
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
-        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse}/>}
+        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse} checkIns={checkIns} setCheckIns={setCheckIns}/>}
 
         {view==="history"&&(
           <FieldNotesTab
@@ -4468,7 +4626,7 @@ export default function App(){
         )}
 
         {view==="library"&&<LibraryTab library={library} setLibrary={setLibrary}/>}
-        {view==="archive"&&<ArchiveTab cats={cats} library={library} prayers={prayers} habits={habits} streaks={streaks} history={history} shelf={shelf} letstalk={letstalk} lastArchivedAt={lastArchivedAt} setLastArchivedAt={setLastArchivedAt}/>}
+        {view==="archive"&&<ArchiveTab cats={cats} library={library} prayers={prayers} habits={habits} streaks={streaks} history={history} shelf={shelf} letstalk={letstalk} checkIns={checkIns} lastArchivedAt={lastArchivedAt} setLastArchivedAt={setLastArchivedAt}/>}
         {view==="letstalk"&&<LetsTalkTab letstalk={letstalk} setLetstalk={setLetstalk}/>}
 
       </div>
