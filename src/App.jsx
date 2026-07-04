@@ -1,4 +1,4 @@
-// SGM Orientation v91 — Check In Insights tab (pattern read + loop frequency + entry history); Field Notes persistence fix; Bible study + Field Notes pulled into Archive; Archive format overhauled with [DATE][TYPE] tags for Notion search
+// SGM Orientation v92 — Word tab title/description updated to reflect full scope; Quick Reference and What It Solves updated to match
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -4046,7 +4046,7 @@ const WHERE_GUIDE_TABS=[
   {tab:"Habits",icon:"✓",desc:"Daily checklist that resets every day. Vitamins, prayer, stretching — the small stuff."},
   {tab:"Map",icon:"◎",desc:"Your life areas — Faith, Family, SGM, Health, etc. Projects and tasks live here."},
   {tab:"Shelf",icon:"⊡",desc:"Quick capture for anything you don't want to deal with right now. Also has the SGM Guides (RTB, IDF, GLF)."},
-  {tab:"Word",icon:"✦",desc:"Scripture for specific struggles — perfectionism, shame, fear, and so on."},
+  {tab:"Word",icon:"✦",desc:"Your personal scripture library — verses for specific struggles, the ones that have carried you through, and the ones you're memorizing. Browse by category or pull up exactly what you need in the moment."},
   {tab:"Identity",icon:"☰",desc:"Where the real battle gets tracked. Deposit a principle when God shows you something about a pattern."},
   {tab:"Prayer",icon:"+",desc:"People and requests you're carrying. Mark answered prayers as a testimony log."},
   {tab:"Field Notes",icon:"◷",desc:"End-of-day honest reflection. The Stack, completions, one paragraph about today."},
@@ -4116,9 +4116,9 @@ const PROBLEM_SOLVED=[
   },
   {
     tab:"Word",icon:"✦",color:OX,
-    problem:"I'd know I needed scripture for a specific struggle — shame, fear, perfectionism — but couldn't always find the right verse in the moment.",
-    helping:"Scripture organized by the actual roadblock, not just by book and chapter. When the struggle hits, the right word is already waiting.",
-    temp:"Steadying. Feels like having ammunition ready instead of searching for it mid-fight."
+    problem:"I'd know scripture existed for what I was going through — a roadblock, a pattern, a moment of fear — but couldn't always find the right verse when I actually needed it. And the verses that have personally meant the most to me were scattered everywhere.",
+    helping:"One place for all of it — verses organized by what they speak to, the ones I've personally held onto, and space to note what each one has meant to me. When something hits, I can find the right word fast instead of searching.",
+    temp:"Grounding. Feels like having the right ammunition already loaded."
   },
   {
     tab:"Identity",icon:"☰",color:OX,
@@ -4609,8 +4609,8 @@ export default function App(){
 
         {view==="scripture"&&(
           <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
-            <SL>Scripture for the Roadblocks</SL>
-            <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Every pattern has a word from God to counter it.</p>
+            <SL>The Word</SL>
+            <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Your personal scripture library — verses for the roadblocks, the ones that have carried you, and the ones you're working to hold onto. Organized the way you need them, ready when you do.</p>
 
             {/* Manual scripture add */}
             <ManualScriptureAdd/>
