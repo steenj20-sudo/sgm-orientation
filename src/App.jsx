@@ -1,4 +1,4 @@
-// SGM Orientation v95 — Week tab split into three tabs: Morning (image, Bible, Check In open), Today (stats, focus, calendar front-and-center), This Week (unchanged)
+// SGM Orientation v96 — AppInsights on Morning tab (reads across all tabs, Claude-generated), Daily Workflow as 4th tab in ? overlay with numbered steps and encouragement line
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -301,6 +301,94 @@ function DailyMsg({cats,habits,prayers,streaks}){
     </div>
   );
 }
+
+function AppInsights({cats,library,prayers,checkIns,letstalk,shelf,habits}){
+  const [insight,setInsight]=useState(null);
+  const [loading,setLoading]=useState(false);
+  const tk=new Date().toISOString().slice(0,10);
+  const th=habits[tk]||{};
+  const habitDone=Object.values(th).filter(Boolean).length;
+  const totalHabits=HABITS.length;
+  const thisWeek=new Date();thisWeek.setDate(thisWeek.getDate()-7);
+  const weekStr=thisWeek.toISOString().slice(0,10);
+
+  // Build a rich data picture across all tabs
+  function buildContext(){
+    const lines=[];
+    // Identity
+    const recentLib=library.filter(p=>p.date&&p.date>=weekStr);
+    lines.push(`Identity deposits this week: ${recentLib.length} (total: ${library.length})`);
+    if(recentLib.length)lines.push(`Latest principle: "${recentLib[0]?.principle?.slice(0,80)}"`);
+    // Prayer
+    const activePrayers=prayers.filter(p=>!p.answered);
+    const answeredPrayers=prayers.filter(p=>p.answered);
+    lines.push(`Active prayers: ${activePrayers.length}. Answered: ${answeredPrayers.length}.`);
+    // Habits
+    lines.push(`Habits today: ${habitDone}/${totalHabits}`);
+    // Check In
+    const recentCI=(checkIns||[]).slice(0,10);
+    const pushCount=recentCI.filter(c=>/push/i.test(c.call)).length;
+    const restCount=recentCI.filter(c=>/rest/i.test(c.call)).length;
+    if(recentCI.length)lines.push(`Last ${recentCI.length} Check Ins: push through ${pushCount}x, rest ${restCount}x`);
+    if(recentCI[0]?.loop)lines.push(`Most recent loop: "${recentCI[0].loop.slice(0,80)}"`);
+    // Let's Talk
+    const lt=letstalk||[];
+    const deeperCards=lt.filter(c=>c.section==="deeper");
+    const peopleCards=lt.filter(c=>c.section==="people");
+    const topicCards=lt.filter(c=>c.section!=="deeper"&&c.section!=="people");
+    lines.push(`Let's Talk: ${topicCards.length} topic cards, ${deeperCards.length} Going Deeper entries, ${peopleCards.length} people tracked`);
+    // Shelf
+    lines.push(`Shelf: ${(shelf||[]).length} items captured`);
+    // Tasks
+    const allTasks=cats.flatMap(c=>c.tasks);
+    const done=allTasks.filter(t=>t.done).length;
+    lines.push(`Tasks: ${done} done, ${allTasks.length-done} open`);
+    return lines.join("\n");
+  }
+
+  async function generate(){
+    setLoading(true);setInsight(null);
+    const ctx=buildContext();
+    const prompt=`You are giving Joe Steen a brief, honest read of what his SGM Orientation app is actually doing for him right now — not generic encouragement, but a real picture based on his actual data. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. Anchor verse: Proverbs 3:5-6.\n\nHere is his current app data:\n${ctx}\n\nWrite 3-4 sentences that:\n1. Name 2-3 specific things the app is actually tracking or showing about his life right now\n2. Name one honest observation or pattern worth his attention\n3. End with one short, grounded forward sentence — not a pep talk, just what\u2019s next\n\nPlain English. No filler. No "great job." Sound like a trusted friend reading the data alongside him.`;
+    try{
+      const result=await claudeAPI(prompt,400);
+      setInsight(result);
+    }catch(e){
+      setInsight("Couldn't reach Claude right now. But the data is here — open any tab and the work continues.");
+    }
+    setLoading(false);
+  }
+
+  return(
+    <div style={{marginBottom:20,background:INK,borderRadius:10,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
+      <div style={{padding:"14px 16px 12px"}}>
+        <div style={{fontSize:11,color:CYAN,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ What Your App Is Doing Right Now</div>
+        {!insight&&!loading&&(
+          <button onClick={generate}
+            style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+CYAN+"60",color:CYAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+            Get Today's Read
+          </button>
+        )}
+        {loading&&(
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:14,height:14,borderRadius:"50%",border:"2px solid "+CYAN,borderTopColor:"transparent",animation:"spin 0.8s linear infinite",flexShrink:0}}/>
+            <span style={{fontSize:15,fontStyle:"italic",color:"rgba(255,255,255,0.5)"}}>Reading across your tabs…</span>
+          </div>
+        )}
+        {insight&&!loading&&(
+          <p style={{fontSize:15,lineHeight:1.85,color:"rgba(255,255,255,0.88)",margin:0,fontFamily:BODY}}>{insight}</p>
+        )}
+      </div>
+      {insight&&(
+        <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+          <button onClick={()=>setInsight(null)} style={{flex:1,padding:"9px",background:"transparent",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer",fontFamily:BODY,fontSize:12}}>Clear</button>
+          <button onClick={generate} style={{flex:1,padding:"9px",background:"transparent",border:"none",borderLeft:"1px solid rgba(255,255,255,0.08)",color:CYAN,cursor:"pointer",fontFamily:BODY,fontSize:12}}>↺ Refresh</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function ProjectScreen({task,cat,onBack,onUpdate}){
   const [pasteMode,setPasteMode]=useState(!task.steps||!task.steps.length);
@@ -679,7 +767,7 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
   );
 }
 
-function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse,checkIns,setCheckIns}){
+function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse,checkIns,setCheckIns,library,letstalk}){
   const [mode,setMode]=useState("day");
   const [calEvents,setCalEvents]=useState([]);
   const [calLoading,setCalLoading]=useState(false);
@@ -1267,6 +1355,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               {!studyContent&&!studyLoading&&(<button onClick={()=>generateStudy(todayVerse.v,todayVerse.r)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Generate Study</button>)}
             </div>)}
           </div>
+          <AppInsights cats={cats} library={library||[]} prayers={prayers} checkIns={checkIns||[]} letstalk={letstalk||[]} shelf={shelf||[]} habits={habits}/>
           <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,overflow:"hidden",animation:"fadeIn 0.25s ease",marginBottom:20}}>
             <div style={{display:"flex",gap:6,padding:"12px 16px 10px",borderBottom:"1px solid "+FINK}}>
               <div style={{fontSize:13,color:OX,letterSpacing:"2px",textTransform:"uppercase",opacity:0.85,flex:1,display:"flex",alignItems:"center"}}>✦ Check In</div>
@@ -4009,6 +4098,15 @@ const PROBLEM_SOLVED=[
 ];
 
 
+const DAILY_WORKFLOW=[
+  {time:"Morning",icon:"◉",color:OX,steps:["Open Morning tab — read Yesterday's Recap","Load Image of the Day","Read Today's Anchor verse, tap to open the study","Respond with your prayer and observation","Check In — talk out how you're feeling and what's ahead","Tap 'Get Today's Read' to see what your app is tracking"]},
+  {time:"Through the Day",icon:"◈",color:"#2E5B8A",steps:["Something happens with a person → People I Know (Let's Talk)","Hear something that sticks → Going Deeper (Let's Talk)","Task or idea that can wait → Shelf","Wrestling with a pattern → Identity deposit","Someone needs prayer → Prayer tab","Feeling off or stuck → Check In on Morning tab"]},
+  {time:"Today Tab",icon:"◎",color:GRN,steps:["Set your Morning Thought and Today's Focus","Check your calendar — add anything that belongs there","Work from the task list in Map","Log completions as you go"]},
+  {time:"Evening",icon:"✦",color:GOLD,steps:["Evening Reflection in Today tab — one honest sentence","Open Archive — tap Copy, paste into Notion Kingdom Notebook","That's it. You're done."]},
+];
+
+const WORKFLOW_ENCOURAGEMENT="This app works when you use it like a companion, not a system. You don't have to do it perfectly. Open it, put something in, close it. That's the whole thing.";
+
 function WhereGuideOverlay({onClose}){
   const [tab,setTab]=useState("tabs");
   return(
@@ -4017,18 +4115,21 @@ function WhereGuideOverlay({onClose}){
       <div onClick={e=>e.stopPropagation()} style={{background:PAPER,width:"100%",maxWidth:700,maxHeight:"82vh",borderRadius:"16px 16px 0 0",overflowY:"auto",animation:"fadeIn 0.25s ease"}}>
         <div style={{position:"sticky",top:0,background:PAPER,borderBottom:"1px solid "+FINK,padding:"16px 20px 12px",zIndex:1}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div style={{fontFamily:SERIF,fontSize:20,fontWeight:700,color:INK}}>{tab==="tabs"?"Quick Reference":"Why I Built This"}</div>
+            <div style={{fontFamily:SERIF,fontSize:20,fontWeight:700,color:INK}}>{tab==="tabs"?"Quick Reference":tab==="why"?"Why I Built This":tab==="workflow"?"Daily Workflow":"What It Solves"}</div>
             <button onClick={onClose} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
           </div>
-          <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"8px 4px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-              Quick Reference
+          <div style={{display:"flex",gap:4}}>
+            <button onClick={()=>setTab("tabs")} style={{flex:1,padding:"7px 3px",background:tab==="tabs"?INK:"transparent",color:tab==="tabs"?"white":TAN,border:"1px solid "+(tab==="tabs"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8,letterSpacing:"0.3px"}}>
+              Quick Ref
             </button>
-            <button onClick={()=>setTab("why")} style={{flex:1,padding:"8px 4px",background:tab==="why"?INK:"transparent",color:tab==="why"?"white":TAN,border:"1px solid "+(tab==="why"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-              Why I Built This
+            <button onClick={()=>setTab("why")} style={{flex:1,padding:"7px 3px",background:tab==="why"?INK:"transparent",color:tab==="why"?"white":TAN,border:"1px solid "+(tab==="why"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8,letterSpacing:"0.3px"}}>
+              Why Built
             </button>
-            <button onClick={()=>setTab("problem")} style={{flex:1,padding:"8px 4px",background:tab==="problem"?INK:"transparent",color:tab==="problem"?"white":TAN,border:"1px solid "+(tab==="problem"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-              What It Solves
+            <button onClick={()=>setTab("problem")} style={{flex:1,padding:"7px 3px",background:tab==="problem"?INK:"transparent",color:tab==="problem"?"white":TAN,border:"1px solid "+(tab==="problem"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8,letterSpacing:"0.3px"}}>
+              What Solves
+            </button>
+            <button onClick={()=>setTab("workflow")} style={{flex:1,padding:"7px 3px",background:tab==="workflow"?INK:"transparent",color:tab==="workflow"?"white":TAN,border:"1px solid "+(tab==="workflow"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8,letterSpacing:"0.3px"}}>
+              Daily Flow
             </button>
           </div>
         </div>
@@ -4086,6 +4187,31 @@ function WhereGuideOverlay({onClose}){
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+          {tab==="workflow"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.65,margin:0}}>The daily rhythm — morning to evening. Use this to re-enter after a few days away.</p>
+              {DAILY_WORKFLOW.map((block,i)=>(
+                <div key={i} style={{background:"white",borderRadius:10,overflow:"hidden",boxShadow:"0 2px 8px rgba(26,46,74,0.06)"}}>
+                  <div style={{background:block.color,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:15,color:"white"}}>{block.icon}</span>
+                    <span style={{fontSize:12,color:"white",letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold",opacity:0.95}}>{block.time}</span>
+                  </div>
+                  <div style={{padding:"10px 14px 12px"}}>
+                    {block.steps.map((step,j)=>(
+                      <div key={j} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:j<block.steps.length-1?8:0}}>
+                        <div style={{width:18,height:18,borderRadius:"50%",border:"1px solid "+block.color,color:block.color,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,fontWeight:"bold"}}>{j+1}</div>
+                        <span style={{fontSize:14,color:INK,lineHeight:1.55,fontFamily:BODY}}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div style={{background:INK,borderRadius:10,padding:"16px",marginTop:4}}>
+                <div style={{fontSize:11,color:CYAN,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.85}}>✦ Remember</div>
+                <p style={{fontSize:15,color:"rgba(255,255,255,0.85)",lineHeight:1.8,margin:0,fontFamily:BODY,fontStyle:"italic"}}>{WORKFLOW_ENCOURAGEMENT}</p>
               </div>
             </div>
           )}
@@ -4448,7 +4574,7 @@ export default function App(){
         {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
-        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse} checkIns={checkIns} setCheckIns={setCheckIns}/>}
+        {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse} checkIns={checkIns} setCheckIns={setCheckIns} library={library} letstalk={letstalk}/>}
 
         {view==="history"&&(
           <FieldNotesTab
