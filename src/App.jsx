@@ -1,4 +1,4 @@
-// SGM Orientation v93 — Word tab full rebuild: unified verse library, color-coded category cards, Browse/By Category modes, Claude-powered card builder, personal notes per verse, expanded sheet overlay
+// SGM Orientation v94 — hotfix: CYAN constant was undefined causing blank screen crash
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -20,6 +20,7 @@ const GRN = "#1A5C2A";
 const AMB = "#7A5200";
 const PUR = "#4A3A7A";
 const FINK = "rgba(26,46,74,0.12)";
+const CYAN = "#6DDCE8";
 const OXF = "rgba(122,31,31,0.07)";
 const BODY = "'Inter',system-ui,sans-serif";
 const SERIF = "Georgia,'Playfair Display',serif";
