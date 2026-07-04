@@ -1,4 +1,4 @@
-// SGM Orientation v92 — Word tab title/description updated to reflect full scope; Quick Reference and What It Solves updated to match
+// SGM Orientation v93 — Word tab full rebuild: unified verse library, color-coded category cards, Browse/By Category modes, Claude-powered card builder, personal notes per verse, expanded sheet overlay
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -3140,74 +3140,303 @@ function GuidesSection(){
   );
 }
 
-function ManualScriptureAdd(){
-  const [open,setOpen]=useState(false);
-  const [verses,setVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm3-manual-verses")||"[]");}catch(e){return[];}});
-  const [form,setForm]=useState({label:"",verse:"",ref:""});
+const WORD_CATS=[
+  {id:"warfare",label:"Warfare",icon:"⚑",color:OX},
+  {id:"identity",label:"Identity",icon:"♡",color:"#7A4F6A"},
+  {id:"rest",label:"Rest",icon:"◈",color:"#2E5B8A"},
+  {id:"faith",label:"Faith",icon:"◎",color:GRN},
+  {id:"surrender",label:"Surrender",icon:"✦",color:GOLD},
+  {id:"relationships",label:"Relationships",icon:"⊕",color:"#B8700A"},
+  {id:"purpose",label:"Purpose",icon:"◉",color:CYAN},
+];
+
+// Migrate legacy SCVS roadblock verses into the new unified pool
+const SCVS_MIGRATED=[
+  {id:"scvs-shame",verse:"There is now no condemnation for those who are in Christ Jesus.",ref:"Romans 8:1",category:"warfare",note:"The shutdown command for condemnation. Present tense — already decided."},
+  {id:"scvs-unknown",verse:"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",ref:"Proverbs 3:5-6",category:"identity",note:"The verse for every moment of over-reliance on your own understanding. The pathway verse."},
+  {id:"scvs-scarcity",verse:"My God will meet all your needs according to the riches of his glory in Christ Jesus.",ref:"Philippians 4:19",category:"faith",note:"For the scarcity mindset. Not some needs — all needs. His riches, not yours."},
+  {id:"scvs-procrastination",verse:"Whatever you do, work at it with all your heart, as working for the Lord.",ref:"Colossians 3:23",category:"purpose",note:"Reframes any task as an act of worship. Changes who you're working for."},
+  {id:"scvs-time",verse:"Teach us to number our days, that we may gain a heart of wisdom.",ref:"Psalm 90:12",category:"surrender",note:"For seasons of feeling like time is running out. Wisdom starts with acknowledging it's finite."},
+  {id:"scvs-perfectionism",verse:"She is clothed with strength and dignity; she can laugh at the days to come.",ref:"Proverbs 31:25",category:"identity",note:"Perfectionism is fear of the future. This verse laughs at it."},
+];
+
+function WordTab(){
+  const [userVerses,setUserVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm3-manual-verses")||"[]");}catch(e){return[];}});
+  const [mode,setMode]=useState("browse"); // browse | category
+  const [activeCat,setActiveCat]=useState("all");
+  const [expandedId,setExpandedId]=useState(null);
+  const [addOpen,setAddOpen]=useState(false);
+  const [addInput,setAddInput]=useState("");
+  const [addLoading,setAddLoading]=useState(false);
+  const [builtCard,setBuiltCard]=useState(null);
+  const [editingNote,setEditingNote]=useState({});
   const [copied,setCopied]=useState(null);
 
-  function save(){
-    if(!form.verse.trim()||!form.ref.trim())return;
-    const updated=[{id:"mv"+Date.now(),label:form.label||form.ref,...form},...verses];
-    setVerses(updated);
-    localStorage.setItem("sgm3-manual-verses",JSON.stringify(updated));
-    setForm({label:"",verse:"",ref:""});
-    setOpen(false);
-  }
+  // Unified verse pool — migrated SCVS + user verses
+  const allVerses=[...SCVS_MIGRATED,...userVerses];
 
-  function remove(id){
-    const updated=verses.filter(v=>v.id!==id);
-    setVerses(updated);
+  function saveVerses(updated){
+    setUserVerses(updated);
     localStorage.setItem("sgm3-manual-verses",JSON.stringify(updated));
   }
 
-  function copy(v){
+  async function buildCard(){
+    if(!addInput.trim())return;
+    setAddLoading(true);setBuiltCard(null);
+    const prompt=`You are helping Joe Steen add a verse to his personal scripture library. He is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. His anchor verse is Proverbs 3:5-6.\n\nHe typed: "${addInput}"\n\nDo the following:\n1. Identify the full verse text if he only gave a reference, or confirm the text if he gave it\n2. Confirm the exact reference (book chapter:verse)\n3. Assign ONE category from this list: warfare, identity, rest, faith, surrender, relationships, purpose\n4. Write a SHORT honest note (1-2 sentences max) about what this verse speaks to — in plain English, from Joe's perspective, not generic\n\nRespond ONLY in this exact format, nothing else:\nVERSE: [full verse text, no quotes]\nREF: [Book chapter:verse]\nCATEGORY: [one word from the list]\nNOTE: [1-2 sentence note]`;
+    try{
+      const result=await claudeAPI(prompt,300);
+      const get=(key)=>{const m=result.match(new RegExp(key+":(.+?)(?=\\n[A-Z]+:|$)","si"));return m?m[1].trim():"";};
+      const cat=get("CATEGORY").toLowerCase().trim();
+      setBuiltCard({
+        verse:get("VERSE"),
+        ref:get("REF"),
+        category:WORD_CATS.find(c=>c.id===cat)?cat:"faith",
+        note:get("NOTE"),
+      });
+    }catch(e){
+      setBuiltCard({verse:addInput,ref:"",category:"faith",note:""});
+    }
+    setAddLoading(false);
+  }
+
+  function saveBuiltCard(){
+    if(!builtCard?.verse)return;
+    const entry={id:"mv"+Date.now(),...builtCard,userNote:""};
+    saveVerses([entry,...userVerses]);
+    setBuiltCard(null);setAddInput("");setAddOpen(false);
+  }
+
+  function removeVerse(id){
+    if(SCVS_MIGRATED.find(v=>v.id===id))return; // can't delete built-ins
+    saveVerses(userVerses.filter(v=>v.id!==id));
+    setExpandedId(null);
+  }
+
+  function copyVerse(v){
     navigator.clipboard?.writeText(`"${v.verse}" — ${v.ref}`).then(()=>{setCopied(v.id);setTimeout(()=>setCopied(null),2000);});
   }
 
+  function saveNote(id,text){
+    const isUser=userVerses.find(v=>v.id===id);
+    if(isUser){
+      saveVerses(userVerses.map(v=>v.id===id?{...v,userNote:text}:v));
+    }
+    setEditingNote(p=>({...p,[id]:undefined}));
+  }
+
+  const catCounts=WORD_CATS.reduce((a,c)=>{a[c.id]=allVerses.filter(v=>v.category===c.id).length;return a;},{});
+  const filtered=activeCat==="all"?allVerses:allVerses.filter(v=>v.category===activeCat);
+  const expandedVerse=allVerses.find(v=>v.id===expandedId);
+  const expandedCat=expandedVerse?WORD_CATS.find(c=>c.id===expandedVerse.category)||WORD_CATS[0]:null;
+
   return(
-    <div style={{marginBottom:24}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.8}}>✦ My Scriptures</div>
-        <button onClick={()=>setOpen(o=>!o)}
-          style={{background:open?OX:"transparent",border:"1px solid "+(open?OX:TANL),color:open?"white":TAN,padding:"5px 12px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-          {open?"× Close":"+ Add Scripture"}
-        </button>
-      </div>
-      {open&&(
-        <div style={{padding:"14px",background:"white",border:"1px solid "+TANL,borderRadius:8,marginBottom:14,animation:"fadeIn 0.2s ease"}}>
-          <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Label (e.g. Fear, Identity, Rest)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
-          <textarea value={form.verse} onChange={e=>setForm(f=>({...f,verse:e.target.value}))} placeholder="Verse text..." rows={3}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"vertical",lineHeight:1.65,marginBottom:8}}/>
-          <input value={form.ref} onChange={e=>setForm(f=>({...f,ref:e.target.value}))} placeholder="Reference (e.g. John 15:5)..."
-            style={{width:"100%",padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,marginBottom:8}}/>
-          <button onClick={save} style={{width:"100%",padding:"9px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
-            Save Scripture
-          </button>
+    <div style={{paddingBottom:40}}>
+
+      {/* Add box */}
+      <div style={{background:"white",border:"1px solid "+OX+"30",borderLeft:"3px solid "+OX,borderRadius:10,marginBottom:20,overflow:"hidden"}}>
+        <div style={{padding:"12px 16px",borderBottom:addOpen?"1px solid "+FINK:"none"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontSize:11,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",opacity:0.85}}>✦ Add a Verse</div>
+            <button onClick={()=>{setAddOpen(o=>!o);setBuiltCard(null);setAddInput("");}}
+              style={{background:addOpen?OX:"transparent",border:"1px solid "+(addOpen?OX:TANL),color:addOpen?"white":TAN,padding:"4px 12px",cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:7}}>
+              {addOpen?"× Close":"+ Add"}
+            </button>
+          </div>
+          {!addOpen&&<p style={{fontSize:13,color:TAN,margin:"6px 0 0",fontStyle:"italic"}}>Type a verse, a reference, or just a few words — Claude builds the card.</p>}
         </div>
-      )}
-      {verses.length>0&&(
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-          {verses.map(v=>(
-            <div key={v.id} style={{padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8}}>
-              {v.label&&<div style={{fontSize:12,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{v.label}</div>}
-              <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{v.verse}"</p>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
-                <p style={{color:GOLD,fontSize:15,margin:0}}>{v.ref}</p>
-                <div style={{display:"flex",gap:6}}>
-                  <button onClick={()=>copy(v)} style={{padding:"3px 8px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-                    {copied===v.id?"✓":"Copy"}
-                  </button>
-                  <button onClick={()=>remove(v.id)} style={{padding:"3px 8px",background:"transparent",color:TANL,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>×</button>
+        {addOpen&&(
+          <div style={{padding:"14px 16px",animation:"fadeIn 0.2s ease"}}>
+            {!builtCard&&(<>
+              <textarea value={addInput} onChange={e=>setAddInput(e.target.value)} rows={3}
+                placeholder={"Type or paste a verse, or just the reference (e.g. John 3:16)..."}
+                style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:PAPER,fontFamily:SERIF,fontSize:15,fontStyle:"italic",color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+              <button onClick={buildCard} disabled={!addInput.trim()||addLoading}
+                style={{width:"100%",padding:"11px",background:addInput.trim()&&!addLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:addInput.trim()&&!addLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                {addLoading?"Building your card...":"✦ Build Card"}
+              </button>
+              {addLoading&&(
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0",justifyContent:"center"}}>
+                  <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                  <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Reading the verse and building the card...</span>
+                </div>
+              )}
+            </>)}
+            {builtCard&&!addLoading&&(
+              <div style={{animation:"fadeIn 0.25s ease"}}>
+                <div style={{fontSize:11,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.85}}>✦ Card Built — Review &amp; Save</div>
+                {(()=>{
+                  const bc=WORD_CATS.find(c=>c.id===builtCard.category)||WORD_CATS[0];
+                  return(
+                    <div style={{background:bc.color+"0D",border:"1px solid "+bc.color+"30",borderRadius:10,overflow:"hidden",marginBottom:12}}>
+                      <div style={{background:bc.color,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+                        <span style={{fontSize:16,color:"white"}}>{bc.icon}</span>
+                        <span style={{fontSize:12,color:"white",letterSpacing:"2px",textTransform:"uppercase",opacity:0.9}}>{bc.label}</span>
+                        <span style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginLeft:"auto"}}>Auto-assigned</span>
+                      </div>
+                      <div style={{padding:"14px 16px"}}>
+                        <p style={{fontFamily:SERIF,fontSize:17,fontStyle:"italic",color:INK,lineHeight:1.65,margin:"0 0 8px"}}>"{builtCard.verse}"</p>
+                        <p style={{fontSize:14,color:GOLD,margin:"0 0 12px",letterSpacing:"0.5px"}}>{builtCard.ref}</p>
+                        {builtCard.note&&(
+                          <div style={{padding:"8px 12px",background:"white",borderLeft:"2px solid "+bc.color,borderRadius:"0 6px 6px 0",fontSize:14,color:INK,lineHeight:1.6,fontStyle:"italic"}}>{builtCard.note}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+                <div style={{fontSize:13,color:TAN,marginBottom:8}}>Change category if needed:</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+                  {WORD_CATS.map(c=>(
+                    <button key={c.id} onClick={()=>setBuiltCard(p=>({...p,category:c.id}))}
+                      style={{padding:"4px 10px",background:builtCard.category===c.id?c.color:"transparent",color:builtCard.category===c.id?"white":c.color,border:"1px solid "+c.color,cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:8}}>
+                      {c.icon} {c.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={saveBuiltCard} style={{flex:1,padding:"11px",background:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save to Word</button>
+                  <button onClick={()=>{setBuiltCard(null);setAddInput("");}} style={{padding:"11px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Discard</button>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{display:"flex",gap:6,marginBottom:16}}>
+        <button onClick={()=>{setMode("browse");setActiveCat("all");}}
+          style={{flex:1,padding:"8px",background:mode==="browse"?INK:"transparent",color:mode==="browse"?"white":TAN,border:"1px solid "+(mode==="browse"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+          Browse
+        </button>
+        <button onClick={()=>setMode("category")}
+          style={{flex:1,padding:"8px",background:mode==="category"?INK:"transparent",color:mode==="category"?"white":TAN,border:"1px solid "+(mode==="category"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
+          By Category
+        </button>
+      </div>
+
+      {/* Category filter strip — browse mode only */}
+      {mode==="browse"&&(
+        <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:20,paddingBottom:2,scrollbarWidth:"none"}}>
+          <button onClick={()=>setActiveCat("all")}
+            style={{padding:"5px 12px",background:activeCat==="all"?INK:"transparent",color:activeCat==="all"?"white":TAN,border:"1px solid "+(activeCat==="all"?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:20,whiteSpace:"nowrap",flexShrink:0}}>
+            All ({allVerses.length})
+          </button>
+          {WORD_CATS.filter(c=>catCounts[c.id]>0).map(c=>(
+            <button key={c.id} onClick={()=>setActiveCat(c.id)}
+              style={{padding:"5px 12px",background:activeCat===c.id?c.color:"transparent",color:activeCat===c.id?"white":c.color,border:"1px solid "+c.color,cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:20,whiteSpace:"nowrap",flexShrink:0}}>
+              {c.icon} {c.label} ({catCounts[c.id]})
+            </button>
           ))}
         </div>
       )}
-      {!verses.length&&!open&&<p style={{fontSize:15,color:TAN,fontStyle:"italic",marginBottom:16}}>Add scriptures that speak directly to you — they'll live here alongside the roadblock verses.</p>}
-      <div style={{height:1,background:FINK,marginBottom:20}}/>
+
+      {/* BROWSE MODE */}
+      {mode==="browse"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          {filtered.map(v=>{
+            const cat=WORD_CATS.find(c=>c.id===v.category)||WORD_CATS[0];
+            return(
+              <div key={v.id} onClick={()=>setExpandedId(v.id)}
+                style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 10px rgba(26,46,74,0.07)",cursor:"pointer",transition:"box-shadow 0.2s"}}>
+                <div style={{background:cat.color+"14",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:15,color:cat.color}}>{cat.icon}</span>
+                  <span style={{fontSize:11,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",fontWeight:"bold",opacity:0.9}}>{cat.label}</span>
+                </div>
+                <div style={{padding:"12px 16px 14px"}}>
+                  <p style={{fontFamily:SERIF,fontSize:17,fontStyle:"italic",color:INK,lineHeight:1.65,margin:"0 0 8px"}}>"{v.verse}"</p>
+                  <p style={{fontSize:14,color:GOLD,margin:"0 0 8px",letterSpacing:"0.5px"}}>{v.ref}</p>
+                  {(v.note||v.userNote)&&(
+                    <p style={{fontSize:13,color:TAN,margin:0,lineHeight:1.55,fontStyle:"italic",paddingTop:8,borderTop:"1px solid "+FINK}}>
+                      {v.userNote||v.note}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* BY CATEGORY MODE */}
+      {mode==="category"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:20}}>
+          {WORD_CATS.filter(c=>catCounts[c.id]>0).map(cat=>{
+            const catVerses=allVerses.filter(v=>v.category===cat.id);
+            return(
+              <div key={cat.id}>
+                <div style={{background:cat.color,padding:"10px 14px",borderRadius:"10px 10px 0 0",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:18,color:"white"}}>{cat.icon}</span>
+                  <span style={{fontSize:12,color:"white",letterSpacing:"2.5px",textTransform:"uppercase",fontWeight:"bold"}}>{cat.label}</span>
+                  <span style={{fontSize:12,color:"rgba(255,255,255,0.55)",marginLeft:"auto"}}>{catVerses.length} {catVerses.length===1?"verse":"verses"}</span>
+                </div>
+                <div style={{background:"white",border:"1px solid "+FINK,borderTop:"none",borderRadius:"0 0 10px 10px"}}>
+                  {catVerses.map((v,i)=>(
+                    <div key={v.id} onClick={()=>setExpandedId(v.id)} style={{padding:"12px 16px",borderBottom:i<catVerses.length-1?"1px solid "+FINK:"none",cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:cat.color,flexShrink:0,marginTop:7}}/>
+                      <div>
+                        <p style={{fontFamily:SERIF,fontSize:15,fontStyle:"italic",color:INK,lineHeight:1.6,margin:"0 0 3px"}}>"{v.verse.length>80?v.verse.slice(0,80)+"...":v.verse}"</p>
+                        <p style={{fontSize:13,color:TAN,margin:0}}>{v.ref}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Expanded card overlay */}
+      {expandedId&&expandedVerse&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(26,46,74,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn 0.2s ease"}}
+          onClick={()=>setExpandedId(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:PAPER,width:"100%",maxWidth:700,maxHeight:"85vh",borderRadius:"16px 16px 0 0",overflowY:"auto",animation:"fadeIn 0.25s ease"}}>
+            <div style={{padding:"20px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+              <div style={{fontSize:11,color:expandedCat.color,letterSpacing:"2.5px",textTransform:"uppercase",fontWeight:"bold"}}>{expandedCat.icon} {expandedCat.label}</div>
+              <button onClick={()=>setExpandedId(null)} style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
+            </div>
+            <p style={{fontFamily:SERIF,fontSize:22,fontStyle:"italic",color:INK,lineHeight:1.6,padding:"0 20px",margin:"0 0 8px"}}>"{expandedVerse.verse}"</p>
+            <p style={{fontSize:15,color:GOLD,padding:"0 20px",margin:"0 0 16px",letterSpacing:"0.5px"}}>{expandedVerse.ref}</p>
+            <div style={{height:1,background:FINK,margin:"0 20px 16px"}}/>
+            {expandedVerse.note&&(
+              <div style={{padding:"0 20px",marginBottom:16}}>
+                <div style={{fontSize:11,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Note</div>
+                <div style={{fontSize:14,color:INK,lineHeight:1.65,fontStyle:"italic",padding:"10px 12px",background:expandedCat.color+"0D",borderLeft:"2px solid "+expandedCat.color,borderRadius:"0 6px 6px 0"}}>{expandedVerse.note}</div>
+              </div>
+            )}
+            <div style={{padding:"0 20px",marginBottom:16}}>
+              <div style={{fontSize:11,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ What This Has Meant to Me</div>
+              {editingNote[expandedId]!==undefined?(
+                <div>
+                  <textarea value={editingNote[expandedId]} onChange={e=>setEditingNote(p=>({...p,[expandedId]:e.target.value}))} rows={3}
+                    style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:8}}/>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>saveNote(expandedId,editingNote[expandedId])} style={{flex:1,padding:"8px",background:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>Save</button>
+                    <button onClick={()=>setEditingNote(p=>({...p,[expandedId]:undefined}))} style={{padding:"8px 12px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>Cancel</button>
+                  </div>
+                </div>
+              ):(
+                <div onClick={()=>setEditingNote(p=>({...p,[expandedId]:expandedVerse.userNote||""}))}
+                  style={{padding:"10px 12px",background:"white",border:"1px solid "+TANL,borderRadius:8,cursor:"text",minHeight:60}}>
+                  {expandedVerse.userNote
+                    ?<p style={{fontSize:15,color:INK,lineHeight:1.65,margin:0,fontFamily:BODY}}>{expandedVerse.userNote}</p>
+                    :<p style={{fontSize:14,color:TAN,lineHeight:1.65,margin:0,fontStyle:"italic"}}>Tap to write what this verse has meant to you — when it hit, how it helped, what changed...</p>
+                  }
+                </div>
+              )}
+            </div>
+            <div style={{display:"flex",gap:8,padding:"0 20px 30px"}}>
+              <button onClick={()=>copyVerse(expandedVerse)} style={{flex:1,padding:"10px",background:"transparent",color:expandedCat.color,border:"1px solid "+expandedCat.color,cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>
+                {copied===expandedVerse.id?"✓ Copied":"Copy Verse"}
+              </button>
+              {!SCVS_MIGRATED.find(v=>v.id===expandedId)&&(
+                <button onClick={()=>removeVerse(expandedId)} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8}}>Delete</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4611,17 +4840,7 @@ export default function App(){
           <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
             <SL>The Word</SL>
             <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Your personal scripture library — verses for the roadblocks, the ones that have carried you, and the ones you're working to hold onto. Organized the way you need them, ready when you do.</p>
-
-            {/* Manual scripture add */}
-            <ManualScriptureAdd/>
-
-            {Object.entries(SCVS).map(([key,val])=>(
-              <div key={key} style={{padding:"16px 18px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8,marginBottom:10}}>
-                <div style={{fontSize:12,letterSpacing:"2.5px",textTransform:"uppercase",color:OX,marginBottom:8,opacity:0.8}}>{key}</div>
-                <p style={{fontStyle:"italic",fontSize:15,lineHeight:1.75,margin:0}}>"{val.v}"</p>
-                <p style={{color:GOLD,fontSize:15,marginTop:6,marginBottom:0}}>{val.r}</p>
-              </div>
-            ))}
+            <WordTab/>
           </div>
         )}
 
