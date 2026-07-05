@@ -1,4 +1,4 @@
-// SGM Orientation v96 — AppInsights on Morning tab (reads across all tabs, Claude-generated), Daily Workflow as 4th tab in ? overlay with numbered steps and encouragement line
+// SGM Orientation v97 — hotfix: mode defaulted to "day" (old value) instead of "morning", causing blank screen on fresh app load since no tab matched
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -768,7 +768,7 @@ function SwipeableEventCard({event,time,onEdit,onDelete}){
 }
 
 function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,setStack,setView,todayVerse,checkIns,setCheckIns,library,letstalk}){
-  const [mode,setMode]=useState("day");
+  const [mode,setMode]=useState("morning");
   const [calEvents,setCalEvents]=useState([]);
   const [calLoading,setCalLoading]=useState(false);
   const [calError,setCalError]=useState(null);
@@ -4264,7 +4264,7 @@ export default function App(){
   const [showWhereGuide,setShowWhereGuide]=useState(false);
 
   const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
-  const todayVerse=ANCH[dayOfYear%ANCH.length];
+  const todayVerse=ANCH[dayOfYear%ANCH.length]||ANCH[0]||{v:"Trust in the Lord with all your heart and lean not on your own understanding.",r:"Proverbs 3:5",app:"Trust Him today."};
   const today=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   // Fix iOS bounce-scroll bleed — match body/html background to the dark header
