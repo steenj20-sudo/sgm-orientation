@@ -1,4 +1,4 @@
-// SGM Orientation v98 — hotfix: Morning tab Image of the Day button called loadArticle (undefined) instead of generateArticle, causing full ReferenceError crash
+// SGM Orientation v99 — Shelf tab removed and merged into Map (quick capture below life categories); SGM Guides moved from Shelf into Identity tab; "Get My Word" reframed around today's roadblocks/tasks instead of morning/evening
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -180,7 +180,6 @@ const TABS_ROW1 = [
   {id:"planner",label:"Week",g:"◈",type:"g"},
   {id:"habits",label:"Habits",g:"✓",type:"g"},
   {id:"dashboard",label:"Map",g:"◎",type:"g"},
-  {id:"shelf",label:"Shelf",g:"⊡",type:"g"},
 ];
 const TABS_ROW2 = [
   {id:"scripture",label:"Word",g:"✦",type:"g"},
@@ -257,36 +256,30 @@ function DailyMsg({cats,habits,prayers,streaks}){
   const [msg,setMsg]=useState(null);
   const [loading,setLoading]=useState(false);
   const [dismissed,setDismissed]=useState(false);
-  const hour=new Date().getHours();
-  const isMorn=hour>=5&&hour<12;
-  const isEve=hour>=19;
-  if((!isMorn&&!isEve)||dismissed) return null;
+  if(dismissed) return null;
   const tk=new Date().toISOString().slice(0,10);
-  const yk=new Date(Date.now()-86400000).toISOString().slice(0,10);
   const th=habits[tk]||{};
-  const yh=habits[yk]||{};
   const tD=Object.values(th).filter(Boolean).length;
-  const yD=Object.values(yh).filter(Boolean).length;
   const allT=cats.flatMap(c=>c.tasks);
-  const pendT=allT.filter(t=>!t.done).length;
+  const pendT=allT.filter(t=>!t.done);
   const doneT=allT.filter(t=>t.done).length;
   const actP=prayers.filter(p=>!p.answered).length;
+  // Pull roadblock tags from open tasks to make this specific, not generic
+  const roadblocks=[...new Set(pendT.map(t=>t.roadblock).filter(Boolean))];
   async function gen(){
     setLoading(true);
     try{
-      const p=isMorn
-        ?"Write a 4-6 sentence morning orientation for Joe Steen. Christian man, SGM founder, stay-at-home dad, 20 years sober. Anchor: Proverbs 3:5-6. Yesterday: "+yD+"/12 habits. Open tasks: "+pendT+". Praying for "+actP+" people. Direct, warm, faith-grounded. Start with who he is. End with scripture or prayer prompt. No filler."
-        :"Write a 4-6 sentence evening wrap-up for Joe Steen. Christian man, SGM founder, stay-at-home dad, 20 years sober. Today: "+tD+"/12 habits, "+doneT+" tasks done, "+pendT+" still open. Direct, warm. Acknowledge what got done. If habits low — data not shame. One thing to hold going into tomorrow. End with rest or prayer.";
+      const p="Write a 4-6 sentence encouraging word for Joe Steen as he works through his life projects and tasks today. Christian man, SGM founder, stay-at-home dad, 20 years sober. Anchor: Proverbs 3:5-6. Open tasks: "+pendT.length+(roadblocks.length?" (roadblocks he's facing: "+roadblocks.join(", ")+")":"")+". Habits today: "+tD+"/12. Praying for "+actP+" people. Direct, warm, faith-grounded — speak to the actual roadblocks if any are named, not generically. End with scripture or a short prayer prompt tied to pushing through resistance. No filler, no cheerleading.";
       const text=await claudeAPI(p,1000);
       setMsg(text||"Trust in the Lord with all your heart. Today is a new opportunity.");
     }catch(e){setMsg("Trust in the Lord with all your heart. Today is a new opportunity.");}
     setLoading(false);
   }
-  const ac=isMorn?OX:PUR;
+  const ac=OX;
   return(
     <div style={{marginBottom:24,background:ac+"08",border:"1px solid "+ac+"30",borderLeft:"3px solid "+ac,borderRadius:8,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
       <div style={{padding:"14px 16px 12px"}}>
-        <SL c={ac}>{isMorn?"Good Morning, Joe":"End of Day, Joe"}</SL>
+        <SL c={ac}>A Word For Today's Work</SL>
         {!msg&&!loading
           ?<button onClick={gen} style={{padding:"8px 16px",background:ac,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Get My Word</button>
           :loading
@@ -1399,7 +1392,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
               <button onClick={()=>{localStorage.removeItem("sgm-cal-access-token");localStorage.removeItem("sgm-cal-refresh-token");setCalToken(null);setCalEvents([]);}} style={{marginTop:6,padding:"4px 10px",background:"transparent",border:"1px solid "+TANL,color:TANL,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>Disconnect</button>
             </div>
           )}
-          {shelfWeek>0&&(<div style={{marginBottom:20,padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8}}><div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div><div style={{fontSize:15,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div><div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf tab to promote to today</div></div>)}
+          {shelfWeek>0&&(<div style={{marginBottom:20,padding:"14px 16px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+OX,borderRadius:8}}><div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6}}>✦ Shelf — This Week</div><div style={{fontSize:15,color:INK}}>{shelfWeek} item{shelfWeek!==1?"s":""} parked for this week</div><div style={{fontSize:13,color:TAN,fontStyle:"italic",marginTop:2}}>Check the Shelf on the Map tab to promote to today</div></div>)}
           <div style={{marginBottom:20}}><SL>Evening Reflection</SL><textarea value={dp.evening||""} onChange={e=>updDay({...dp,evening:e.target.value})} placeholder="What happened today that’s worth remembering?" rows={3} style={{width:"100%",padding:"12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,resize:"none",lineHeight:1.65}}/></div>
         </div>
       )}
@@ -2359,6 +2352,9 @@ function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,strea
           }
         </div>
       )}
+
+      {/* SGM Guides — moved here from Shelf */}
+      <GuidesSection/>
     </div>
   );
 }
@@ -2636,7 +2632,7 @@ const SGM_GUIDES = [
   },
 ];
 
-function ShelfTab({shelf,setShelf,cats,setCats}){
+function ShelfSection({shelf,setShelf,cats,setCats}){
   const [input,setInput]=useState("");
   const [timeframe,setTimeframe]=useState("week");
   const [filter,setFilter]=useState("all");
@@ -2668,8 +2664,9 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
   const filtered=filter==="all"?shelf:shelf.filter(s=>s.timeframe===filter);
 
   return(
-    <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
-      <SL>The Shelf</SL>
+    <div style={{marginTop:32}}>
+      <div style={{height:1,background:FINK,marginBottom:24}}/>
+      <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ The Shelf</div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Out of your head. Not today. Not forgotten.</p>
 
       {/* Quick capture */}
@@ -2764,9 +2761,6 @@ function ShelfTab({shelf,setShelf,cats,setCats}){
           );
         })}
       </div>
-
-      {/* SGM Guides section */}
-      <GuidesSection/>
     </div>
   );
 }
@@ -3989,10 +3983,9 @@ function LetsTalkTab({letstalk,setLetstalk}){
 const WHERE_GUIDE_TABS=[
   {tab:"Week",icon:"◈",desc:"Your morning. Today's verse and study, your day plan, calendar, yesterday's recap."},
   {tab:"Habits",icon:"✓",desc:"Daily checklist that resets every day. Vitamins, prayer, stretching — the small stuff."},
-  {tab:"Map",icon:"◎",desc:"Your life areas — Faith, Family, SGM, Health, etc. Projects and tasks live here."},
-  {tab:"Shelf",icon:"⊡",desc:"Quick capture for anything you don't want to deal with right now. Also has the SGM Guides (RTB, IDF, GLF)."},
+  {tab:"Map",icon:"◎",desc:"Your life areas — Faith, Family, SGM, Health, etc. Projects and tasks live here, plus the Shelf for quick capture and a morning word for whatever you're working through."},
   {tab:"Word",icon:"✦",desc:"Your personal scripture library — verses for specific struggles, the ones that have carried you through, and the ones you're memorizing. Browse by category or pull up exactly what you need in the moment."},
-  {tab:"Identity",icon:"☰",desc:"Where the real battle gets tracked. Deposit a principle when God shows you something about a pattern."},
+  {tab:"Identity",icon:"☰",desc:"Where the real battle gets tracked. Deposit a principle when God shows you something about a pattern. Also has the SGM Guides (RTB, IDF, GLF)."},
   {tab:"Prayer",icon:"+",desc:"People and requests you're carrying. Mark answered prayers as a testimony log."},
   {tab:"Field Notes",icon:"◷",desc:"End-of-day honest reflection. The Stack, completions, one paragraph about today."},
   {tab:"Let's Talk",icon:"♡",desc:"Conversation prep, things you heard that stuck with you, and your read on the people in your life."},
@@ -4001,7 +3994,7 @@ const WHERE_GUIDE_TABS=[
 
 const WHERE_GUIDE_SITUATIONS=[
   {q:"Something just happened with a person — Shawn, a kid, a friend",a:"Let's Talk → People I Know",icon:"♡",color:"#7A4F6A"},
-  {q:"I need to remember to do something, but not right now",a:"Shelf",icon:"⊡",color:OX},
+  {q:"I need to remember to do something, but not right now",a:"Shelf (on Map)",icon:"⊡",color:OX},
   {q:"I heard something — sermon, podcast, conversation — and I'm not done with it",a:"Let's Talk → Going Deeper",icon:"⬇",color:"#2E5B8A"},
   {q:"I'm wrestling with shame, perfectionism, or a pattern I keep hitting",a:"Identity",icon:"☰",color:OX},
   {q:"Someone needs prayer",a:"Prayer",icon:"+",color:OX},
@@ -4049,15 +4042,9 @@ const PROBLEM_SOLVED=[
   },
   {
     tab:"Map",icon:"◎",color:"#1A7A8A",
-    problem:"My life felt like too many moving pieces at once — Faith, Family, SGM, Health — with no way to see all of it together.",
-    helping:"Every area of my life lives here as its own category, with real tasks and real progress. I can see the whole map instead of carrying it all in my head.",
+    problem:"My life felt like too many moving pieces at once — Faith, Family, SGM, Health — with no way to see all of it together. And my head was the only place ideas and half-formed tasks lived, so I was either dropping things or carrying mental weight all day trying not to forget them.",
+    helping:"Every area of my life lives here as its own category, with real tasks and real progress — plus the Shelf right underneath, so anything not ready for today gets captured and off my mind instead of lost.",
     temp:"Grounding. It quiets the noise of 'what am I forgetting.'"
-  },
-  {
-    tab:"Shelf",icon:"⊡",color:OX,
-    problem:"My head was the only place ideas and tasks lived, so I was either dropping things or carrying mental weight all day trying not to forget them.",
-    helping:"I dump it here the second it crosses my mind and it's off me. I don't have to hold it anymore — the app does.",
-    temp:"Low-pressure, almost relieving. This one's quiet but it does a lot."
   },
   {
     tab:"Word",icon:"✦",color:OX,
@@ -4100,7 +4087,7 @@ const PROBLEM_SOLVED=[
 
 const DAILY_WORKFLOW=[
   {time:"Morning",icon:"◉",color:OX,steps:["Open Morning tab — read Yesterday's Recap","Load Image of the Day","Read Today's Anchor verse, tap to open the study","Respond with your prayer and observation","Check In — talk out how you're feeling and what's ahead","Tap 'Get Today's Read' to see what your app is tracking"]},
-  {time:"Through the Day",icon:"◈",color:"#2E5B8A",steps:["Something happens with a person → People I Know (Let's Talk)","Hear something that sticks → Going Deeper (Let's Talk)","Task or idea that can wait → Shelf","Wrestling with a pattern → Identity deposit","Someone needs prayer → Prayer tab","Feeling off or stuck → Check In on Morning tab"]},
+  {time:"Through the Day",icon:"◈",color:"#2E5B8A",steps:["Something happens with a person → People I Know (Let's Talk)","Hear something that sticks → Going Deeper (Let's Talk)","Task or idea that can wait → Shelf (on Map)","Wrestling with a pattern → Identity deposit","Someone needs prayer → Prayer tab","Feeling off or stuck → Check In on Morning tab"]},
   {time:"Today Tab",icon:"◎",color:GRN,steps:["Set your Morning Thought and Today's Focus","Check your calendar — add anything that belongs there","Work from the task list in Map","Log completions as you go"]},
   {time:"Evening",icon:"✦",color:GOLD,steps:["Evening Reflection in Today tab — one honest sentence","Open Archive — tap Copy, paste into Notion Kingdom Notebook","That's it. You're done."]},
 ];
@@ -4568,10 +4555,12 @@ export default function App(){
                 )}
               </div>
             )}
+
+            {/* Shelf — merged into Map */}
+            <ShelfSection shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>
           </div>
         )}
 
-        {view==="shelf"&&<ShelfTab shelf={shelf} setShelf={setShelf} cats={cats} setCats={setCats}/>}
         {view==="prayer"&&<PrayerTab prayers={prayers} setPrayers={setPrayers}/>}
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
         {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse} checkIns={checkIns} setCheckIns={setCheckIns} library={library} letstalk={letstalk}/>}
