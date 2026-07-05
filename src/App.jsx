@@ -1,4 +1,4 @@
-// SGM Orientation v97 — hotfix: mode defaulted to "day" (old value) instead of "morning", causing blank screen on fresh app load since no tab matched
+// SGM Orientation v98 — hotfix: Morning tab Image of the Day button called loadArticle (undefined) instead of generateArticle, causing full ReferenceError crash
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -1325,7 +1325,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             <div style={{position:"relative",overflow:"hidden",minHeight:180,background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)"}}>
               {articleContent&&!articleContent.error&&articleContent.imageUrl?(<img src={articleContent.imageUrl} alt={articleContent.headline} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block",background:"#111820"}}/>):(
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:180,flexDirection:"column",gap:12}}>
-                  {articleLoading?<><div style={{width:20,height:20,border:"2px solid rgba(109,220,232,0.5)",borderTopColor:CYAN,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/><span style={{color:"rgba(255,255,255,0.5)",fontFamily:BODY,fontSize:14}}>Loading…</span></>:<button onClick={loadArticle} style={{padding:"10px 20px",background:"transparent",border:"1px solid rgba(109,220,232,0.5)",color:CYAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>✦ Load Image of the Day</button>}
+                  {articleLoading?<><div style={{width:20,height:20,border:"2px solid rgba(109,220,232,0.5)",borderTopColor:CYAN,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/><span style={{color:"rgba(255,255,255,0.5)",fontFamily:BODY,fontSize:14}}>Loading…</span></>:<button onClick={generateArticle} style={{padding:"10px 20px",background:"transparent",border:"1px solid rgba(109,220,232,0.5)",color:CYAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>✦ Load Image of the Day</button>}
                 </div>
               )}
             </div>
