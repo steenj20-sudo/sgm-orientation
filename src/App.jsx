@@ -1,4 +1,4 @@
-// SGM Orientation v99 — Shelf tab removed and merged into Map (quick capture below life categories); SGM Guides moved from Shelf into Identity tab; "Get My Word" reframed around today's roadblocks/tasks instead of morning/evening
+// SGM Orientation v100 — Image of the Day description fixed (field name mismatch), A Word For Today's Work recolored to SGM Blue, Identity tab header layout fixed + description shortened, Going Deeper cards now editable
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -275,7 +275,7 @@ function DailyMsg({cats,habits,prayers,streaks}){
     }catch(e){setMsg("Trust in the Lord with all your heart. Today is a new opportunity.");}
     setLoading(false);
   }
-  const ac=OX;
+  const ac="#1BAEE8";
   return(
     <div style={{marginBottom:24,background:ac+"08",border:"1px solid "+ac+"30",borderLeft:"3px solid "+ac,borderRadius:8,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
       <div style={{padding:"14px 16px 12px"}}>
@@ -1083,7 +1083,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
 
       const text=await claudeAPI(prompt,1200);
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      const result={...parsed,imageUrl,imageCredit};
+      const result={...parsed,description:parsed.image_description||parsed.body||parsed.description,imageUrl,imageCredit};
       setArticleContent(result);
       localStorage.setItem("sgm3-article-v3",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
     }catch(e){
@@ -1981,14 +1981,14 @@ Here is my unload:
       <LibraryInsights library={library} setAc={setAc} ac={ac}/>
 
       {/* Deposit button + panel */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
         <SL>Identity</SL>
-        <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.75}}>This is the battle. Every principle here lives in the space between who you think you are and who God says you are. Your unloads surface it. The Way Forward addresses it. This is where you track it, name it, and experience freedom in Christ.</p>
         <button onClick={()=>{setShowDeposit(d=>!d);setParseError(false);}}
-          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,marginBottom:10}}>
+          style={{background:showDeposit?OX:"transparent",border:"1px solid "+(showDeposit?OX:TANL),color:showDeposit?"white":TAN,padding:"6px 14px",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
           {showDeposit?"× Close":"+ Deposit"}
         </button>
       </div>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>The space between who you think you are and who God says you are. Track it, name it, walk in freedom.</p>
 
       {showDeposit&&(
         <div style={{marginBottom:24,padding:"16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.3s ease"}}>
@@ -3703,7 +3703,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
   function deleteCard(id){setLetstalk(p=>(p||[]).filter(c=>c.id!==id));setExpandedCard(null);}
 
   function startEditCard(card){
-    setEditForm({topic:card.topic,position:card.position||"",keypoints:card.keypoints||"",howgoes:card.howgoes||"",wiring:card.wiring||"",friction:card.friction||"",bestway:card.bestway||"",scripture:card.scripture||"",inwords:card.inwords||""});
+    setEditForm({topic:card.topic,position:card.position||"",keypoints:card.keypoints||"",howgoes:card.howgoes||"",wiring:card.wiring||"",friction:card.friction||"",bestway:card.bestway||"",scripture:card.scripture||"",inwords:card.inwords||"",raw:card.raw||"",insight:card.insight||""});
     setEditingCard(card.id);
   }
 
@@ -3796,20 +3796,42 @@ function LetsTalkTab({letstalk,setLetstalk}){
                     </div>
                     {expandedCard===card.id&&(
                       <div style={{padding:"0 14px 14px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
-                        {card.raw&&<div style={{marginTop:12}}>
-                          <div style={{fontSize:13,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.7}}>What You Captured</div>
-                          <p style={{fontSize:15,color:TAN,lineHeight:1.7,fontStyle:"italic",margin:0}}>{card.raw}</p>
-                        </div>}
-                        {card.insight&&<div style={{marginTop:14}}>
-                          <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>Going Deeper</div>
-                          <p style={{fontSize:15,color:INK,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}}>{card.insight}</p>
-                        </div>}
-                        <div style={{marginTop:14,display:"flex",gap:8}}>
-                          <button onClick={()=>copyForClaude(card)} style={{flex:1,padding:"8px",background:copiedCard===card.id?GRN:"transparent",color:copiedCard===card.id?"white":sec.color,border:"1px solid "+(copiedCard===card.id?GRN:sec.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
-                            {copiedCard===card.id?"Copied":"Copy for Claude"}
-                          </button>
-                          <button onClick={()=>deleteCard(card.id)} style={{padding:"8px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
-                        </div>
+                        {editingCard===card.id?(
+                          <div style={{marginTop:12}}>
+                            <div style={{marginBottom:10}}>
+                              <div style={{fontSize:13,color:TAN,marginBottom:4}}>Source</div>
+                              <input value={editForm.topic||""} onChange={e=>setEditForm(f=>({...f,topic:e.target.value}))} style={inp2}/>
+                            </div>
+                            <div style={{marginBottom:10}}>
+                              <div style={{fontSize:13,color:TAN,marginBottom:4}}>What You Captured</div>
+                              <textarea value={editForm.raw||""} onChange={e=>setEditForm(f=>({...f,raw:e.target.value}))} rows={4} style={ta}/>
+                            </div>
+                            <div style={{marginBottom:10}}>
+                              <div style={{fontSize:13,color:TAN,marginBottom:4}}>Going Deeper Insight</div>
+                              <textarea value={editForm.insight||""} onChange={e=>setEditForm(f=>({...f,insight:e.target.value}))} rows={5} style={ta}/>
+                            </div>
+                            <div style={{display:"flex",gap:8,marginTop:4}}>
+                              <button onClick={saveEditCard} style={{flex:1,padding:"10px",background:sec.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Save Changes</button>
+                              <button onClick={cancelEditCard} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
+                            </div>
+                          </div>
+                        ):(<>
+                          {card.raw&&<div style={{marginTop:12}}>
+                            <div style={{fontSize:13,color:TAN,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.7}}>What You Captured</div>
+                            <p style={{fontSize:15,color:TAN,lineHeight:1.7,fontStyle:"italic",margin:0}}>{card.raw}</p>
+                          </div>}
+                          {card.insight&&<div style={{marginTop:14}}>
+                            <div style={{fontSize:13,color:sec.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>Going Deeper</div>
+                            <p style={{fontSize:15,color:INK,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}}>{card.insight}</p>
+                          </div>}
+                          <div style={{marginTop:14,display:"flex",gap:8}}>
+                            <button onClick={()=>copyForClaude(card)} style={{flex:1,padding:"8px",background:copiedCard===card.id?GRN:"transparent",color:copiedCard===card.id?"white":sec.color,border:"1px solid "+(copiedCard===card.id?GRN:sec.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
+                              {copiedCard===card.id?"Copied":"Copy for Claude"}
+                            </button>
+                            <button onClick={()=>startEditCard(card)} style={{padding:"8px 14px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Edit</button>
+                            <button onClick={()=>deleteCard(card.id)} style={{padding:"8px 14px",background:"transparent",border:"1px solid "+OX+"60",color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Delete</button>
+                          </div>
+                        </>)}
                       </div>
                     )}
                   </div>
