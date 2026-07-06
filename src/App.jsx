@@ -1,4 +1,4 @@
-// SGM Orientation v100 — Image of the Day description fixed (field name mismatch), A Word For Today's Work recolored to SGM Blue, Identity tab header layout fixed + description shortened, Going Deeper cards now editable
+// SGM Orientation v101 — Image of the Day cache key bumped to v4 to force regeneration past stale pre-fix cached data; Word for Today's Work box darkened to steel blue #2E5B8A
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -275,9 +275,9 @@ function DailyMsg({cats,habits,prayers,streaks}){
     }catch(e){setMsg("Trust in the Lord with all your heart. Today is a new opportunity.");}
     setLoading(false);
   }
-  const ac="#1BAEE8";
+  const ac="#2E5B8A";
   return(
-    <div style={{marginBottom:24,background:ac+"08",border:"1px solid "+ac+"30",borderLeft:"3px solid "+ac,borderRadius:8,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
+    <div style={{marginBottom:24,background:ac+"12",border:"1px solid "+ac+"45",borderLeft:"3px solid "+ac,borderRadius:8,overflow:"hidden",animation:"fadeIn 0.5s ease"}}>
       <div style={{padding:"14px 16px 12px"}}>
         <SL c={ac}>A Word For Today's Work</SL>
         {!msg&&!loading
@@ -1085,7 +1085,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const result={...parsed,description:parsed.image_description||parsed.body||parsed.description,imageUrl,imageCredit};
       setArticleContent(result);
-      localStorage.setItem("sgm3-article-v3",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
+      localStorage.setItem("sgm3-article-v4",JSON.stringify({date:new Date().toISOString().slice(0,10),content:result}));
     }catch(e){
       console.error("Article error:",e);
       setArticleContent({error:true,msg:e.message||"Could not load enrichment."});
@@ -1101,7 +1101,7 @@ Return ONLY valid JSON, no markdown, no extra text.`;
       if(sc.date===today&&sc.content)setStudyContent(sc.content);
     }catch(e){}
     try{
-      const ac=JSON.parse(localStorage.getItem("sgm3-article-v3")||"{}");
+      const ac=JSON.parse(localStorage.getItem("sgm3-article-v4")||"{}");
       if(ac.date===today&&ac.content)setArticleContent(ac.content);
     }catch(e){}
   },[]);
