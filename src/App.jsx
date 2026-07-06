@@ -1,4 +1,4 @@
-// SGM Orientation v102 — Image of the Day now has a white gallery mat frame with drop shadow, so dark paintings separate from the dark background instead of blending in
+// SGM Orientation v103 — Map: single "+ Add Task" button (free-text, Claude auto-categorizes), removed inline "+ Add project" form per category so tapping a category is now purely informational
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -4265,6 +4265,10 @@ export default function App(){
   const [saveStatus,setSaveStatus]=useState("");
   const [addingTask,setAddingTask]=useState(false);
   const [newTask,setNewTask]=useState({label:"",resistance:"low",roadblock:null});
+  const [quickAddOpen,setQuickAddOpen]=useState(false);
+  const [quickAddInput,setQuickAddInput]=useState("");
+  const [quickAddLoading,setQuickAddLoading]=useState(false);
+  const [quickAddResult,setQuickAddResult]=useState(null);
   const [projectView,setProjectView]=useState(null);
   const [habits,setHabits]=useState({});
   const [customHabits,setCustomHabits]=useState([]);
@@ -4356,6 +4360,35 @@ export default function App(){
     setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:[...cat.tasks,{id:catId+Date.now(),label:newTask.label,resistance:newTask.resistance,roadblocks:newTask.roadblocks||[],roadblock:newTask.roadblocks?.[0]||null,done:false,steps:[]}]}));
     setNewTask({label:"",resistance:"low",roadblocks:[]});
     setAddingTask(false);
+  }
+
+  async function processQuickAdd(){
+    if(!quickAddInput.trim())return;
+    setQuickAddLoading(true);setQuickAddResult(null);
+    const catList=cats.map(c=>`${c.id}: ${c.label}`).join(", ");
+    const prompt=`Joe Steen just typed a task he needs to do. Read it and figure out which life category it belongs to, plus a resistance level.\n\nCategories (pick exactly one id): ${catList}\n\nTask: "${quickAddInput}"\n\nRespond ONLY in this exact format:\nCATEGORY: [category id from the list]\nLABEL: [cleaned up short task label, in Joe's words]\nRESISTANCE: [low, medium, or high — how much this task likely resists him]\nROADBLOCK: [one word if obvious: perfectionism, shame, procrastination, time, scarcity, unknown — or leave blank if none obvious]`;
+    try{
+      const result=await claudeAPI(prompt,200);
+      const get=(key)=>{const m=result.match(new RegExp(key+":\\s*(.+)","i"));return m?m[1].trim():"";};
+      const catId=get("CATEGORY").toLowerCase().replace(/[^a-z]/g,"");
+      const matchedCat=cats.find(c=>c.id===catId)||cats.find(c=>catId.includes(c.id)||c.id.includes(catId));
+      setQuickAddResult({
+        catId:matchedCat?.id||cats[0].id,
+        label:get("LABEL")||quickAddInput,
+        resistance:(get("RESISTANCE")||"low").toLowerCase(),
+        roadblock:get("ROADBLOCK")||null,
+      });
+    }catch(e){
+      setQuickAddResult({catId:cats[0].id,label:quickAddInput,resistance:"low",roadblock:null});
+    }
+    setQuickAddLoading(false);
+  }
+
+  function confirmQuickAdd(){
+    if(!quickAddResult)return;
+    const{catId,label,resistance,roadblock}=quickAddResult;
+    setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:[...cat.tasks,{id:catId+Date.now(),label,resistance,roadblocks:roadblock?[roadblock]:[],roadblock:roadblock||null,done:false,steps:[]}]}));
+    setQuickAddInput("");setQuickAddResult(null);setQuickAddOpen(false);
   }
 
   const manualSave = ()=>{
@@ -4474,6 +4507,70 @@ export default function App(){
                 <span style={{fontSize:15}}>◎</span> Life Snapshot
               </button>
             </div>
+
+            {/* Quick Add Task — single entry point, auto-categorized */}
+            <div style={{marginBottom:16}}>
+              {!quickAddOpen?(
+                <button onClick={()=>setQuickAddOpen(true)} style={{width:"100%",padding:"10px",background:OX,border:"none",color:"white",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <span style={{fontSize:15}}>+</span> Add Task
+                </button>
+              ):(
+                <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:8,padding:"14px",animation:"fadeIn 0.25s ease"}}>
+                  <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:10,opacity:0.8}}>✦ Add Task</div>
+                  {!quickAddResult&&(<>
+                    <textarea value={quickAddInput} onChange={e=>setQuickAddInput(e.target.value)} rows={3}
+                      placeholder="What needs to get done? Just describe it — I'll figure out where it goes."
+                      style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8,marginBottom:10}}/>
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={processQuickAdd} disabled={!quickAddInput.trim()||quickAddLoading}
+                        style={{flex:1,padding:"10px",background:quickAddInput.trim()&&!quickAddLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:quickAddInput.trim()&&!quickAddLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                        {quickAddLoading?"Sorting it out...":"Add Task"}
+                      </button>
+                      <button onClick={()=>{setQuickAddOpen(false);setQuickAddInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
+                    </div>
+                    {quickAddLoading&&(
+                      <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0"}}>
+                        <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                        <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Reading where this belongs...</span>
+                      </div>
+                    )}
+                  </>)}
+                  {quickAddResult&&(()=>{
+                    const cat=cats.find(c=>c.id===quickAddResult.catId)||cats[0];
+                    return(
+                      <div style={{animation:"fadeIn 0.25s ease"}}>
+                        <div style={{background:cat.color+"10",border:"1px solid "+cat.color+"40",borderRadius:8,padding:"12px 14px",marginBottom:12}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                            <span style={{fontSize:16,color:cat.color}}>{cat.icon}</span>
+                            <span style={{fontSize:12,color:cat.color,letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold"}}>{cat.label}</span>
+                            <span style={{fontSize:12,color:TAN,marginLeft:"auto"}}>Auto-assigned</span>
+                          </div>
+                          <div style={{fontSize:15,color:INK,marginBottom:6}}>{quickAddResult.label}</div>
+                          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                            <RDot level={quickAddResult.resistance}/>
+                            {quickAddResult.roadblock&&<span style={{fontSize:13,color:OX,fontStyle:"italic"}}>{quickAddResult.roadblock}</span>}
+                          </div>
+                        </div>
+                        <div style={{fontSize:13,color:TAN,marginBottom:8}}>Change category if needed:</div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                          {cats.map(c=>(
+                            <button key={c.id} onClick={()=>setQuickAddResult(r=>({...r,catId:c.id}))}
+                              style={{padding:"4px 10px",background:quickAddResult.catId===c.id?c.color:"transparent",color:quickAddResult.catId===c.id?"white":c.color,border:"1px solid "+c.color,cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:8}}>
+                              {c.icon} {c.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{display:"flex",gap:8}}>
+                          <button onClick={confirmQuickAdd} style={{flex:1,padding:"10px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Confirm & Add</button>
+                          <button onClick={()=>{setQuickAddResult(null);setQuickAddInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Discard</button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
             <div style={{marginBottom:16}}>
               <AISuggestButton cats={cats} planner={planner} setPlanner={setPlanner}/>
             </div>
@@ -4551,36 +4648,6 @@ export default function App(){
                       </div>
                     )}
                   </div>
-                )}
-
-                {/* Add project form */}
-                {addingTask?(
-                  <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:8}}>
-                    <input autoFocus value={newTask.label} onChange={e=>setNewTask(n=>({...n,label:e.target.value}))} placeholder="Project name..." onKeyDown={e=>e.key==="Enter"&&addTask(aC.id)} style={{...inp,width:"100%"}}/>
-                    <select value={newTask.resistance} onChange={e=>setNewTask(n=>({...n,resistance:e.target.value}))} style={{...inp,width:"100%"}}>
-                      <option value="low">Low resistance</option><option value="medium">Medium resistance</option><option value="high">High resistance</option>
-                    </select>
-                    <div>
-                      <div style={{fontSize:13,color:TAN,marginBottom:6,fontStyle:"italic"}}>Roadblocks (select all that apply):</div>
-                      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                        {Object.keys(SCVS).map(k=>{
-                          const sel=(newTask.roadblocks||[]).includes(k);
-                          return(
-                            <button key={k} onClick={()=>setNewTask(n=>{const rb=n.roadblocks||[];return{...n,roadblocks:sel?rb.filter(r=>r!==k):[...rb,k]};})}
-                              style={{padding:"4px 10px",background:sel?OX:"transparent",color:sel?"white":TAN,border:"1px solid "+(sel?OX:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-                              {k}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>addTask(aC.id)} style={{flex:1,padding:"9px",background:aC.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Add Project</button>
-                      <button onClick={()=>setAddingTask(false)} style={{padding:"9px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
-                    </div>
-                  </div>
-                ):(
-                  <button onClick={()=>setAddingTask(true)} style={{marginTop:10,width:"100%",padding:"8px",background:"transparent",border:"1px dashed "+TANL,color:TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,fontStyle:"italic",borderRadius:8}}>+ Add project</button>
                 )}
               </div>
             )}
