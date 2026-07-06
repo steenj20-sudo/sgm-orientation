@@ -1,4 +1,4 @@
-// SGM Orientation v106 — Prayer: Quick Prayer generator per person (short prayable text for nighttime use); Identity: Understand This Pattern button generates a short explanation of what the pattern is and how it affects Joe
+// SGM Orientation v107 — Field Notes renamed to Reference, holds only SGM Guides (visually redesigned with colored header bands) + external Claude prompts (Identity Deposit, Develop a Topic, Relationship Map); Stack moved to Map/Today tab, daily Field Note moved to Morning tab; Quick Reference guide text updated to match
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -185,7 +185,7 @@ const TABS_ROW2 = [
   {id:"scripture",label:"Word",g:"✦",type:"g"},
   {id:"library",label:"Identity",g:"☰",type:"g"},
   {id:"prayer",label:"Prayer",type:"cross"},
-  {id:"history",label:"Field Notes",g:"◷",type:"g"},
+  {id:"history",label:"Reference",g:"◷",type:"g"},
   {id:"letstalk",label:"Let's Talk",g:"♡",type:"g"},
 ];
 const TABS=[...TABS_ROW1,...TABS_ROW2];
@@ -884,6 +884,19 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   const [articleExpanded,setArticleExpanded]=useState(false);
   const [studyLoading,setStudyLoading]=useState(false);
 
+  // Daily field note — moved here from the old Field Notes tab
+  const [fieldNote,setFieldNote]=useState(()=>{
+    try{const s=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");const tk=new Date().toISOString().slice(0,10);return (s[tk]&&s[tk].fieldnote)||"";}catch(e){return"";}
+  });
+  useEffect(()=>{
+    try{
+      const tk=new Date().toISOString().slice(0,10);
+      const saved=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");
+      saved[tk]={...(saved[tk]||{}),fieldnote:fieldNote};
+      localStorage.setItem("sgm3-fieldnotes",JSON.stringify(saved));
+    }catch(e){}
+  },[fieldNote]);
+
   // Check-In — free-speak loop reader
   const [checkInOpen,setCheckInOpen]=useState(false);
   const [checkInInput,setCheckInInput]=useState("");
@@ -1459,6 +1472,15 @@ Return ONLY valid JSON, no markdown, no extra text.`;
             </div>)}
           </div>
           <AppInsights cats={cats} library={library||[]} prayers={prayers} checkIns={checkIns||[]} letstalk={letstalk||[]} shelf={shelf||[]} habits={habits}/>
+
+          {/* Daily Field Note — moved here from the old Field Notes tab */}
+          <div style={{marginBottom:20}}>
+            <SL>Today's Field Note</SL>
+            <textarea value={fieldNote} onChange={e=>setFieldNote(e.target.value)}
+              placeholder="One honest paragraph about today. What God is doing. What you're carrying. What you want to remember."
+              rows={4} style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:8}}/>
+          </div>
+
           <div style={{background:"white",border:"1px solid "+OX+"40",borderLeft:"3px solid "+OX,borderRadius:10,overflow:"hidden",animation:"fadeIn 0.25s ease",marginBottom:20}}>
             <div style={{display:"flex",gap:6,padding:"12px 16px 10px",borderBottom:"1px solid "+FINK}}>
               <div style={{fontSize:13,color:OX,letterSpacing:"2px",textTransform:"uppercase",opacity:0.85,flex:1,display:"flex",alignItems:"center"}}>✦ Check In</div>
@@ -1985,16 +2007,7 @@ function LibraryInsights({library,setAc,ac}){
   );
 }
 
-function LibraryTab({library,setLibrary}){
-  const [ac,setAc]=useState("all");
-  const [showDeposit,setShowDeposit]=useState(false);
-  const [pt,setPt]=useState("");
-  const [expanded,setExpanded]=useState(null);
-  const [copied,setCopied]=useState(null);
-  const [showPrompt,setShowPrompt]=useState(false);
-  const [promptCopied,setPromptCopied]=useState(false);
-  const [parseError,setParseError]=useState(false);
-  const DEPOSIT_PROMPT=`I'm going to paste my Gemini unload below. For each major insight or principle you find, format it exactly like this — one block per principle, separated by three dashes:
+const DEPOSIT_PROMPT=`I'm going to paste my Gemini unload below. For each major insight or principle you find, format it exactly like this — one block per principle, separated by three dashes:
 
 PRINCIPLE: One clear sentence capturing the core insight, in my voice
 CATEGORY: one of — identity, relationships, capacity, warfare, stewardship, ministry
@@ -2018,6 +2031,16 @@ Rules:
 Here is my unload:
 
 [PASTE GEMINI OUTPUT HERE]`;
+
+function LibraryTab({library,setLibrary}){
+  const [ac,setAc]=useState("all");
+  const [showDeposit,setShowDeposit]=useState(false);
+  const [pt,setPt]=useState("");
+  const [expanded,setExpanded]=useState(null);
+  const [copied,setCopied]=useState(null);
+  const [showPrompt,setShowPrompt]=useState(false);
+  const [promptCopied,setPromptCopied]=useState(false);
+  const [parseError,setParseError]=useState(false);
 
   function copyPrompt(){
     navigator.clipboard?.writeText(DEPOSIT_PROMPT).then(()=>{setPromptCopied(true);setTimeout(()=>setPromptCopied(false),2200);});
@@ -2104,19 +2127,12 @@ Here is my unload:
         <div style={{marginBottom:24,padding:"16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.3s ease"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
             <SL>Paste from Claude</SL>
-            <button onClick={()=>setShowPrompt(p=>!p)}
-              style={{background:"transparent",border:"1px solid "+TANL,color:TAN,width:22,height:22,borderRadius:"50%",cursor:"pointer",fontFamily:BODY,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:-2}}>?</button>
+            <button onClick={copyPrompt}
+              style={{background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,padding:"4px 10px",cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:8,flexShrink:0}}>
+              {promptCopied?"✓ Copied":"Copy Prompt"}
+            </button>
           </div>
-          {showPrompt&&(
-            <div style={{marginBottom:14,padding:"12px 14px",background:"rgba(26,46,74,0.04)",border:"1px solid "+FINK,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
-              <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Claude Prompt</div>
-              <pre style={{fontSize:13,color:INK,lineHeight:1.7,margin:"0 0 10px",whiteSpace:"pre-wrap",fontFamily:BODY,opacity:0.85}}>{DEPOSIT_PROMPT}</pre>
-              <button onClick={copyPrompt}
-                style={{width:"100%",padding:"7px",background:"transparent",border:"1px solid "+(promptCopied?GRN:TANL),color:promptCopied?GRN:TAN,cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8}}>
-                {promptCopied?"✓ Copied":"Copy Prompt"}
-              </button>
-            </div>
-          )}
+          <p style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:10,lineHeight:1.55}}>Full prompt also lives in Reference if you need it again later.</p>
           <p style={{fontSize:15,color:TAN,lineHeight:1.7,marginBottom:12,fontStyle:"italic"}}>Paste the full formatted output from your Claude session. All principles will be added at once.</p>
           <textarea value={pt} onChange={e=>{setPt(e.target.value);setParseError(false);}}
             placeholder={"PRINCIPLE: The vine has two axes working at once...\nCATEGORY: identity\nDATE: May 23, 2026\nCONTEXT: This came from a 4:30am session where...\nPATTERN: Over-reliance on personal framework\nSCRIPTURE: I am the vine; you are the branches.\nREF: John 15:5\n---\nPRINCIPLE: next principle here..."}
@@ -2291,228 +2307,50 @@ Here is my unload:
   );
 }
 
-function FieldNotesTab({stack,setStack,history,cats,library,prayers,habits,streaks}){
-  const [view,setView]=useState("today");
-  const [joiceInputs,setJoeInputs]=useState(()=>{
-    try{const s=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");const tk=new Date().toISOString().slice(0,10);return s[tk]||{};}catch(e){return{};}
-  });
-
-  // Save joiceInputs to localStorage keyed by date whenever they change
-  useEffect(()=>{
-    try{
-      const tk=new Date().toISOString().slice(0,10);
-      const saved=JSON.parse(localStorage.getItem("sgm3-fieldnotes")||"{}");
-      saved[tk]=joiceInputs;
-      localStorage.setItem("sgm3-fieldnotes",JSON.stringify(saved));
-    }catch(e){}
-  },[joiceInputs]);
-  const [copied,setCopied]=useState(false);
-  const today=new Date().toISOString().slice(0,10);
-  const tk=today;
-  const todayHabits=habits[tk]||{};
-
-  // Pattern surfacing — find recurring categories in library and stack
-  function getPatterns(){
-    const catCounts={};
-    library.forEach(p=>{catCounts[p.category]=(catCounts[p.category]||0)+1;});
-    const topCat=Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0];
-    const patterns=library.map(p=>p.pattern).filter(Boolean);
-    const patternCounts={};
-    patterns.forEach(p=>{patternCounts[p]=(patternCounts[p]||0)+1;});
-    const topPattern=Object.entries(patternCounts).sort((a,b)=>b[1]-a[1])[0];
-    return{topCat,topPattern};
-  }
-
-  // Group history by date
-  function getRecentDays(){
-    const days={};
-    history.forEach(item=>{
-      if(!days[item.date])days[item.date]=[];
-      days[item.date].push(item);
-    });
-    return Object.entries(days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,14);
-  }
-
-  // Notion export — two layer format
-  function buildNotionExport(){
-    const now=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
-    const L=[];
-    L.push("FIELD NOTE — "+now);
-    L.push("========================================");
-    L.push("");
-    L.push("THE STACK");
-    L.push("----------------------------------------");
-    if(stack.length){
-      stack.forEach(w=>L.push("• "+w.label+(w.duration?" ["+w.duration+"]":"")+" ("+w.time+")"));
-    }else{
-      L.push("No stack entries today.");
-    }
-    if(joiceInputs.stack){L.push("");L.push("In Joe's Words: "+joiceInputs.stack);}
-    L.push("");
-    L.push("COMPLETIONS");
-    L.push("----------------------------------------");
-    const todayHistory=history.filter(h=>h.date===today);
-    if(todayHistory.length){
-      todayHistory.forEach(h=>L.push("✓ "+h.task+" ["+h.category+"]"));
-    }else{
-      L.push("No completions logged today.");
-    }
-    if(joiceInputs.completions){L.push("");L.push("In Joe's Words: "+joiceInputs.completions);}
-    L.push("");
-    L.push("HABIT SNAPSHOT");
-    L.push("----------------------------------------");
-    const habitDone=Object.values(todayHabits).filter(Boolean).length;
-    L.push("Completed: "+habitDone+" habits today");
-    if(joiceInputs.habits){L.push("");L.push("In Joe's Words: "+joiceInputs.habits);}
-    L.push("");
-    L.push("PATTERN FLAG");
-    L.push("----------------------------------------");
-    const {topCat,topPattern}=getPatterns();
-    if(topCat)L.push("Most active area: "+topCat[0]+" ("+topCat[1]+" Library entries)");
-    if(topPattern)L.push("Recurring pattern: "+topPattern[0]+" ("+topPattern[1]+"x)");
-    if(joiceInputs.pattern){L.push("");L.push("In Joe's Words: "+joiceInputs.pattern);}
-    L.push("");
-    L.push("FIELD NOTE");
-    L.push("----------------------------------------");
-    if(joiceInputs.fieldnote){L.push(joiceInputs.fieldnote);}else{L.push("(No field note written today)");}
-    L.push("");
-    L.push("========================================");
-    L.push("End of Field Note — Paste into Kingdom Notebook > Archive");
-    return L.join("\n");
-  }
-
-  const {topCat,topPattern}=getPatterns();
-  const recentDays=getRecentDays();
-
+function ReferenceTab(){
   return(
     <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
-      {/* Header with view toggle */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <SL>Field Notes</SL>
-        <div style={{display:"flex",gap:6}}>
-          {["today","recent","archive"].map(v=>(
-            <button key={v} onClick={()=>setView(v)}
-              style={{padding:"4px 10px",background:view===v?INK:"transparent",color:view===v?"white":TAN,border:"1px solid "+(view===v?INK:TANL),cursor:"pointer",fontFamily:BODY,fontSize:13,borderRadius:8,textTransform:"capitalize"}}>
-              {v==="archive"?"Archive":v==="recent"?"Recent":"Today"}
-            </button>
-          ))}
-        </div>
+      <SL>Reference</SL>
+      <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:20,lineHeight:1.65}}>Things you consult, not things you log. Your personal frameworks and the external Claude prompts you use to feed this app.</p>
+
+      {/* External Claude Prompts */}
+      <div style={{marginBottom:8}}>
+        <div style={{fontSize:12,color:OX,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ Claude Prompts</div>
+        <p style={{fontStyle:"italic",color:TAN,fontSize:14,lineHeight:1.6,marginBottom:14}}>Copy these into an external Claude session, paste your unload, then bring the formatted result back into the app.</p>
       </div>
+      <ReferencePromptCard label="Identity Deposit" abbr="Paste from Claude → Identity" color={OX} prompt={DEPOSIT_PROMPT}/>
+      <ReferencePromptCard label="Develop a Topic" abbr="Let's Talk → Topic sections" color={OX} prompt={LT_TOPIC_PROMPT}/>
+      <ReferencePromptCard label="Relationship Map" abbr="Let's Talk → People I Know" color={"#7A4F6A"} prompt={LT_MAP_PROMPT}/>
 
-      {/* TODAY VIEW */}
-      {view==="today"&&(
-        <div>
-          {/* The Stack */}
-          <StackSection stack={stack} setStack={setStack}/>
-
-          {/* In Joe's Words — Stack */}
-          <div style={{marginBottom:20}}>
-            <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.8}}>✦ In Joe's Words — The Stack</div>
-            <textarea value={joiceInputs.stack||""} onChange={e=>setJoeInputs(p=>({...p,stack:e.target.value}))}
-              placeholder="How did today's stack feel? What surprised you? What was harder than expected?"
-              rows={3} style={{width:"100%",padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
-          </div>
-
-          {/* Completions */}
-          <div style={{marginBottom:16}}>
-            <SL>Completions Today</SL>
-            {history.filter(h=>h.date===today).length===0
-              ?<p style={{fontStyle:"italic",color:TAN,fontSize:13}}>Complete a project task and it will appear here.</p>
-              :history.filter(h=>h.date===today).map(item=>(
-                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:6}}>
-                  <div style={{width:20,height:20,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:11}}>✓</span></div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:15,color:INK}}>{item.task}</div>
-                    <div style={{fontSize:13,color:TAN,marginTop:2}}>{item.category}</div>
-                  </div>
-                </div>
-              ))
-            }
-            <textarea value={joiceInputs.completions||""} onChange={e=>setJoeInputs(p=>({...p,completions:e.target.value}))}
-              placeholder="In Joe's Words — what's worth noting about today's completions?"
-              rows={2} style={{width:"100%",marginTop:8,padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
-          </div>
-
-          {/* Pattern flag */}
-          {(topCat||topPattern)&&(
-            <div style={{marginBottom:16,padding:"14px 16px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+GOLD,borderRadius:8}}>
-              <div style={{fontSize:12,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ Pattern Surfacing</div>
-              {topCat&&<p style={{fontSize:15,color:INK,margin:"0 0 4px"}}>Most active area: <strong>{topCat[0]}</strong> ({topCat[1]} Library entries)</p>}
-              {topPattern&&<p style={{fontSize:15,color:INK,margin:0}}>Recurring pattern: <strong>{topPattern[0]}</strong> ({topPattern[1]}×)</p>}
-              <textarea value={joiceInputs.pattern||""} onChange={e=>setJoeInputs(p=>({...p,pattern:e.target.value}))}
-                placeholder="In Joe's Words — what do you make of this pattern?"
-                rows={2} style={{width:"100%",marginTop:10,padding:"10px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.65,borderRadius:8}}/>
-            </div>
-          )}
-
-          {/* Field Note — free voice entry */}
-          <div style={{marginBottom:20}}>
-            <SL>Today's Field Note</SL>
-            <textarea value={joiceInputs.fieldnote||""} onChange={e=>setJoeInputs(p=>({...p,fieldnote:e.target.value}))}
-              placeholder="One honest paragraph about today. What God is doing. What you're carrying. What you want to remember."
-              rows={5} style={{width:"100%",padding:"12px 14px",border:"1px solid "+OX+"40",background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",resize:"vertical",lineHeight:1.75,borderRadius:8}}/>
-          </div>
-
-          {/* Copy to Notion */}
-          <button onClick={()=>navigator.clipboard?.writeText(buildNotionExport()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);})}
-            style={{width:"100%",padding:"12px",background:copied?GRN:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s",marginBottom:6}}>
-            {copied?"✓ Copied to Clipboard — Paste into Notion":"Copy Field Note → Paste into Notion"}
-          </button>
-          <p style={{fontSize:13,color:TAN,fontStyle:"italic",textAlign:"center",margin:0}}>Paste into Kingdom Notebook → Archive in Notion</p>
-        </div>
-      )}
-
-      {/* RECENT VIEW — last 14 days */}
-      {view==="recent"&&(
-        <div>
-          <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Last 14 days — patterns emerge when you look back.</p>
-          {!recentDays.length&&<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Complete tasks and they'll appear here.</div>}
-          {recentDays.map(([date,items])=>(
-            <div key={date} style={{marginBottom:12}}>
-              <div style={{fontSize:13,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>
-                {new Date(date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
-              </div>
-              {items.map(item=>(
-                <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:4}}>
-                  <div style={{fontSize:15,color:INK,flex:1}}>{item.task}</div>
-                  <div style={{fontSize:13,color:TAN,flexShrink:0}}>{item.category}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ARCHIVE VIEW */}
-      {view==="archive"&&(
-        <div>
-          <p style={{fontStyle:"italic",color:TAN,fontSize:15,marginBottom:16,lineHeight:1.65}}>Everything logged — searchable record of your growth.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
-            {[["Completions",history.length],["Principles",library.length],["Prayers",prayers.filter(p=>p.answered).length]].map(([label,val])=>(
-              <div key={label} style={{padding:"12px 8px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8,textAlign:"center"}}>
-                <div style={{fontSize:20,fontWeight:"bold",color:INK}}>{val}</div>
-                <div style={{fontSize:12,color:TAN,textTransform:"uppercase",letterSpacing:"1px",marginTop:2}}>{label}</div>
-              </div>
-            ))}
-          </div>
-          {history.length===0
-            ?<div style={{textAlign:"center",padding:"40px",color:TAN,fontStyle:"italic"}}>Your record builds as you complete tasks.</div>
-            :history.map(item=>(
-              <div key={item.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,0.5)",border:"1px solid "+FINK,borderLeft:"3px solid "+item.categoryColor,borderRadius:8,marginBottom:5}}>
-                <div style={{width:18,height:18,borderRadius:"50%",background:item.categoryColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"white",fontSize:10}}>✓</span></div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,color:INK}}>{item.task}</div>
-                  <div style={{fontSize:13,color:TAN,marginTop:1}}>{item.category} · {item.date}</div>
-                </div>
-                <RDot level={item.resistance}/>
-              </div>
-            ))
-          }
-        </div>
-      )}
-
-      {/* SGM Guides — moved here from Shelf */}
+      {/* SGM Guides */}
       <GuidesSection/>
+    </div>
+  );
+}
+
+function ReferencePromptCard({label,abbr,color,prompt}){
+  const [open,setOpen]=useState(false);
+  const [copied,setCopied]=useState(false);
+  function copy(){
+    navigator.clipboard?.writeText(prompt).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+  }
+  return(
+    <div style={{background:"white",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 2px 8px rgba(26,46,74,0.06)"}}>
+      <div onClick={()=>setOpen(o=>!o)} style={{padding:"12px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,borderLeft:"3px solid "+color}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:15,color:INK,fontWeight:"bold"}}>{label}</div>
+          <div style={{fontSize:13,color:TAN,marginTop:1}}>{abbr}</div>
+        </div>
+        <span style={{color:color,fontSize:14,flexShrink:0}}>{open?"▲":"▼"}</span>
+      </div>
+      {open&&(
+        <div style={{padding:"0 16px 14px",borderTop:"1px solid "+FINK,animation:"fadeIn 0.2s ease"}}>
+          <pre style={{fontFamily:BODY,fontSize:14,color:INK,lineHeight:1.7,whiteSpace:"pre-wrap",margin:"14px 0 10px"}}>{prompt}</pre>
+          <button onClick={copy} style={{width:"100%",padding:"9px",background:copied?GRN:"transparent",color:copied?"white":color,border:"1px solid "+(copied?GRN:color),cursor:"pointer",fontFamily:BODY,fontSize:14,borderRadius:8,transition:"all 0.2s"}}>
+            {copied?"✓ Copied":"Copy Prompt"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -2768,6 +2606,7 @@ const SGM_GUIDES = [
     id:"rtb",
     label:"Root, Trunk & Branch",
     abbr:"RTB",
+    icon:"🌳",
     color:OX,
     desc:"A personal framework for understanding how you're built — the roots that feed you, the trunk that holds you, and the branches that extend into the world.",
     prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nGenerate Joe's RTB as a structured HTML-style text output:\n\nROOT\n• [3-4 roots Joe draws from — his faith, his sobriety, his anchor verse Proverbs 3:5-6, his family]\n\nTRUNK\n• [3-4 core identity statements about Joe — empath, systems thinker, discipler, 20 years sober, visual learner]\n\nBRANCH\n• [3-4 active branches — SGM, Celebrate Recovery, family/dad season, discipleship relationships]\n\nClose with one sentence in Joe's voice about what this framework means for how he lives right now.\n\nHonest. Plain English. No filler. Written as if Joe is reading his own map.`
@@ -2776,6 +2615,7 @@ const SGM_GUIDES = [
     id:"idf",
     label:"Internal Deployment Framework",
     abbr:"IDF",
+    icon:"⚙",
     color:GOLD,
     desc:"How you deploy your internal resources — capacity, energy, attention, and care — across the areas of your life that matter most.",
     prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nGenerate his IDF across these deployment zones:\n\nSPIRITUAL DEPLOYMENT\n• How Joe's faith and spiritual formation resources get deployed day to day\n\nFAMILY DEPLOYMENT\n• How Joe shows up for Shawn, the kids, and the home in this season\n\nMINISTRY DEPLOYMENT\n• SGM and Celebrate Recovery — where and how he extends outward\n\nCAPACITY MANAGEMENT\n• What threatens his capacity and what restores it — honest, specific\n\nANCHOR\n• One sentence on what holds the whole deployment together\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language.`
@@ -2784,6 +2624,7 @@ const SGM_GUIDES = [
     id:"glf",
     label:"Ground Level Framework",
     abbr:"GLF",
+    icon:"◉",
     color:"#2E6B8A",
     desc:"A street-level map of where you actually are right now — not the vision, not the goals, but the honest ground-floor reality of this season.",
     prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nGenerate the GLF across these ground-level categories:\n\nWHERE I AM NOW\n• The honest 2-3 sentence summary of this life season — no spin\n\nWHAT'S WORKING\n• 2-3 real things that are actually working in Joe's life right now\n\nWHAT'S OPEN\n• 2-3 honest open loops or unresolved things Joe is carrying\n\nWHAT I KNOW TO BE TRUE\n• 2-3 settled convictions Joe holds that don't change regardless of circumstances\n\nWHAT'S NEXT AT GROUND LEVEL\n• The one next right step — not the plan, just the next thing\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. Written like Joe is looking at a map of his own terrain.`
@@ -2953,21 +2794,24 @@ function GuidesSection(){
       <div style={{height:1,background:FINK,marginBottom:24}}/>
       <div style={{fontSize:12,color:GOLD,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:6,opacity:0.9}}>✦ SGM Guides</div>
       <p style={{fontStyle:"italic",color:TAN,fontSize:15,lineHeight:1.65,marginBottom:16}}>Personal orientation frameworks. Tap to generate or review.</p>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
         {SGM_GUIDES.map(guide=>{
           const isOpen=activeGuide===guide.id;
           const result=guideResult[guide.id];
           const loading=guideLoading[guide.id];
           return(
-            <div key={guide.id} style={{background:"white",border:"1px solid rgba(184,149,106,0.22)",borderLeft:"3px solid "+guide.color,borderRadius:10,overflow:"hidden"}}>
+            <div key={guide.id} style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 10px rgba(26,46,74,0.07)"}}>
               <div onClick={()=>setActiveGuide(isOpen?null:guide.id)}
-                style={{padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
+                style={{background:guide.color,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
+                <span style={{fontSize:22,flexShrink:0}}>{guide.icon}</span>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,color:guide.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:3,opacity:0.85}}>{guide.abbr}</div>
-                  <div style={{fontSize:16,color:INK,fontWeight:"bold",fontFamily:SERIF,marginBottom:2}}>{guide.label}</div>
-                  <div style={{fontSize:14,color:TAN,lineHeight:1.5,fontStyle:"italic"}}>{guide.desc}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,0.75)",letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:2}}>{guide.abbr}</div>
+                  <div style={{fontSize:17,color:"white",fontWeight:"bold",fontFamily:SERIF}}>{guide.label}</div>
                 </div>
-                <span style={{color:guide.color,fontSize:16,flexShrink:0}}>{isOpen?"▲":"▼"}</span>
+                <span style={{color:"white",fontSize:15,flexShrink:0,opacity:0.85}}>{isOpen?"▲":"▼"}</span>
+              </div>
+              <div style={{padding:"14px 16px"}}>
+                <p style={{fontSize:14,color:TAN,lineHeight:1.6,fontStyle:"italic",margin:0}}>{guide.desc}</p>
               </div>
               {isOpen&&(
                 <div style={{borderTop:"1px solid "+FINK,padding:"14px 16px 16px",animation:"fadeIn 0.25s ease"}}>
@@ -2985,7 +2829,9 @@ function GuidesSection(){
                   )}
                   {result&&!loading&&(
                     <div>
-                      <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:"0 0 16px",whiteSpace:"pre-wrap"}}>{result}</p>
+                      <div style={{padding:"14px 16px",background:guide.color+"0D",borderLeft:"3px solid "+guide.color,borderRadius:"0 8px 8px 0",marginBottom:16}}>
+                        <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:0,whiteSpace:"pre-wrap"}}>{result}</p>
+                      </div>
                       <div style={{display:"flex",gap:8}}>
                         <button onClick={()=>copyGuide(guide)}
                           style={{flex:1,padding:"9px",background:copiedGuide===guide.id?GRN:"transparent",color:copiedGuide===guide.id?"white":guide.color,border:"1px solid "+(copiedGuide===guide.id?GRN:guide.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
@@ -4049,10 +3895,11 @@ function LetsTalkTab({letstalk,setLetstalk}){
           <div style={{marginBottom:16,padding:"14px 16px",background:"white",border:"1px solid "+TANL,borderRadius:8,animation:"fadeIn 0.2s ease"}}>
             <div style={{fontSize:13,color:GOLD,letterSpacing:"2px",textTransform:"uppercase",marginBottom:10,fontWeight:"bold"}}>{isMap?"Relationship Map":"Develop a Topic"}</div>
             <pre style={{fontFamily:BODY,fontSize:15,color:INK,lineHeight:1.75,whiteSpace:"pre-wrap",margin:"0 0 12px"}}>{activePrompt}</pre>
-            <div style={{display:"flex",gap:8}}>
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
               <button onClick={copyPrompt} style={{flex:1,padding:"9px",background:copied?GRN:GOLD,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"background 0.3s"}}>{copied?"Copied":"Copy Prompt"}</button>
               <button onClick={()=>{setShowPrompt(false);setPasteMode(true);}} style={{flex:1,padding:"9px",background:"transparent",border:"1px solid "+sec.color,color:sec.color,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Paste Card</button>
             </div>
+            <p style={{fontSize:12,color:TAN,fontStyle:"italic",margin:0}}>This prompt also lives in Reference for quick browsing.</p>
           </div>
         )}
         {pasteMode&&(
@@ -4167,7 +4014,7 @@ const WHERE_GUIDE_TABS=[
   {tab:"Word",icon:"✦",desc:"Your personal scripture library — verses for specific struggles, the ones that have carried you through, and the ones you're memorizing. Browse by category or pull up exactly what you need in the moment."},
   {tab:"Identity",icon:"☰",desc:"Where the real battle gets tracked. Deposit a principle when God shows you something about a pattern. Also has the SGM Guides (RTB, IDF, GLF)."},
   {tab:"Prayer",icon:"+",desc:"People and requests you're carrying. Mark answered prayers as a testimony log."},
-  {tab:"Field Notes",icon:"◷",desc:"End-of-day honest reflection. The Stack, completions, one paragraph about today."},
+  {tab:"Reference",icon:"◷",desc:"Your personal frameworks (RTB, IDF, GLF) and the external Claude prompts you use to feed the app — Identity deposits, Let's Talk cards. Consult, don't log."},
   {tab:"Let's Talk",icon:"♡",desc:"Conversation prep, things you heard that stuck with you, and your read on the people in your life."},
   {tab:"Archive",icon:"⊡",desc:"Your backup. Copy what's new and paste into Notion."},
 ];
@@ -4179,7 +4026,7 @@ const WHERE_GUIDE_SITUATIONS=[
   {q:"I'm wrestling with shame, perfectionism, or a pattern I keep hitting",a:"Identity",icon:"☰",color:OX},
   {q:"Someone needs prayer",a:"Prayer",icon:"+",color:OX},
   {q:"I have a hard or important conversation coming up",a:"Let's Talk → Develop a Topic",icon:"✦",color:OX},
-  {q:"I want to be honest about how today actually went",a:"Field Notes",icon:"◷",color:GOLD},
+  {q:"I want to be honest about how today actually went",a:"Morning tab → Today's Field Note",icon:"◷",color:GOLD},
   {q:"I just want to check off the basics and move on",a:"Habits",icon:"✓",color:GRN},
   {q:"I need to see everything going on in my life at once",a:"Map",icon:"◎",color:"#1A7A8A"},
 ];
@@ -4245,10 +4092,10 @@ const PROBLEM_SOLVED=[
     temp:"Faithful. This one keeps me honest about who I said I'd carry."
   },
   {
-    tab:"Field Notes",icon:"◷",color:GOLD,
-    problem:"Most days just blurred together — I'd finish one without ever really processing what actually happened in it.",
-    helping:"A few minutes at the end of the day to be honest about what I did, what I'm carrying, and what's worth remembering — before it's gone.",
-    temp:"Reflective. Slows me down enough to actually notice my own life."
+    tab:"Reference",icon:"◷",color:GOLD,
+    problem:"My personal frameworks and the prompts I use to feed this app were scattered — buried inside other tabs' add-forms, or nowhere consistent at all.",
+    helping:"One place to consult RTB, IDF, and GLF, plus every external Claude prompt this app runs on. Nothing to log here — just things to reach for when I need them.",
+    temp:"Quiet reference. Doesn't demand anything, just there when I need it."
   },
   {
     tab:"Let's Talk",icon:"♡",color:"#7A4F6A",
@@ -4665,6 +4512,7 @@ export default function App(){
         {view==="dashboard"&&(
           <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
             <DailyMsg cats={cats} habits={habits} prayers={prayers} streaks={streaks}/>
+            <StackSection stack={stack} setStack={setStack}/>
             <div style={{display:"flex",justifyContent:"center",marginBottom:36}}>
               <div style={{textAlign:"center"}}>
                 <Ring size={140} pct={overall} color="#6DDCE8" color2="#1A2E4A" sw={12} main={true}>
@@ -4841,18 +4689,7 @@ export default function App(){
         {view==="habits"&&<HabitsTab habits={habits} setHabits={setHabits} streaks={streaks} setStreaks={setStreaks} customHabits={customHabits} setCustomHabits={setCustomHabits}/>}
         {view==="planner"&&<DayWeekTab cats={cats} planner={planner} setPlanner={setPlanner} prayers={prayers} habits={habits} shelf={shelf} history={history} stack={stack} setStack={setStack} setView={setView} todayVerse={todayVerse} checkIns={checkIns} setCheckIns={setCheckIns} library={library} letstalk={letstalk}/>}
 
-        {view==="history"&&(
-          <FieldNotesTab
-            stack={stack}
-            setStack={setStack}
-            history={history}
-            cats={cats}
-            library={library}
-            prayers={prayers}
-            habits={habits}
-            streaks={streaks}
-          />
-        )}
+        {view==="history"&&<ReferenceTab/>}
 
         {view==="scripture"&&(
           <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
