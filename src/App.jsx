@@ -1,4 +1,4 @@
-// SGM Orientation v101 — Image of the Day cache key bumped to v4 to force regeneration past stale pre-fix cached data; Word for Today's Work box darkened to steel blue #2E5B8A
+// SGM Orientation v102 — Image of the Day now has a white gallery mat frame with drop shadow, so dark paintings separate from the dark background instead of blending in
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -1316,7 +1316,14 @@ Return ONLY valid JSON, no markdown, no extra text.`;
           )}
           <div style={{...CARD,marginBottom:16,overflow:"hidden",animation:"fadeIn 0.4s ease"}}>
             <div style={{position:"relative",overflow:"hidden",minHeight:180,background:"linear-gradient(135deg, #1A2E4A 0%, #2E5C8A 50%, #1BAEE8 100%)"}}>
-              {articleContent&&!articleContent.error&&articleContent.imageUrl?(<img src={articleContent.imageUrl} alt={articleContent.headline} style={{width:"100%",maxHeight:280,objectFit:"contain",display:"block",background:"#111820"}}/>):(
+              {articleContent&&!articleContent.error&&articleContent.imageUrl?(
+                <div style={{padding:"16px",display:"flex",justifyContent:"center"}}>
+                  <div style={{background:"white",padding:"10px",borderRadius:4,boxShadow:"0 8px 24px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.2)",maxWidth:"100%"}}>
+                    <img src={articleContent.imageUrl} alt={articleContent.headline}
+                      style={{width:"100%",maxHeight:260,objectFit:"contain",display:"block",background:"#f4f2ee"}}/>
+                  </div>
+                </div>
+              ):(
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:180,flexDirection:"column",gap:12}}>
                   {articleLoading?<><div style={{width:20,height:20,border:"2px solid rgba(109,220,232,0.5)",borderTopColor:CYAN,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/><span style={{color:"rgba(255,255,255,0.5)",fontFamily:BODY,fontSize:14}}>Loading…</span></>:<button onClick={generateArticle} style={{padding:"10px 20px",background:"transparent",border:"1px solid rgba(109,220,232,0.5)",color:CYAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>✦ Load Image of the Day</button>}
                 </div>
