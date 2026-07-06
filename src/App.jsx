@@ -1,4 +1,4 @@
-// SGM Orientation v104 — Delete button added to active and completed tasks; Quick Add Task now splits multiple tasks typed together into separate cards, each independently categorized and editable before confirming
+// SGM Orientation v105 — Prayer tab: manual form replaced with Quick Add (free-text, Claude splits multiple prayers and auto-assigns relationship category); Map Add Task button changed from solid to outline style
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -594,11 +594,55 @@ function PrayerTab({prayers,setPrayers}){
   const [adding,setAdding]=useState(false);
   const [expId,setExpId]=useState(null);
   const [form,setForm]=useState({name:"",relationship:"church",request:"",notes:""});
+  const [quickInput,setQuickInput]=useState("");
+  const [quickLoading,setQuickLoading]=useState(false);
+  const [quickResult,setQuickResult]=useState(null);
   const today=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
   const active=prayers.filter(p=>!p.answered);
   const answered=prayers.filter(p=>p.answered);
   const grouped=RTAGS.reduce((acc,tag)=>{const items=active.filter(p=>p.relationship===tag.id);if(items.length)acc.push({tag,items});return acc;},[]);
   const inp={padding:"9px 12px",border:"1px solid "+TANL,background:"white",fontFamily:BODY,fontSize:15,color:INK,outline:"none",borderRadius:8,width:"100%"};
+
+  async function processQuickPrayer(){
+    if(!quickInput.trim())return;
+    setQuickLoading(true);setQuickResult(null);
+    const tagList=RTAGS.map(t=>`${t.id}: ${t.label}`).join(", ");
+    const prompt=`Joe Steen just typed one or more prayer requests — they may mention one person or several, separated by commas, "and", line breaks, or just run together. Read it and split it into SEPARATE distinct prayers, one per person/request. For each, pull out the person's name, which relationship category fits, and a clean version of the request.\n\nRelationship categories (pick exactly one id per prayer): ${tagList}\n\nWhat Joe typed: "${quickInput}"\n\nRespond ONLY with one block per prayer in this exact format, separated by three dashes on their own line:\nNAME: [person's name]\nRELATIONSHIP: [category id from the list]\nREQUEST: [clean 1-sentence version of what to pray for, in Joe's words]\n---\n\nIf Joe only typed one prayer, return just one block, no dashes needed. Don't merge separate people into one block.`;
+    try{
+      const result=await claudeAPI(prompt,500);
+      const blocks=result.split(/\n---+\n?/).map(b=>b.trim()).filter(Boolean);
+      const parsed=blocks.map(block=>{
+        const get=(key)=>{const m=block.match(new RegExp(key+":\\s*(.+)","i"));return m?m[1].trim():"";};
+        const relId=get("RELATIONSHIP").toLowerCase().replace(/[^a-z]/g,"");
+        const matchedTag=RTAGS.find(t=>t.id===relId)||RTAGS.find(t=>relId.includes(t.id)||t.id.includes(relId));
+        return{
+          id:"qp"+Date.now()+Math.random(),
+          name:get("NAME")||"Unnamed",
+          relationship:matchedTag?.id||RTAGS[0].id,
+          request:get("REQUEST")||quickInput,
+        };
+      }).filter(p=>p.name);
+      setQuickResult(parsed.length?parsed:[{id:"qp"+Date.now(),name:"Unnamed",relationship:RTAGS[0].id,request:quickInput}]);
+    }catch(e){
+      setQuickResult([{id:"qp"+Date.now(),name:"Unnamed",relationship:RTAGS[0].id,request:quickInput}]);
+    }
+    setQuickLoading(false);
+  }
+
+  function updateQuickPrayerItem(id,updates){
+    setQuickResult(prev=>prev.map(item=>item.id===id?{...item,...updates}:item));
+  }
+
+  function removeQuickPrayerItem(id){
+    setQuickResult(prev=>prev.filter(item=>item.id!==id));
+  }
+
+  function confirmQuickPrayer(){
+    if(!quickResult?.length)return;
+    const newPrayers=quickResult.map(r=>({id:"p"+Date.now()+Math.random(),name:r.name,relationship:r.relationship,request:r.request,notes:"",dateAdded:today,answered:false,answeredDate:null}));
+    setPrayers(p=>[...newPrayers,...p]);
+    setQuickInput("");setQuickResult(null);setAdding(false);
+  }
   return(
     <div style={{animation:"fadeIn 0.4s ease",paddingBottom:40}}>
       <SL>Prayer</SL>
@@ -608,23 +652,61 @@ function PrayerTab({prayers,setPrayers}){
           <button key={v} onClick={()=>setPv(v)} style={{flex:1,padding:"8px",background:pv===v?OX:"transparent",border:"1px solid "+(pv===v?OX:TANL),color:pv===v?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>{label}</button>
         ))}
       </div>
-      {pv==="active"&&<button onClick={()=>setAdding(!adding)} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>{adding?"× Close":"✦ Add Prayer"}</button>}
+      {pv==="active"&&<button onClick={()=>{setAdding(!adding);setQuickResult(null);setQuickInput("");}} style={{width:"100%",marginBottom:20,padding:"10px",background:adding?OX:"transparent",border:"1px solid "+(adding?OX:TANL),color:adding?"white":TAN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>{adding?"× Close":"✦ Add Prayer"}</button>}
       {adding&&(
         <div style={{marginBottom:24,padding:"18px",background:"white",border:"1px solid rgba(184,149,106,0.22)",borderRadius:8}}>
-          <SL>New Prayer</SL>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Person's name..." style={inp}/>
-            <select value={form.relationship} onChange={e=>setForm(f=>({...f,relationship:e.target.value}))} style={inp}>
-              {RTAGS.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}
-            </select>
-            <textarea value={form.request} onChange={e=>setForm(f=>({...f,request:e.target.value}))} placeholder="What are you praying for..." rows={3} style={{...inp,resize:"vertical",lineHeight:1.6}}/>
-            <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Notes — what God is doing (optional)..." rows={2} style={{...inp,resize:"vertical",lineHeight:1.6}}/>
+          <SL>Add Prayer</SL>
+          {!quickResult&&(<>
+            <p style={{fontSize:14,color:TAN,fontStyle:"italic",marginBottom:10,lineHeight:1.6}}>Just say who and what — one person or several. I'll sort it out.</p>
+            <textarea value={quickInput} onChange={e=>setQuickInput(e.target.value)} rows={3}
+              placeholder="e.g. Pray for Shawn's mom's surgery, and for Mike at work who's job hunting..."
+              style={{...inp,resize:"vertical",lineHeight:1.6,marginBottom:10}}/>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{if(!form.name.trim()||!form.request.trim())return;setPrayers(p=>[{id:"p"+Date.now(),...form,dateAdded:today,answered:false,answeredDate:null},...p]);setForm({name:"",relationship:"church",request:"",notes:""});setAdding(false);}}
-                style={{flex:1,padding:"10px",background:"transparent",color:OX,border:"1px solid "+OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Add to Prayer List</button>
+              <button onClick={processQuickPrayer} disabled={!quickInput.trim()||quickLoading}
+                style={{flex:1,padding:"10px",background:quickInput.trim()&&!quickLoading?OX:"rgba(26,46,74,0.2)",color:"white",border:"none",cursor:quickInput.trim()&&!quickLoading?"pointer":"default",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                {quickLoading?"Sorting it out...":"Find Prayers"}
+              </button>
               <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Cancel</button>
             </div>
-          </div>
+            {quickLoading&&(
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0 0"}}>
+                <div style={{width:16,height:16,border:"2px solid "+OX,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                <span style={{fontSize:14,color:TAN,fontStyle:"italic"}}>Reading who and what...</span>
+              </div>
+            )}
+          </>)}
+          {quickResult&&quickResult.length>0&&(
+            <div style={{animation:"fadeIn 0.25s ease"}}>
+              <div style={{fontSize:13,color:TAN,marginBottom:10,fontStyle:"italic"}}>{quickResult.length} prayer{quickResult.length!==1?"s":""} found — review before adding.</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
+                {quickResult.map(item=>{
+                  const tag=RTAGS.find(t=>t.id===item.relationship)||RTAGS[0];
+                  return(
+                    <div key={item.id} style={{background:tag.color+"10",border:"1px solid "+tag.color+"40",borderRadius:8,padding:"12px 14px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                        <span style={{fontSize:16,color:tag.color}}>{tag.icon}</span>
+                        <span style={{fontSize:15,fontWeight:"bold",color:INK}}>{item.name}</span>
+                        <button onClick={()=>removeQuickPrayerItem(item.id)} style={{marginLeft:"auto",background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,padding:0}}>×</button>
+                      </div>
+                      <div style={{fontSize:15,color:INK,marginBottom:10,lineHeight:1.6}}>{item.request}</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                        {RTAGS.map(t=>(
+                          <button key={t.id} onClick={()=>updateQuickPrayerItem(item.id,{relationship:t.id})}
+                            style={{padding:"3px 8px",background:item.relationship===t.id?t.color:"transparent",color:item.relationship===t.id?"white":t.color,border:"1px solid "+t.color,cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8}}>
+                            {t.icon} {t.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={confirmQuickPrayer} style={{flex:1,padding:"10px",background:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Confirm & Add All ({quickResult.length})</button>
+                <button onClick={()=>{setQuickResult(null);setQuickInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Discard</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {pv==="active"&&(
@@ -4532,7 +4614,7 @@ export default function App(){
             {/* Quick Add Task — single entry point, auto-categorized */}
             <div style={{marginBottom:16}}>
               {!quickAddOpen?(
-                <button onClick={()=>setQuickAddOpen(true)} style={{width:"100%",padding:"10px",background:OX,border:"none",color:"white",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <button onClick={()=>setQuickAddOpen(true)} style={{width:"100%",padding:"10px",background:"transparent",border:"1px solid "+OX,color:OX,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                   <span style={{fontSize:15}}>+</span> Add Task
                 </button>
               ):(
