@@ -1,4 +1,4 @@
-// SGM Orientation v103 — Map: single "+ Add Task" button (free-text, Claude auto-categorizes), removed inline "+ Add project" form per category so tapping a category is now purely informational
+// SGM Orientation v104 — Delete button added to active and completed tasks; Quick Add Task now splits multiple tasks typed together into separate cards, each independently categorized and editable before confirming
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -4366,28 +4366,45 @@ export default function App(){
     if(!quickAddInput.trim())return;
     setQuickAddLoading(true);setQuickAddResult(null);
     const catList=cats.map(c=>`${c.id}: ${c.label}`).join(", ");
-    const prompt=`Joe Steen just typed a task he needs to do. Read it and figure out which life category it belongs to, plus a resistance level.\n\nCategories (pick exactly one id): ${catList}\n\nTask: "${quickAddInput}"\n\nRespond ONLY in this exact format:\nCATEGORY: [category id from the list]\nLABEL: [cleaned up short task label, in Joe's words]\nRESISTANCE: [low, medium, or high — how much this task likely resists him]\nROADBLOCK: [one word if obvious: perfectionism, shame, procrastination, time, scarcity, unknown — or leave blank if none obvious]`;
+    const prompt=`Joe Steen just typed one or more tasks he needs to do — they may be separated by commas, "and", line breaks, or just run together in one breath. Read it and split it into SEPARATE distinct tasks. For each task, figure out which life category it belongs to and a resistance level.\n\nCategories (pick exactly one id per task): ${catList}\n\nWhat Joe typed: "${quickAddInput}"\n\nRespond ONLY with one block per task in this exact format, separated by three dashes on their own line:\nCATEGORY: [category id from the list]\nLABEL: [cleaned up short task label, in Joe's words]\nRESISTANCE: [low, medium, or high]\nROADBLOCK: [one word if obvious: perfectionism, shame, procrastination, time, scarcity, unknown — or leave blank]\n---\n\nIf Joe only typed one task, return just one block, no dashes needed. Do not merge separate tasks into one block — each distinct thing he needs to do gets its own block.`;
     try{
-      const result=await claudeAPI(prompt,200);
-      const get=(key)=>{const m=result.match(new RegExp(key+":\\s*(.+)","i"));return m?m[1].trim():"";};
-      const catId=get("CATEGORY").toLowerCase().replace(/[^a-z]/g,"");
-      const matchedCat=cats.find(c=>c.id===catId)||cats.find(c=>catId.includes(c.id)||c.id.includes(catId));
-      setQuickAddResult({
-        catId:matchedCat?.id||cats[0].id,
-        label:get("LABEL")||quickAddInput,
-        resistance:(get("RESISTANCE")||"low").toLowerCase(),
-        roadblock:get("ROADBLOCK")||null,
-      });
+      const result=await claudeAPI(prompt,600);
+      const blocks=result.split(/\n---+\n?/).map(b=>b.trim()).filter(Boolean);
+      const parsed=blocks.map(block=>{
+        const get=(key)=>{const m=block.match(new RegExp(key+":\\s*(.+)","i"));return m?m[1].trim():"";};
+        const catId=get("CATEGORY").toLowerCase().replace(/[^a-z]/g,"");
+        const matchedCat=cats.find(c=>c.id===catId)||cats.find(c=>catId.includes(c.id)||c.id.includes(catId));
+        return{
+          id:"qa"+Date.now()+Math.random(),
+          catId:matchedCat?.id||cats[0].id,
+          label:get("LABEL")||quickAddInput,
+          resistance:(get("RESISTANCE")||"low").toLowerCase(),
+          roadblock:get("ROADBLOCK")||null,
+        };
+      }).filter(t=>t.label);
+      setQuickAddResult(parsed.length?parsed:[{id:"qa"+Date.now(),catId:cats[0].id,label:quickAddInput,resistance:"low",roadblock:null}]);
     }catch(e){
-      setQuickAddResult({catId:cats[0].id,label:quickAddInput,resistance:"low",roadblock:null});
+      setQuickAddResult([{id:"qa"+Date.now(),catId:cats[0].id,label:quickAddInput,resistance:"low",roadblock:null}]);
     }
     setQuickAddLoading(false);
   }
 
+  function updateQuickAddItem(id,updates){
+    setQuickAddResult(prev=>prev.map(item=>item.id===id?{...item,...updates}:item));
+  }
+
+  function removeQuickAddItem(id){
+    setQuickAddResult(prev=>prev.filter(item=>item.id!==id));
+  }
+
   function confirmQuickAdd(){
-    if(!quickAddResult)return;
-    const{catId,label,resistance,roadblock}=quickAddResult;
-    setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:[...cat.tasks,{id:catId+Date.now(),label,resistance,roadblocks:roadblock?[roadblock]:[],roadblock:roadblock||null,done:false,steps:[]}]}));
+    if(!quickAddResult?.length)return;
+    setCats(prev=>prev.map(cat=>{
+      const itemsForCat=quickAddResult.filter(r=>r.catId===cat.id);
+      if(!itemsForCat.length)return cat;
+      const newTasks=itemsForCat.map((r,i)=>({id:cat.id+Date.now()+i,label:r.label,resistance:r.resistance,roadblocks:r.roadblock?[r.roadblock]:[],roadblock:r.roadblock||null,done:false,steps:[]}));
+      return{...cat,tasks:[...cat.tasks,...newTasks]};
+    }));
     setQuickAddInput("");setQuickAddResult(null);setQuickAddOpen(false);
   }
 
@@ -4431,6 +4448,10 @@ export default function App(){
 
   function updateTask(catId,updTask){
     setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:cat.tasks.map(t=>t.id===updTask.id?updTask:t)}));
+  }
+
+  function deleteTask(catId,taskId){
+    setCats(prev=>prev.map(cat=>cat.id!==catId?cat:{...cat,tasks:cat.tasks.filter(t=>t.id!==taskId)}));
   }
 
   if(projectView){
@@ -4535,38 +4556,42 @@ export default function App(){
                       </div>
                     )}
                   </>)}
-                  {quickAddResult&&(()=>{
-                    const cat=cats.find(c=>c.id===quickAddResult.catId)||cats[0];
-                    return(
-                      <div style={{animation:"fadeIn 0.25s ease"}}>
-                        <div style={{background:cat.color+"10",border:"1px solid "+cat.color+"40",borderRadius:8,padding:"12px 14px",marginBottom:12}}>
-                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                            <span style={{fontSize:16,color:cat.color}}>{cat.icon}</span>
-                            <span style={{fontSize:12,color:cat.color,letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold"}}>{cat.label}</span>
-                            <span style={{fontSize:12,color:TAN,marginLeft:"auto"}}>Auto-assigned</span>
-                          </div>
-                          <div style={{fontSize:15,color:INK,marginBottom:6}}>{quickAddResult.label}</div>
-                          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                            <RDot level={quickAddResult.resistance}/>
-                            {quickAddResult.roadblock&&<span style={{fontSize:13,color:OX,fontStyle:"italic"}}>{quickAddResult.roadblock}</span>}
-                          </div>
-                        </div>
-                        <div style={{fontSize:13,color:TAN,marginBottom:8}}>Change category if needed:</div>
-                        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-                          {cats.map(c=>(
-                            <button key={c.id} onClick={()=>setQuickAddResult(r=>({...r,catId:c.id}))}
-                              style={{padding:"4px 10px",background:quickAddResult.catId===c.id?c.color:"transparent",color:quickAddResult.catId===c.id?"white":c.color,border:"1px solid "+c.color,cursor:"pointer",fontFamily:BODY,fontSize:12,borderRadius:8}}>
-                              {c.icon} {c.label}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{display:"flex",gap:8}}>
-                          <button onClick={confirmQuickAdd} style={{flex:1,padding:"10px",background:cat.color,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Confirm & Add</button>
-                          <button onClick={()=>{setQuickAddResult(null);setQuickAddInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Discard</button>
-                        </div>
+                  {quickAddResult&&quickAddResult.length>0&&(
+                    <div style={{animation:"fadeIn 0.25s ease"}}>
+                      <div style={{fontSize:13,color:TAN,marginBottom:10,fontStyle:"italic"}}>{quickAddResult.length} task{quickAddResult.length!==1?"s":""} found — review and adjust before adding.</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
+                        {quickAddResult.map(item=>{
+                          const cat=cats.find(c=>c.id===item.catId)||cats[0];
+                          return(
+                            <div key={item.id} style={{background:cat.color+"10",border:"1px solid "+cat.color+"40",borderRadius:8,padding:"12px 14px"}}>
+                              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                                <span style={{fontSize:16,color:cat.color}}>{cat.icon}</span>
+                                <span style={{fontSize:12,color:cat.color,letterSpacing:"2px",textTransform:"uppercase",fontWeight:"bold"}}>{cat.label}</span>
+                                <button onClick={()=>removeQuickAddItem(item.id)} style={{marginLeft:"auto",background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,padding:0}}>×</button>
+                              </div>
+                              <div style={{fontSize:15,color:INK,marginBottom:8}}>{item.label}</div>
+                              <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:10}}>
+                                <RDot level={item.resistance}/>
+                                {item.roadblock&&<span style={{fontSize:13,color:OX,fontStyle:"italic"}}>{item.roadblock}</span>}
+                              </div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                                {cats.map(c=>(
+                                  <button key={c.id} onClick={()=>updateQuickAddItem(item.id,{catId:c.id})}
+                                    style={{padding:"3px 8px",background:item.catId===c.id?c.color:"transparent",color:item.catId===c.id?"white":c.color,border:"1px solid "+c.color,cursor:"pointer",fontFamily:BODY,fontSize:11,borderRadius:8}}>
+                                    {c.icon} {c.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })()}
+                      <div style={{display:"flex",gap:8}}>
+                        <button onClick={confirmQuickAdd} style={{flex:1,padding:"10px",background:INK,color:"white",border:"none",cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Confirm & Add All ({quickAddResult.length})</button>
+                        <button onClick={()=>{setQuickAddResult(null);setQuickAddInput("");}} style={{padding:"10px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>Discard</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -4617,6 +4642,8 @@ export default function App(){
                           <button onClick={()=>setProjectView({catId:aC.id,taskId:task.id})} style={{background:"transparent",border:"1px solid "+aC.color+"50",color:aC.color,padding:"3px 8px",cursor:"pointer",fontSize:13,fontFamily:BODY,borderRadius:8,whiteSpace:"nowrap"}}>Break down</button>
                           <button onClick={()=>{setShelf(s=>[...s,{id:"sh"+Date.now(),label:task.label,timeframe:"week",note:"From "+aC.label}]);setCats(prev=>prev.map(c=>c.id!==aC.id?c:{...c,tasks:c.tasks.filter(t=>t.id!==task.id)}));}}
                             style={{background:"transparent",border:"1px solid "+TANL,color:TAN,padding:"3px 8px",cursor:"pointer",fontSize:13,fontFamily:BODY,borderRadius:8,whiteSpace:"nowrap"}}>→ Shelf</button>
+                          <button onClick={()=>{if(window.confirm("Delete this task?"))deleteTask(aC.id,task.id);}}
+                            style={{background:"transparent",border:"1px solid "+OX+"50",color:OX,padding:"3px 8px",cursor:"pointer",fontSize:13,fontFamily:BODY,borderRadius:8,whiteSpace:"nowrap"}}>Delete</button>
                         </div>
                       </div>
                       {task.steps&&task.steps.length>0&&(
@@ -4643,6 +4670,8 @@ export default function App(){
                               <span style={{color:"white",fontSize:10}}>✓</span>
                             </div>
                             <div style={{fontSize:15,color:TAN,textDecoration:"line-through",flex:1}}>{task.label}</div>
+                            <button onClick={()=>{if(window.confirm("Delete this task?"))deleteTask(aC.id,task.id);}}
+                              style={{background:"none",border:"none",color:TANL,cursor:"pointer",fontSize:15,padding:0,flexShrink:0}}>×</button>
                           </div>
                         ))}
                       </div>
