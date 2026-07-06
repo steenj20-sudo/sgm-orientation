@@ -1,4 +1,4 @@
-// SGM Orientation v107 — Field Notes renamed to Reference, holds only SGM Guides (visually redesigned with colored header bands) + external Claude prompts (Identity Deposit, Develop a Topic, Relationship Map); Stack moved to Map/Today tab, daily Field Note moved to Morning tab; Quick Reference guide text updated to match
+// SGM Orientation v108 — SGM Guides: tree emoji replaced with app-consistent icon; prompts rewritten to forbid markdown and use plain SECTION/bullet format; render now parses sections into properly styled headers, bullets, and body text instead of dumping raw markdown text
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -2606,10 +2606,10 @@ const SGM_GUIDES = [
     id:"rtb",
     label:"Root, Trunk & Branch",
     abbr:"RTB",
-    icon:"🌳",
+    icon:"✦",
     color:OX,
     desc:"A personal framework for understanding how you're built — the roots that feed you, the trunk that holds you, and the branches that extend into the world.",
-    prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nGenerate Joe's RTB as a structured HTML-style text output:\n\nROOT\n• [3-4 roots Joe draws from — his faith, his sobriety, his anchor verse Proverbs 3:5-6, his family]\n\nTRUNK\n• [3-4 core identity statements about Joe — empath, systems thinker, discipler, 20 years sober, visual learner]\n\nBRANCH\n• [3-4 active branches — SGM, Celebrate Recovery, family/dad season, discipleship relationships]\n\nClose with one sentence in Joe's voice about what this framework means for how he lives right now.\n\nHonest. Plain English. No filler. Written as if Joe is reading his own map.`
+    prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nROOT\n- [one root Joe draws from]\n- [another root]\n- [another root]\n\nTRUNK\n- [one core identity statement about Joe]\n- [another]\n- [another]\n\nBRANCH\n- [one active branch — SGM, Celebrate Recovery, family, discipleship]\n- [another]\n- [another]\n\nCLOSING\n[one sentence in Joe's voice about what this framework means for how he lives right now]\n\nHonest. Plain English. No filler. No markdown formatting whatsoever.`
   },
   {
     id:"idf",
@@ -2618,7 +2618,7 @@ const SGM_GUIDES = [
     icon:"⚙",
     color:GOLD,
     desc:"How you deploy your internal resources — capacity, energy, attention, and care — across the areas of your life that matter most.",
-    prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nGenerate his IDF across these deployment zones:\n\nSPIRITUAL DEPLOYMENT\n• How Joe's faith and spiritual formation resources get deployed day to day\n\nFAMILY DEPLOYMENT\n• How Joe shows up for Shawn, the kids, and the home in this season\n\nMINISTRY DEPLOYMENT\n• SGM and Celebrate Recovery — where and how he extends outward\n\nCAPACITY MANAGEMENT\n• What threatens his capacity and what restores it — honest, specific\n\nANCHOR\n• One sentence on what holds the whole deployment together\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language.`
+    prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nSPIRITUAL DEPLOYMENT\n[1-2 sentences on how Joe's faith and spiritual formation resources get deployed day to day]\n\nFAMILY DEPLOYMENT\n[1-2 sentences on how Joe shows up for Shawn, the kids, and the home in this season]\n\nMINISTRY DEPLOYMENT\n[1-2 sentences on SGM and Celebrate Recovery — where and how he extends outward]\n\nCAPACITY MANAGEMENT\n[1-2 honest, specific sentences on what threatens his capacity and what restores it]\n\nANCHOR\n[one sentence on what holds the whole deployment together]\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language. No markdown formatting whatsoever.`
   },
   {
     id:"glf",
@@ -2627,7 +2627,7 @@ const SGM_GUIDES = [
     icon:"◉",
     color:"#2E6B8A",
     desc:"A street-level map of where you actually are right now — not the vision, not the goals, but the honest ground-floor reality of this season.",
-    prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nGenerate the GLF across these ground-level categories:\n\nWHERE I AM NOW\n• The honest 2-3 sentence summary of this life season — no spin\n\nWHAT'S WORKING\n• 2-3 real things that are actually working in Joe's life right now\n\nWHAT'S OPEN\n• 2-3 honest open loops or unresolved things Joe is carrying\n\nWHAT I KNOW TO BE TRUE\n• 2-3 settled convictions Joe holds that don't change regardless of circumstances\n\nWHAT'S NEXT AT GROUND LEVEL\n• The one next right step — not the plan, just the next thing\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. Written like Joe is looking at a map of his own terrain.`
+    prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nWHERE I AM NOW\n[2-3 honest sentences summarizing this life season — no spin]\n\nWHAT'S WORKING\n- [one real thing that's actually working]\n- [another]\n\nWHAT'S OPEN\n- [one honest open loop or unresolved thing Joe is carrying]\n- [another]\n\nWHAT I KNOW TO BE TRUE\n- [one settled conviction Joe holds regardless of circumstances]\n- [another]\n\nWHAT'S NEXT AT GROUND LEVEL\n[the one next right step — not the plan, just the next thing]\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. No markdown formatting whatsoever.`
   },
 ];
 
@@ -2789,6 +2789,30 @@ function GuidesSection(){
     navigator.clipboard?.writeText(guide.label+"\n\n"+text).then(()=>{setCopiedGuide(guide.id);setTimeout(()=>setCopiedGuide(null),2000);});
   }
 
+  // Parse the plain-text SECTION\n- bullet\n- bullet format into structured blocks
+  function parseGuideSections(text){
+    if(!text)return[];
+    const lines=text.split("\n").map(l=>l.trim()).filter(l=>l.length);
+    const sections=[];
+    let current=null;
+    lines.forEach(line=>{
+      // A line in ALL CAPS (allowing spaces/apostrophes) with no leading dash is a section header
+      const isHeader=/^[A-Z][A-Z\s'&]+$/.test(line)&&!line.startsWith("-");
+      if(isHeader){
+        current={title:line,bullets:[],body:[]};
+        sections.push(current);
+      }else if(current){
+        const clean=line.replace(/^[-•*]\s*/,"").replace(/\*\*/g,"");
+        if(line.startsWith("-")||line.startsWith("•")||line.startsWith("*")){
+          current.bullets.push(clean);
+        }else{
+          current.body.push(clean);
+        }
+      }
+    });
+    return sections;
+  }
+
   return(
     <div style={{marginTop:32}}>
       <div style={{height:1,background:FINK,marginBottom:24}}/>
@@ -2827,23 +2851,45 @@ function GuidesSection(){
                       <span style={{fontSize:15,color:TAN,fontStyle:"italic"}}>Building your {guide.abbr}...</span>
                     </div>
                   )}
-                  {result&&!loading&&(
-                    <div>
-                      <div style={{padding:"14px 16px",background:guide.color+"0D",borderLeft:"3px solid "+guide.color,borderRadius:"0 8px 8px 0",marginBottom:16}}>
-                        <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:0,whiteSpace:"pre-wrap"}}>{result}</p>
+                  {result&&!loading&&(()=>{
+                    const sections=parseGuideSections(result);
+                    return(
+                      <div>
+                        <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:16}}>
+                          {sections.length?sections.map((sec,i)=>(
+                            <div key={i}>
+                              <div style={{fontSize:11,color:guide.color,letterSpacing:"2.5px",textTransform:"uppercase",fontWeight:"bold",marginBottom:8,opacity:0.9}}>{sec.title}</div>
+                              {sec.body.map((b,j)=>(
+                                <p key={j} style={{fontSize:15,lineHeight:1.75,color:INK,margin:"0 0 8px"}}>{b}</p>
+                              ))}
+                              {sec.bullets.length>0&&(
+                                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                                  {sec.bullets.map((bul,j)=>(
+                                    <div key={j} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                                      <div style={{width:5,height:5,borderRadius:"50%",background:guide.color,flexShrink:0,marginTop:8}}/>
+                                      <p style={{fontSize:15,lineHeight:1.7,color:INK,margin:0}}>{bul}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )):(
+                            <p style={{fontSize:15,lineHeight:1.9,color:INK,margin:0,whiteSpace:"pre-wrap"}}>{result}</p>
+                          )}
+                        </div>
+                        <div style={{display:"flex",gap:8}}>
+                          <button onClick={()=>copyGuide(guide)}
+                            style={{flex:1,padding:"9px",background:copiedGuide===guide.id?GRN:"transparent",color:copiedGuide===guide.id?"white":guide.color,border:"1px solid "+(copiedGuide===guide.id?GRN:guide.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
+                            {copiedGuide===guide.id?"Copied":"Copy"}
+                          </button>
+                          <button onClick={()=>generateGuide(guide)}
+                            style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
+                            Regenerate
+                          </button>
+                        </div>
                       </div>
-                      <div style={{display:"flex",gap:8}}>
-                        <button onClick={()=>copyGuide(guide)}
-                          style={{flex:1,padding:"9px",background:copiedGuide===guide.id?GRN:"transparent",color:copiedGuide===guide.id?"white":guide.color,border:"1px solid "+(copiedGuide===guide.id?GRN:guide.color),cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,transition:"all 0.2s"}}>
-                          {copiedGuide===guide.id?"Copied":"Copy"}
-                        </button>
-                        <button onClick={()=>generateGuide(guide)}
-                          style={{padding:"9px 14px",background:"transparent",color:TAN,border:"1px solid "+TANL,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>
-                          Regenerate
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               )}
             </div>
