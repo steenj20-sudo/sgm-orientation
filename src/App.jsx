@@ -1,4 +1,4 @@
-// SGM Orientation v105 — Prayer tab: manual form replaced with Quick Add (free-text, Claude splits multiple prayers and auto-assigns relationship category); Map Add Task button changed from solid to outline style
+// SGM Orientation v106 — Prayer: Quick Prayer generator per person (short prayable text for nighttime use); Identity: Understand This Pattern button generates a short explanation of what the pattern is and how it affects Joe
 import { useState, useEffect, useRef } from "react";
 
 // Inject Inter font
@@ -731,6 +731,27 @@ function PrayerTab({prayers,setPrayers}){
                       {ie&&(
                         <div style={{padding:"12px 14px 14px",borderTop:"1px solid "+FINK}}>
                           {pr.notes&&<div style={{fontSize:15,fontStyle:"italic",color:INK,lineHeight:1.65,marginBottom:12,padding:"8px 12px",background:tag.color+"08",borderLeft:"2px solid "+tag.color+"40"}}>{pr.notes}</div>}
+                          {pr.quickPrayer&&(
+                            <div style={{marginBottom:12,padding:"12px 14px",background:tag.color+"0D",borderLeft:"3px solid "+tag.color,borderRadius:"0 6px 6px 0"}}>
+                              <div style={{fontSize:11,color:tag.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Pray This</div>
+                              <p style={{fontSize:15,color:INK,lineHeight:1.75,margin:0,fontStyle:"italic",fontFamily:SERIF}}>{pr.quickPrayer}</p>
+                            </div>
+                          )}
+                          <div style={{display:"flex",gap:8,marginBottom:8}}>
+                            <button onClick={async()=>{
+                              setPrayers(p=>p.map(x=>x.id===pr.id?{...x,quickPrayerLoading:true}:x));
+                              const prompt=`Write one short prayer (2-3 sentences, prayable out loud in 10-15 seconds) for Joe Steen to pray over ${pr.name}. What he's praying for: ${pr.request}. Direct, warm, addressed to God, in Joe's voice — a stay-at-home dad, 20 years sober, leads Celebrate Recovery. No filler, no long build-up, just the prayer itself.`;
+                              try{
+                                const text=await claudeAPI(prompt,200);
+                                setPrayers(p=>p.map(x=>x.id===pr.id?{...x,quickPrayer:text,quickPrayerLoading:false}:x));
+                              }catch(e){
+                                setPrayers(p=>p.map(x=>x.id===pr.id?{...x,quickPrayer:"Lord, be near to "+pr.name+" tonight. "+pr.request+". In Jesus' name, amen.",quickPrayerLoading:false}:x));
+                              }
+                            }} disabled={pr.quickPrayerLoading}
+                              style={{flex:1,padding:"8px",background:"transparent",color:tag.color,border:"1px solid "+tag.color,cursor:pr.quickPrayerLoading?"default":"pointer",fontFamily:BODY,fontSize:15,borderRadius:8,opacity:pr.quickPrayerLoading?0.6:1}}>
+                              {pr.quickPrayerLoading?"Writing...":pr.quickPrayer?"✦ New Quick Prayer":"✦ Quick Prayer"}
+                            </button>
+                          </div>
                           <div style={{display:"flex",gap:8}}>
                             <button onClick={()=>setPrayers(p=>p.map(x=>x.id===pr.id?{...x,answered:true,answeredDate:today}:x))}
                               style={{flex:1,padding:"8px",background:"transparent",color:GRN,border:"1px solid "+GRN,cursor:"pointer",fontFamily:BODY,fontSize:15,borderRadius:8}}>✓ Mark Answered</button>
@@ -2149,6 +2170,30 @@ Here is my unload:
                 {latest.context&&<><div style={{fontSize:12,color:latestCat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
                 <p style={{fontSize:15,lineHeight:1.8,color:INK,margin:"0 0 14px"}}>{latest.context}</p></>}
                 {latest.pattern&&<div style={{fontSize:13,color:TAN,fontStyle:"italic",marginBottom:14}}>Pattern: {latest.pattern}</div>}
+                {latest.pattern&&(
+                  <div style={{marginBottom:14}}>
+                    {latest.patternInsight?(
+                      <div style={{padding:"12px 14px",background:latestCat.color+"0D",borderLeft:"3px solid "+latestCat.color,borderRadius:"0 6px 6px 0"}}>
+                        <div style={{fontSize:11,color:latestCat.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Understanding This Pattern</div>
+                        <p style={{fontSize:15,color:INK,lineHeight:1.7,margin:0,fontFamily:BODY}}>{latest.patternInsight}</p>
+                      </div>
+                    ):(
+                      <button onClick={async()=>{
+                        setLibrary(p=>p.map(x=>x.id===latest.id?{...x,patternInsightLoading:true}:x));
+                        const prompt=`Joe Steen deposited this identity principle: "${latest.principle}" — tagged with the pattern "${latest.pattern}". Context: ${latest.context||"none given"}.\n\nIn 2-3 short sentences, explain what this pattern actually is and how it tends to show up in his life or affect him. Plain English, direct, like a trusted friend naming it clearly — not clinical, not preachy. No filler.`;
+                        try{
+                          const text=await claudeAPI(prompt,200);
+                          setLibrary(p=>p.map(x=>x.id===latest.id?{...x,patternInsight:text,patternInsightLoading:false}:x));
+                        }catch(e){
+                          setLibrary(p=>p.map(x=>x.id===latest.id?{...x,patternInsightLoading:false}:x));
+                        }
+                      }} disabled={latest.patternInsightLoading}
+                        style={{width:"100%",padding:"8px",background:"transparent",border:"1px solid "+latestCat.color+"60",color:latestCat.color,cursor:latest.patternInsightLoading?"default":"pointer",fontFamily:BODY,fontSize:14,borderRadius:8,opacity:latest.patternInsightLoading?0.6:1}}>
+                        {latest.patternInsightLoading?"Reading the pattern...":"✦ Understand This Pattern"}
+                      </button>
+                    )}
+                  </div>
+                )}
                 {latest.tag&&<div style={{display:"inline-block",fontSize:13,color:latestCat.color,border:"1px solid "+latestCat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:14}}>#{latest.tag}</div>}
                 {latest.scripture&&(
                   <div style={{borderLeft:"3px solid "+latestCat.color,padding:"10px 14px",background:latestCat.color+"08",marginBottom:14}}>
@@ -2194,6 +2239,30 @@ Here is my unload:
                   {item.context&&<><div style={{paddingTop:14,fontSize:13,fontFamily:BODY,fontWeight:600,color:cat.color,letterSpacing:"2.5px",textTransform:"uppercase",marginBottom:8,opacity:0.8}}>✦ In Your Words</div>
                   <p style={{fontSize:15,lineHeight:1.8,color:"#2a3a4a",fontFamily:BODY,margin:"0 0 12px"}}>{item.context}</p></>}
                   {item.pattern&&<div style={{fontSize:15,color:TAN,fontStyle:"italic",fontFamily:BODY,marginBottom:12}}>Pattern: {item.pattern}</div>}
+                  {item.pattern&&(
+                    <div style={{marginBottom:12}}>
+                      {item.patternInsight?(
+                        <div style={{padding:"12px 14px",background:cat.color+"0D",borderLeft:"3px solid "+cat.color,borderRadius:"0 6px 6px 0"}}>
+                          <div style={{fontSize:11,color:cat.color,letterSpacing:"2px",textTransform:"uppercase",marginBottom:6,opacity:0.85}}>✦ Understanding This Pattern</div>
+                          <p style={{fontSize:15,color:INK,lineHeight:1.7,margin:0,fontFamily:BODY}}>{item.patternInsight}</p>
+                        </div>
+                      ):(
+                        <button onClick={async()=>{
+                          setLibrary(p=>p.map(x=>x.id===item.id?{...x,patternInsightLoading:true}:x));
+                          const prompt=`Joe Steen deposited this identity principle: "${item.principle}" — tagged with the pattern "${item.pattern}". Context: ${item.context||"none given"}.\n\nIn 2-3 short sentences, explain what this pattern actually is and how it tends to show up in his life or affect him. Plain English, direct, like a trusted friend naming it clearly — not clinical, not preachy. No filler.`;
+                          try{
+                            const text=await claudeAPI(prompt,200);
+                            setLibrary(p=>p.map(x=>x.id===item.id?{...x,patternInsight:text,patternInsightLoading:false}:x));
+                          }catch(e){
+                            setLibrary(p=>p.map(x=>x.id===item.id?{...x,patternInsightLoading:false}:x));
+                          }
+                        }} disabled={item.patternInsightLoading}
+                          style={{width:"100%",padding:"8px",background:"transparent",border:"1px solid "+cat.color+"60",color:cat.color,cursor:item.patternInsightLoading?"default":"pointer",fontFamily:BODY,fontSize:14,borderRadius:8,opacity:item.patternInsightLoading?0.6:1}}>
+                          {item.patternInsightLoading?"Reading the pattern...":"✦ Understand This Pattern"}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   {item.tag&&<div style={{display:"inline-block",fontSize:13,color:cat.color,border:"1px solid "+cat.color+"50",borderRadius:12,padding:"3px 10px",marginBottom:12,fontFamily:BODY}}>#{item.tag}</div>}
                   {item.scripture&&(
                     <div style={{borderLeft:"3px solid "+cat.color,padding:"12px 14px",background:cat.color+"08",marginBottom:12,borderRadius:"0 6px 6px 0"}}>
