@@ -2985,7 +2985,7 @@ function WordTab(){
         note:"",texts,teachers:card.teachers||"",bookId:card.bookId||"",
       });
     }catch(e){
-      setBuiltCard({verse:addInput,ref:"",category:"faith",note:"",texts:{},teachers:"",bookId:""});
+      setBuiltCard({verse:addInput,ref:"",category:"faith",note:"",texts:{},teachers:"",bookId:"",err:e.message||"AI could not build this card"});
     }
     setAddLoading(false);
   }
@@ -3074,6 +3074,7 @@ function WordTab(){
                       <div style={{padding:"14px 16px"}}>
                         <p style={{fontFamily:SERIF,fontSize:17,fontStyle:"italic",color:INK,lineHeight:1.65,margin:"0 0 8px"}}>"{builtCard.verse}"</p>
                         <p style={{fontSize:14,color:GOLD,margin:"0 0 12px",letterSpacing:"0.5px"}}>{builtCard.ref}</p>
+                        {builtCard.err&&(<p style={{fontSize:13,color:OX,margin:"0 0 10px"}}>The AI couldn't build this card ({builtCard.err}). You can still save what you typed.</p>)}
                         {builtCard.note&&(
                           <div style={{padding:"8px 12px",background:"white",borderLeft:"2px solid "+bc.color,borderRadius:"0 6px 6px 0",fontSize:14,color:INK,lineHeight:1.6,fontStyle:"italic"}}>{builtCard.note}</div>
                         )}
