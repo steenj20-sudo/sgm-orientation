@@ -29,21 +29,30 @@ const SEC = {fontSize:15,color:"#3a4a5a",fontFamily:BODY,lineHeight:1.75};
 
 const BG = "repeating-linear-gradient(transparent,transparent 27px,rgba(26,46,74,0.025) 27px,rgba(26,46,74,0.025) 28px)";
 
+// All AI calls go through the private Bible Hub server (the Anthropic key never lives in this app).
+const HUB_URL="https://bible-hub-two.vercel.app";
+function hubPass(force){
+  let p="";
+  try{p=localStorage.getItem("sgm-hub-pass")||"";}catch(e){}
+  if(!p||force){
+    p=window.prompt("Passcode")||"";
+    try{if(p)localStorage.setItem("sgm-hub-pass",p);}catch(e){}
+  }
+  return p;
+}
+async function hubFetch(path,opts={}){
+  for(let attempt=0;attempt<2;attempt++){
+    const res=await fetch(HUB_URL+path,{...opts,headers:{"Content-Type":"application/json","x-passcode":hubPass(attempt>0),...(opts.headers||{})}});
+    if(res.status===401&&attempt===0){try{localStorage.removeItem("sgm-hub-pass");}catch(e){}continue;}
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(data.error||"API error");
+    return data;
+  }
+  throw new Error("Wrong passcode");
+}
 async function claudeAPI(prompt,max_tokens=1000){
-  const key=import.meta.env.VITE_ANTHROPIC_API_KEY;
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-api-key":key||"",
-      "anthropic-version":"2023-06-01",
-      "anthropic-dangerous-direct-browser-access":"true",
-    },
-    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens,messages:[{role:"user",content:prompt}]})
-  });
-  const data=await res.json();
-  if(data.error)throw new Error(data.error.message||"API error");
-  return data.content?.find(b=>b.type==="text")?.text||"";
+  const d=await hubFetch("/api/claude",{method:"POST",body:JSON.stringify({prompt,max_tokens})});
+  return d.text||"";
 }
 
 const SCVS = {
@@ -135,7 +144,7 @@ const INIT_CATS = [
   {id:"faith",label:"Faith",icon:"✦",color:"#1A2E4A",color2:"#6DDCE8",state:"Intentional. Holy Spirit is speaking.",tasks:[
     {id:"f1",label:"Morning prayer & orientation",resistance:"low",roadblock:"unknown",done:false,steps:[]},
     {id:"f2",label:"Kingdom Notebook deposit",resistance:"medium",roadblock:"procrastination",done:false,steps:[]},
-    {id:"f3",label:"Celebrate Recovery prep",resistance:"low",roadblock:null,done:false,steps:[]},
+    {id:"f3",label:"City Recovery prep",resistance:"low",roadblock:null,done:false,steps:[]},
   ]},
   {id:"family",label:"Family & Kids",icon:"⌂",color:"#2E6B8A",color2:"#6DDCE8",state:"Healthy. Present and engaged.",tasks:[
     {id:"fa1",label:"Graduation — Bloomington Creek 5:30pm",resistance:"low",roadblock:null,done:false,steps:[]},
@@ -342,7 +351,7 @@ function AppInsights({cats,library,prayers,checkIns,letstalk,shelf,habits}){
   async function generate(){
     setLoading(true);setInsight(null);
     const ctx=buildContext();
-    const prompt=`You are giving Joe Steen a brief, honest read of what his SGM Orientation app is actually doing for him right now — not generic encouragement, but a real picture based on his actual data. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. Anchor verse: Proverbs 3:5-6.\n\nHere is his current app data:\n${ctx}\n\nWrite 3-4 sentences that:\n1. Name 2-3 specific things the app is actually tracking or showing about his life right now\n2. Name one honest observation or pattern worth his attention\n3. End with one short, grounded forward sentence — not a pep talk, just what\u2019s next\n\nPlain English. No filler. No "great job." Sound like a trusted friend reading the data alongside him.`;
+    const prompt=`You are giving Joe Steen a brief, honest read of what his SGM Orientation app is actually doing for him right now — not generic encouragement, but a real picture based on his actual data. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads City Recovery. Anchor verse: Proverbs 3:5-6.\n\nHere is his current app data:\n${ctx}\n\nWrite 3-4 sentences that:\n1. Name 2-3 specific things the app is actually tracking or showing about his life right now\n2. Name one honest observation or pattern worth his attention\n3. End with one short, grounded forward sentence — not a pep talk, just what\u2019s next\n\nPlain English. No filler. No "great job." Sound like a trusted friend reading the data alongside him.`;
     try{
       const result=await claudeAPI(prompt,400);
       setInsight(result);
@@ -740,7 +749,7 @@ function PrayerTab({prayers,setPrayers}){
                           <div style={{display:"flex",gap:8,marginBottom:8}}>
                             <button onClick={async()=>{
                               setPrayers(p=>p.map(x=>x.id===pr.id?{...x,quickPrayerLoading:true}:x));
-                              const prompt=`Write one short prayer (2-3 sentences, prayable out loud in 10-15 seconds) for Joe Steen to pray over ${pr.name}. What he's praying for: ${pr.request}. Direct, warm, addressed to God, in Joe's voice — a stay-at-home dad, 20 years sober, leads Celebrate Recovery. No filler, no long build-up, just the prayer itself.`;
+                              const prompt=`Write one short prayer (2-3 sentences, prayable out loud in 10-15 seconds) for Joe Steen to pray over ${pr.name}. What he's praying for: ${pr.request}. Direct, warm, addressed to God, in Joe's voice — a stay-at-home dad, 20 years sober, leads City Recovery. No filler, no long build-up, just the prayer itself.`;
                               try{
                                 const text=await claudeAPI(prompt,200);
                                 setPrayers(p=>p.map(x=>x.id===pr.id?{...x,quickPrayer:text,quickPrayerLoading:false}:x));
@@ -906,7 +915,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   async function processCheckIn(){
     if(!checkInInput.trim())return;
     setCheckInLoading(true);setCheckInResult(null);
-    const prompt=`You are helping Joe Steen in the middle of his day. He is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. He just spoke freely about how he's feeling and what he has to do. He has his own frameworks for this exact moment: the Future Self Reframe (instead of "do it now," ask what life looks like 2-3 days out if he acts vs doesn't), and the Familiarity Trap (avoidance often returns to a known, comfortable mindset that feels like home, even when it's not serving him). The system behind task avoidance — high empathy, pattern sensitivity — is the same system behind his ministry effectiveness. Avoidance is usually avoiding the feeling, not the task itself.\n\nHere's what Joe just said:\n${checkInInput}\n\nRespond in this exact format, short and direct, no fluff, like a trusted friend who knows him well:\n\nTHE LOOP: [Name what's actually happening in 1-2 sentences — the feeling and the pull, in plain language]\nSCRIPTURE: [One short verse that fits, with reference]\nTHE CALL: [One direct sentence: push through, or rest — pick one, don't hedge]\nHOW TO DO IT RIGHT: [1-2 sentences on how to do that responsibly — if push through, what's the smallest next action; if rest, what makes it actual rest and not avoidance]\n\nBe honest, not soft. No "you've got this" filler. Plain English.`;
+    const prompt=`You are helping Joe Steen in the middle of his day. He is a stay-at-home dad, founder of SGM, 20 years sober, leads City Recovery. He just spoke freely about how he's feeling and what he has to do. He has his own frameworks for this exact moment: the Future Self Reframe (instead of "do it now," ask what life looks like 2-3 days out if he acts vs doesn't), and the Familiarity Trap (avoidance often returns to a known, comfortable mindset that feels like home, even when it's not serving him). The system behind task avoidance — high empathy, pattern sensitivity — is the same system behind his ministry effectiveness. Avoidance is usually avoiding the feeling, not the task itself.\n\nHere's what Joe just said:\n${checkInInput}\n\nRespond in this exact format, short and direct, no fluff, like a trusted friend who knows him well:\n\nTHE LOOP: [Name what's actually happening in 1-2 sentences — the feeling and the pull, in plain language]\nSCRIPTURE: [One short verse that fits, with reference]\nTHE CALL: [One direct sentence: push through, or rest — pick one, don't hedge]\nHOW TO DO IT RIGHT: [1-2 sentences on how to do that responsibly — if push through, what's the smallest next action; if rest, what makes it actual rest and not avoidance]\n\nBe honest, not soft. No "you've got this" filler. Plain English.`;
     try{
       const result=await claudeAPI(prompt,500);
       setCheckInResult(result);
@@ -941,7 +950,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
     setInsightLoading(true);setInsightResult(null);
     const entries=checkIns.slice(0,20);
     const summary=entries.map((e,i)=>`[${e.date}] You said: ${e.input}\nLoop: ${e.loop}\nCall: ${e.call}`).join("\n\n");
-    const prompt=`You are helping Joe Steen understand his own patterns across his recent Check In entries. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. His own frameworks: the Familiarity Trap (avoidance returns to a known comfortable mindset), the Future Self Reframe (act for the person you're becoming), and the insight that avoidance is avoiding the feeling, not the task.\n\nHere are his recent Check In entries (newest first):\n\n${summary}\n\nWrite a short, honest pattern read — 3-4 sentences max. Name the loop that keeps showing up most, when it tends to hit, and one honest observation about the pattern of his calls (push through vs rest). Don't be soft. Don't be a coach. Sound like a trusted friend who's been watching closely. Plain English, no filler.\n\nReturn only the pattern read. Nothing else.`;
+    const prompt=`You are helping Joe Steen understand his own patterns across his recent Check In entries. Joe is a stay-at-home dad, founder of SGM, 20 years sober, leads City Recovery. His own frameworks: the Familiarity Trap (avoidance returns to a known comfortable mindset), the Future Self Reframe (act for the person you're becoming), and the insight that avoidance is avoiding the feeling, not the task.\n\nHere are his recent Check In entries (newest first):\n\n${summary}\n\nWrite a short, honest pattern read — 3-4 sentences max. Name the loop that keeps showing up most, when it tends to hit, and one honest observation about the pattern of his calls (push through vs rest). Don't be soft. Don't be a coach. Sound like a trusted friend who's been watching closely. Plain English, no filler.\n\nReturn only the pattern read. Nothing else.`;
     try{
       const result=await claudeAPI(prompt,300);
       setInsightResult(result);
@@ -980,7 +989,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
     if(yLib.length)dataParts.push("Library deposits: "+yLib.map(p=>p.principle).filter(Boolean).join(" | "));
     if(yStudy?.ref)dataParts.push("Anchor verse: "+yStudy.ref+(yStudy.observation?" — Joe wrote: \""+yStudy.observation.slice(0,200)+"\"":""));
     try{
-      const text=await claudeAPI(`You are writing a brief morning recap for Joe Steen — stay-at-home dad, founder of Steen Growth Ministries, 20 years sober, leads Celebrate Recovery. Write 2-3 warm sentences (no more) that acknowledge what he did yesterday and set a forward tone for today. Use his data below. Sound like a trusted friend — honest, warm, direct. No self-help filler. No "great job" cheerleading. Just name what happened and hand him toward today.\n\nYesterday's data:\n${dataParts.join("\n")}\n\nReturn only the 2-3 sentence paragraph. Nothing else.`,200);
+      const text=await claudeAPI(`You are writing a brief morning recap for Joe Steen — stay-at-home dad, founder of Steen Growth Ministries, 20 years sober, leads City Recovery. Write 2-3 warm sentences (no more) that acknowledge what he did yesterday and set a forward tone for today. Use his data below. Sound like a trusted friend — honest, warm, direct. No self-help filler. No "great job" cheerleading. Just name what happened and hand him toward today.\n\nYesterday's data:\n${dataParts.join("\n")}\n\nReturn only the 2-3 sentence paragraph. Nothing else.`,200);
       if(text){
         setRecapContent(text);
         localStorage.setItem("sgm3-recap",JSON.stringify({date:yesterday,text}));
@@ -1112,7 +1121,7 @@ function DayWeekTab({cats,planner,setPlanner,prayers,habits,shelf,history,stack,
   async function generateStudy(verse,ref){
     setStudyLoading(true);
     try{
-      const prompt=`You are generating a structured morning Bible study for Joe Steen, founder of Steen Growth Ministries. Joe is a stay-at-home dad, 20 years sober, leads Celebrate Recovery, and is building a digital formation platform. His anchor verse is Proverbs 3:5-6. His voice: honest, warm, direct — like a trusted friend over coffee.
+      const prompt=`You are generating a structured morning Bible study for Joe Steen, founder of Steen Growth Ministries. Joe is a stay-at-home dad, 20 years sober, leads City Recovery, and is building a digital formation platform. His anchor verse is Proverbs 3:5-6. His voice: honest, warm, direct — like a trusted friend over coffee.
 
 Today's verse: "${verse}" — ${ref}
 
@@ -2609,7 +2618,7 @@ const SGM_GUIDES = [
     icon:"✦",
     color:OX,
     desc:"A personal framework for understanding how you're built — the roots that feed you, the trunk that holds you, and the branches that extend into the world.",
-    prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nROOT\n- [one root Joe draws from]\n- [another root]\n- [another root]\n\nTRUNK\n- [one core identity statement about Joe]\n- [another]\n- [another]\n\nBRANCH\n- [one active branch — SGM, Celebrate Recovery, family, discipleship]\n- [another]\n- [another]\n\nCLOSING\n[one sentence in Joe's voice about what this framework means for how he lives right now]\n\nHonest. Plain English. No filler. No markdown formatting whatsoever.`
+    prompt:`You are generating a personal formation framework for Joe Steen using the Root, Trunk & Branch model.\n\nROOT = What feeds you at the source level. Spiritual inputs, anchor relationships, foundational truths that hold everything up.\nTRUNK = Core identity, character, and values. Who you are when no one's watching. The load-bearing center.\nBRANCH = Where you extend into the world — ministry, family, work, influence. What grows from who you are.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nROOT\n- [one root Joe draws from]\n- [another root]\n- [another root]\n\nTRUNK\n- [one core identity statement about Joe]\n- [another]\n- [another]\n\nBRANCH\n- [one active branch — SGM, City Recovery, family, discipleship]\n- [another]\n- [another]\n\nCLOSING\n[one sentence in Joe's voice about what this framework means for how he lives right now]\n\nHonest. Plain English. No filler. No markdown formatting whatsoever.`
   },
   {
     id:"idf",
@@ -2618,7 +2627,7 @@ const SGM_GUIDES = [
     icon:"⚙",
     color:GOLD,
     desc:"How you deploy your internal resources — capacity, energy, attention, and care — across the areas of your life that matter most.",
-    prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nSPIRITUAL DEPLOYMENT\n[1-2 sentences on how Joe's faith and spiritual formation resources get deployed day to day]\n\nFAMILY DEPLOYMENT\n[1-2 sentences on how Joe shows up for Shawn, the kids, and the home in this season]\n\nMINISTRY DEPLOYMENT\n[1-2 sentences on SGM and Celebrate Recovery — where and how he extends outward]\n\nCAPACITY MANAGEMENT\n[1-2 honest, specific sentences on what threatens his capacity and what restores it]\n\nANCHOR\n[one sentence on what holds the whole deployment together]\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language. No markdown formatting whatsoever.`
+    prompt:`You are generating a personal framework for Joe Steen called the Internal Deployment Framework (IDF).\n\nThe IDF maps how Joe deploys his internal resources — emotional capacity, mental energy, spiritual attention, and relational care — across his life.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024), founder of SGM, leads City Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6. Visual learner, natural empath, systems thinker.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nSPIRITUAL DEPLOYMENT\n[1-2 sentences on how Joe's faith and spiritual formation resources get deployed day to day]\n\nFAMILY DEPLOYMENT\n[1-2 sentences on how Joe shows up for Shawn, the kids, and the home in this season]\n\nMINISTRY DEPLOYMENT\n[1-2 sentences on SGM and City Recovery — where and how he extends outward]\n\nCAPACITY MANAGEMENT\n[1-2 honest, specific sentences on what threatens his capacity and what restores it]\n\nANCHOR\n[one sentence on what holds the whole deployment together]\n\nHonest, plain English, written in Joe's voice. No filler. No self-help language. No markdown formatting whatsoever.`
   },
   {
     id:"glf",
@@ -2627,7 +2636,7 @@ const SGM_GUIDES = [
     icon:"◉",
     color:"#2E6B8A",
     desc:"A street-level map of where you actually are right now — not the vision, not the goals, but the honest ground-floor reality of this season.",
-    prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads Celebrate Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nWHERE I AM NOW\n[2-3 honest sentences summarizing this life season — no spin]\n\nWHAT'S WORKING\n- [one real thing that's actually working]\n- [another]\n\nWHAT'S OPEN\n- [one honest open loop or unresolved thing Joe is carrying]\n- [another]\n\nWHAT I KNOW TO BE TRUE\n- [one settled conviction Joe holds regardless of circumstances]\n- [another]\n\nWHAT'S NEXT AT GROUND LEVEL\n[the one next right step — not the plan, just the next thing]\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. No markdown formatting whatsoever.`
+    prompt:`You are generating a personal framework for Joe Steen called the Ground Level Framework (GLF).\n\nThe GLF is not about vision or goals. It is an honest street-level map of where Joe actually is right now — the real terrain of this season.\n\nJoe's context: stay-at-home dad (youngest Xenya born Dec 2024, plus two older kids), founder of SGM (building in the margins), leads City Recovery at City Church, 20 years sober, wife Shawn runs Imprint Pediatric Therapy. Anchor verse Proverbs 3:5-6.\n\nRespond ONLY in this exact plain-text format — no markdown, no #, no **, no asterisks of any kind, just plain sentences with a dash for each bullet:\n\nWHERE I AM NOW\n[2-3 honest sentences summarizing this life season — no spin]\n\nWHAT'S WORKING\n- [one real thing that's actually working]\n- [another]\n\nWHAT'S OPEN\n- [one honest open loop or unresolved thing Joe is carrying]\n- [another]\n\nWHAT I KNOW TO BE TRUE\n- [one settled conviction Joe holds regardless of circumstances]\n- [another]\n\nWHAT'S NEXT AT GROUND LEVEL\n[the one next right step — not the plan, just the next thing]\n\nHonest, plain English, first-person where it fits. No filler. No self-help language. No markdown formatting whatsoever.`
   },
 ];
 
@@ -2921,7 +2930,31 @@ const SCVS_MIGRATED=[
 ];
 
 function WordTab(){
-  const [userVerses,setUserVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm3-manual-verses")||"[]");}catch(e){return[];}});
+  // Verses live in the shared Bible Hub collection (same list as Living Word). Cached here for offline.
+  const [hubVerses,setHubVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm-hub-verses-cache")||"[]");}catch(e){return[];}});
+  const cacheHub=(l)=>{try{localStorage.setItem("sgm-hub-verses-cache",JSON.stringify(l));}catch(e){}};
+  const hubMutate=async(fn)=>{
+    const d=await hubFetch("/api/verses");
+    const next=fn(d.verses||[]);
+    await hubFetch("/api/verses",{method:"POST",body:JSON.stringify({verses:next})});
+    setHubVerses(next);cacheHub(next);
+  };
+  useEffect(()=>{
+    (async()=>{
+      try{
+        let list=(await hubFetch("/api/verses")).verses||[];
+        // one-time: move verses added here before sharing into the shared collection
+        let old=[];try{old=JSON.parse(localStorage.getItem("sgm3-manual-verses")||"[]");}catch(e){}
+        if(old.length&&!localStorage.getItem("sgm-manual-migrated")){
+          const moved=old.filter(o=>!list.some(h=>h.id===o.id)).map(o=>({id:o.id,ref:o.ref||"",bookId:"",category:o.category||"faith",main:"Saved",texts:o.verse?{Saved:o.verse}:{},note:o.userNote||"",aiNote:o.note||"",teachers:"",source:"Added in Orientation",added:"",memorize:false}));
+          if(moved.length){list=[...moved,...list];await hubFetch("/api/verses",{method:"POST",body:JSON.stringify({verses:list})});}
+          localStorage.setItem("sgm-manual-migrated","1");
+        }
+        setHubVerses(list);cacheHub(list);
+      }catch(e){}
+    })();
+  },[]);
+  const userVerses=hubVerses.map(h=>({id:h.id,verse:(h.texts&&(h.texts[h.main]||h.texts.ESV||h.texts.NIV||h.texts.NLT||Object.values(h.texts)[0]))||"",ref:h.ref,category:h.category||"faith",note:h.aiNote||"",userNote:h.note||""}));
   const [mode,setMode]=useState("browse"); // browse | category
   const [activeCat,setActiveCat]=useState("all");
   const [expandedId,setExpandedId]=useState(null);
@@ -2933,43 +2966,39 @@ function WordTab(){
   const [copied,setCopied]=useState(null);
 
   // Unified verse pool — migrated SCVS + user verses
-  const allVerses=[...SCVS_MIGRATED,...userVerses];
+  const hubRefs=new Set(hubVerses.map(h=>h.ref));
+  const allVerses=[...SCVS_MIGRATED.filter(m=>!hubRefs.has(m.ref)),...userVerses];
 
-  function saveVerses(updated){
-    setUserVerses(updated);
-    localStorage.setItem("sgm3-manual-verses",JSON.stringify(updated));
-  }
 
   async function buildCard(){
     if(!addInput.trim())return;
     setAddLoading(true);setBuiltCard(null);
-    const prompt=`You are helping Joe Steen add a verse to his personal scripture library. He is a stay-at-home dad, founder of SGM, 20 years sober, leads Celebrate Recovery. His anchor verse is Proverbs 3:5-6.\n\nHe typed: "${addInput}"\n\nDo the following:\n1. Identify the full verse text if he only gave a reference, or confirm the text if he gave it\n2. Confirm the exact reference (book chapter:verse)\n3. Assign ONE category from this list: warfare, identity, rest, faith, surrender, relationships, purpose\n4. Write a SHORT honest note (1-2 sentences max) about what this verse speaks to — in plain English, from Joe's perspective, not generic\n\nRespond ONLY in this exact format, nothing else:\nVERSE: [full verse text, no quotes]\nREF: [Book chapter:verse]\nCATEGORY: [one word from the list]\nNOTE: [1-2 sentence note]`;
     try{
-      const result=await claudeAPI(prompt,300);
-      const get=(key)=>{const m=result.match(new RegExp(key+":(.+?)(?=\\n[A-Z]+:|$)","si"));return m?m[1].trim():"";};
-      const cat=get("CATEGORY").toLowerCase().trim();
+      const {card}=await hubFetch("/api/build-card",{method:"POST",body:JSON.stringify({input:addInput})});
+      const texts={};Object.entries(card.texts||{}).forEach(([k,t])=>{if(t)texts[k]=t;});
       setBuiltCard({
-        verse:get("VERSE"),
-        ref:get("REF"),
-        category:WORD_CATS.find(c=>c.id===cat)?cat:"faith",
-        note:get("NOTE"),
+        verse:texts.ESV||texts.NIV||texts.NLT||Object.values(texts)[0]||addInput,
+        ref:card.ref||"",
+        category:WORD_CATS.find(c=>c.id===card.category)?card.category:"faith",
+        note:"",texts,teachers:card.teachers||"",bookId:card.bookId||"",
       });
     }catch(e){
-      setBuiltCard({verse:addInput,ref:"",category:"faith",note:""});
+      setBuiltCard({verse:addInput,ref:"",category:"faith",note:"",texts:{},teachers:"",bookId:""});
     }
     setAddLoading(false);
   }
 
-  function saveBuiltCard(){
+  async function saveBuiltCard(){
     if(!builtCard?.verse)return;
-    const entry={id:"mv"+Date.now(),...builtCard,userNote:""};
-    saveVerses([entry,...userVerses]);
+    const texts=Object.keys(builtCard.texts||{}).length?builtCard.texts:{Saved:builtCard.verse};
+    const entry={id:"o"+Date.now(),ref:builtCard.ref,bookId:builtCard.bookId||"",category:builtCard.category,main:texts.ESV?"ESV":Object.keys(texts)[0],texts,note:"",teachers:builtCard.teachers||"",source:"Added in Orientation",added:new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"}),memorize:false};
+    try{await hubMutate(l=>[entry,...l]);}catch(e){}
     setBuiltCard(null);setAddInput("");setAddOpen(false);
   }
 
-  function removeVerse(id){
+  async function removeVerse(id){
     if(SCVS_MIGRATED.find(v=>v.id===id))return; // can't delete built-ins
-    saveVerses(userVerses.filter(v=>v.id!==id));
+    try{await hubMutate(l=>l.filter(v=>v.id!==id));}catch(e){}
     setExpandedId(null);
   }
 
@@ -2977,10 +3006,9 @@ function WordTab(){
     navigator.clipboard?.writeText(`"${v.verse}" — ${v.ref}`).then(()=>{setCopied(v.id);setTimeout(()=>setCopied(null),2000);});
   }
 
-  function saveNote(id,text){
-    const isUser=userVerses.find(v=>v.id===id);
-    if(isUser){
-      saveVerses(userVerses.map(v=>v.id===id?{...v,userNote:text}:v));
+  async function saveNote(id,text){
+    if(userVerses.find(v=>v.id===id)){
+      try{await hubMutate(l=>l.map(v=>v.id===id?{...v,note:text}:v));}catch(e){}
     }
     setEditingNote(p=>({...p,[id]:undefined}));
   }
@@ -3694,7 +3722,7 @@ function LetsTalkTab({letstalk,setLetstalk}){
   async function processDevelop(){
     if(!developInput.trim())return;
     setDevelopLoading(true);setDevelopResult(null);
-    const prompt=`You are helping Joe Steen develop a conversation card for his "${sec.label}" context. Joe is a stay-at-home dad, 20 years sober, founder of SGM, leads Celebrate Recovery. His anchor verse is Proverbs 3:5-6. His voice is honest, warm, direct — like a trusted friend over coffee.\n\nSection context: ${sec.desc}\n\nHere is Joe's raw thinking:\n${developInput}\n\nBuild this into a Let's Talk card. Return in this exact format:\n\nTOPIC: [Name or topic — one line]\nYOUR POSITION: [What Joe actually believes or wants to communicate — in his voice, 2-3 sentences]\nKEY POINTS: [2-3 things that need to land — numbered]\nHOW IT USUALLY GOES: [What typically happens in this kind of conversation — honest, 1-2 sentences]\nSCRIPTURE: [One verse that anchors it, if applicable — or leave blank]\nIN JOE'S WORDS: [One honest sentence from Joe's perspective on why this conversation matters]\n\nNo extra text before or after the card format. Stay in Joe's voice throughout.`;
+    const prompt=`You are helping Joe Steen develop a conversation card for his "${sec.label}" context. Joe is a stay-at-home dad, 20 years sober, founder of SGM, leads City Recovery. His anchor verse is Proverbs 3:5-6. His voice is honest, warm, direct — like a trusted friend over coffee.\n\nSection context: ${sec.desc}\n\nHere is Joe's raw thinking:\n${developInput}\n\nBuild this into a Let's Talk card. Return in this exact format:\n\nTOPIC: [Name or topic — one line]\nYOUR POSITION: [What Joe actually believes or wants to communicate — in his voice, 2-3 sentences]\nKEY POINTS: [2-3 things that need to land — numbered]\nHOW IT USUALLY GOES: [What typically happens in this kind of conversation — honest, 1-2 sentences]\nSCRIPTURE: [One verse that anchors it, if applicable — or leave blank]\nIN JOE'S WORDS: [One honest sentence from Joe's perspective on why this conversation matters]\n\nNo extra text before or after the card format. Stay in Joe's voice throughout.`;
     try{const result=await claudeAPI(prompt,800);setDevelopResult(result);}
     catch(e){setDevelopResult("Couldn't reach Claude right now. Try again.");}
     setDevelopLoading(false);
