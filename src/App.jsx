@@ -2933,6 +2933,8 @@ function WordTab(){
   // Verses live in the shared Bible Hub collection (same list as Living Word). Cached here for offline.
   const [hubVerses,setHubVerses]=useState(()=>{try{return JSON.parse(localStorage.getItem("sgm-hub-verses-cache")||"[]");}catch(e){return[];}});
   const cacheHub=(l)=>{try{localStorage.setItem("sgm-hub-verses-cache",JSON.stringify(l));}catch(e){}};
+  const [hubErr,setHubErr]=useState("");
+  const [hubTry,setHubTry]=useState(0);
   const hubMutate=async(fn)=>{
     const d=await hubFetch("/api/verses");
     const next=fn(d.verses||[]);
@@ -2950,10 +2952,10 @@ function WordTab(){
           if(moved.length){list=[...moved,...list];await hubFetch("/api/verses",{method:"POST",body:JSON.stringify({verses:list})});}
           localStorage.setItem("sgm-manual-migrated","1");
         }
-        setHubVerses(list);cacheHub(list);
-      }catch(e){}
+        setHubVerses(list);cacheHub(list);setHubErr("");
+      }catch(e){setHubErr(e.message||"Could not reach the shared library");}
     })();
-  },[]);
+  },[hubTry]);
   const userVerses=hubVerses.map(h=>({id:h.id,verse:(h.texts&&(h.texts[h.main]||h.texts.ESV||h.texts.NIV||h.texts.NLT||Object.values(h.texts)[0]))||"",ref:h.ref,category:h.category||"faith",note:h.aiNote||"",userNote:h.note||""}));
   const [mode,setMode]=useState("browse"); // browse | category
   const [activeCat,setActiveCat]=useState("all");
@@ -3020,6 +3022,13 @@ function WordTab(){
 
   return(
     <div style={{paddingBottom:40}}>
+
+      {hubErr&&(
+        <div style={{background:"#FBF1EF",border:"1px solid "+OX+"40",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:13,color:OX,lineHeight:1.5}}>
+          Couldn't load your shared verses: {hubErr}
+          <div><button onClick={()=>{try{localStorage.removeItem("sgm-hub-pass");}catch(e){}setHubTry(t=>t+1);}} style={{marginTop:6,background:OX,color:"white",border:"none",borderRadius:7,padding:"5px 12px",fontSize:13,cursor:"pointer"}}>Try again with passcode</button></div>
+        </div>
+      )}
 
       {/* Add box */}
       <div style={{background:"white",border:"1px solid "+OX+"30",borderLeft:"3px solid "+OX,borderRadius:10,marginBottom:20,overflow:"hidden"}}>
